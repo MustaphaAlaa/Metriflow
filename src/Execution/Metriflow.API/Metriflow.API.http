@@ -1,0 +1,6 @@
+@Metriflow.API_HostAddress = http://localhost:5230
+
+GET {{Metriflow.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
