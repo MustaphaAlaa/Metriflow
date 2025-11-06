@@ -7,12 +7,20 @@ using RabbitMQ.Client;
 
 namespace Metriflow.Messaging;
 
+/// <summary>
+/// Implements the RabbitMQ message publishing functionality.
+/// </summary>
 public class RabbitMQProducer : IRabbitMQProducer, IAsyncDisposable
 {
     private readonly IRabbitMQConnection _connection;
     private readonly ILogger<RabbitMQProducer> _logger;
     private IChannel? _sharedChannel;
 
+    /// <summary>
+    /// Initializes a new instance of the RabbitMQProducer class.
+    /// </summary>
+    /// <param name="connection">The RabbitMQ connection instance.</param>
+    /// <param name="logger">The logger instance for logging producer events.</param>
     public RabbitMQProducer(IRabbitMQConnection connection, ILogger<RabbitMQProducer> logger)
     {
         _connection = connection;
