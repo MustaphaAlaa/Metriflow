@@ -6,30 +6,25 @@ using RabbitMQ.Client;
 
 namespace Metriflow.Messaging;
 
+
 /// <summary>
-/// Represents a connection to a RabbitMQ server, providing methods to publish messages and manage channels.
+/// Implements the RabbitMQ connection management functionality.
 /// </summary>
-/// <remarks>
-/// This class implements the <see cref="IRabbitMQConnection"/> interface and is responsible for establishing
-/// a connection to RabbitMQ, creating channels, and publishing messages to specified exchanges.
-/// </remarks>
-/// <exception cref="ArgumentNullException">
-/// Thrown when the <paramref name="logger"/> or <paramref name="options"/> parameters are null,
-/// or when <paramref name="options.Value"/> is null.
-/// </exception>
-/// <example>
-/// <code>
-/// var rabbitMqConnection = new RabbitMQConnection(options, logger);
-/// await rabbitMqConnection.Publish(message, "exchangeName", "routingKey");
-/// </code>
-/// </example>
-///
+
 public class RabbitMQConnection : IRabbitMQConnection, IDisposable
 {
     private readonly IConnection _connection;
 
     private readonly RabbitMqSettings _settings;
     private readonly ILogger<RabbitMQConnection> _logger;
+    
+    
+    /// <summary>
+    /// Initializes a new instance of the RabbitMQConnection class.
+    /// </summary>
+    /// <param name="options">The RabbitMQ connection settings.</param>
+    /// <param name="logger">The logger instance for logging connection events.</param>
+    /// <exception cref="ArgumentNullException">Thrown when options or logger is null.</exception>
 
     public RabbitMQConnection(
         IOptions<RabbitMqSettings> options,
@@ -70,32 +65,6 @@ public class RabbitMQConnection : IRabbitMQConnection, IDisposable
     {
         _connection.Dispose();
     }
-
-    // public async Task Publish<TMessage>(TMessage message, string exchangeName, string routingKey)
-    // {
-    //     var jsonString = JsonSerializer.Serialize(message);
-    //     var body = Encoding.UTF8.GetBytes(jsonString);
-    //     await _channel.BasicPublishAsync(
-    //         exchange: exchangeName,
-    //         routingKey: routingKey,
-    //         body: body
-    //     );
-    // }
-
-    // public async Task CreateChannel(string exchangeName, string exchangeType = "direct")
-    // {
-    //     using var _channel = await _connection.CreateChannelAsync();
-    //     _logger.LogDebug("The channel is created.");
-
-    //     _logger.LogDebug($"Creating an exchange {exchangeName} -- ExchangeType: {exchangeType}");
-    //     await _channel.ExchangeDeclareAsync(
-    //         exchange: exchangeName,
-    //         type: exchangeType,
-    //         durable: true
-    //     );
-
-    //     _logger.LogDebug("The exchange is created.");
-    // }
 
     public async Task<IChannel> CreateNewChannelAsync()
     {
