@@ -51,5 +51,10 @@ public interface IRabbitMQProducer
     /// <param name="message">The message to publish.</param>
     /// <param name="exchangeName">The exchange to publish to.</param>
     /// <param name="routingKey">The routing key for message routing.</param>
-    Task PublishToChannelAsync<T>(IChannel channel, T message, string exchangeName, string routingKey);
+    Task PublishToChannelAsync<T>(
+        IChannel channel,
+        T message,
+        string exchangeName,
+        string routingKey
+    );
 }

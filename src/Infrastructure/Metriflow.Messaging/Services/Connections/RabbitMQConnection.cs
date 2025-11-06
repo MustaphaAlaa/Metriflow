@@ -6,25 +6,15 @@ using RabbitMQ.Client;
 
 namespace Metriflow.Messaging;
 
-
 /// <summary>
 /// Implements the RabbitMQ connection management functionality.
 /// </summary>
-
 public class RabbitMQConnection : IRabbitMQConnection, IDisposable
 {
     private readonly IConnection _connection;
 
     private readonly RabbitMqSettings _settings;
     private readonly ILogger<RabbitMQConnection> _logger;
-    
-    
-    /// <summary>
-    /// Initializes a new instance of the RabbitMQConnection class.
-    /// </summary>
-    /// <param name="options">The RabbitMQ connection settings.</param>
-    /// <param name="logger">The logger instance for logging connection events.</param>
-    /// <exception cref="ArgumentNullException">Thrown when options or logger is null.</exception>
 
     public RabbitMQConnection(
         IOptions<RabbitMqSettings> options,
@@ -65,7 +55,6 @@ public class RabbitMQConnection : IRabbitMQConnection, IDisposable
     {
         _connection.Dispose();
     }
-
     public async Task<IChannel> CreateNewChannelAsync()
     {
         var _channel = await _connection.CreateChannelAsync();
