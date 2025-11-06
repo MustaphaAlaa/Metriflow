@@ -25,7 +25,7 @@ services:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: mypassword
     ports:
-      - "5672:5672"   # AMQP
+      - "5672:5672" # AMQP
       - "15672:15672" # Management UI
     networks:
       - metriflow-net
@@ -45,6 +45,11 @@ services:
       - "6379:6379"
     networks:
       - metriflow-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   # ----------------------------------------
   # APPLICATION SERVICES
@@ -71,17 +76,19 @@ services:
     container_name: metriflow-correlation-worker
     build:
       context: .
-      dockerfile: src/Execution/Metriflow.Worker/Dockerfile
+      dockerfile: src/Execution/Metriflow.Correlation.Worker/Dockerfile
     restart: always
     depends_on:
-      - rabbitmq
-      - redis
+      rabbitmq:
+        condition: service_healthy
+      metriflow-redis:
+        condition: service_healthy
     environment:
-        - RabbitMQ_HostName=rabbitmq
-        - RabbitMQ_Port=5672
-        - RabbitMQ_UserName=user
-        - RabbitMQ_Password=mypassword
-        - ConnectionStrings__Redis=redis:6379
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=user
+      - RabbitMQ__Password=mypassword
+      - ConnectionStrings__Redis=redis:6379
     networks:
       - metriflow-net
 
@@ -95,11 +102,11 @@ services:
       - rabbitmq
       - db
     environment:
-        - RabbitMQ_HostName=rabbitmq
-        - RabbitMQ_Port=5672
-        - RabbitMQ_UserName=user
-        - RabbitMQ_Password=mypassword
-        - ConnectionStrings__Sqlserver=Server=db,1433;Database=metriflow_db;User Id=sa;Password=${DB_PASSWORD:-localpassword123!};TrustServerCertificate=True;
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=user
+      - RabbitMQ__Password=mypassword
+      - ConnectionStrings__Sqlserver=Server=db,1433;Database=metriflow_db;User Id=sa;Password=${DB_PASSWORD:-localpassword123!};TrustServerCertificate=True;
     networks:
       - metriflow-net
 
@@ -112,10 +119,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-        - RabbitMQ__HostName=rabbitmq
-        - RabbitMQ__Port=5672
-        - RabbitMQ__UserName=user
-        - RabbitMQ__Password=mypassword
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=user
+      - RabbitMQ__Password=mypassword
     networks:
       - metriflow-net
 
