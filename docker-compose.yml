@@ -1,10 +1,130 @@
 services:
-  RabbitMq:
-    container_name: "RabbitMq"
-    image: rabbitmq:4.2.0-management-alpine
+  # ----------------------------------------
+  # INFRASTRUCTURE SERVICES
+  # ----------------------------------------
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: metriflow-sqlserver
+    restart: always
     environment:
-      - RABBITMQ_DEFAULT_USER=user
-      - RABBITMQ_DEFAULT_PASS=mypassword
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: ${DB_PASSWORD:-localpassword123!}
     ports:
-      - "5672:5672" # RabbitMQ instance
-      - "15672:15672" # Web interface
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - metriflow-net
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: metriflow-rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: mypassword
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    networks:
+      - metriflow-net
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 5s
+      timeout: 15s
+      retries: 5
+      start_period: 20s
+
+  redis:
+    image: redis:7-alpine
+    container_name: metriflow-redis
+    restart: always
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    networks:
+      - metriflow-net
+
+  # ----------------------------------------
+  # APPLICATION SERVICES
+  # ----------------------------------------
+
+  metriflow-api:
+    container_name: metriflow-api
+    build:
+      context: .
+      dockerfile: src/Execution/Metriflow.API/Dockerfile
+    restart: always
+    depends_on:
+      - db
+      - redis
+    environment:
+      ConnectionStrings__Sqlserver: Server=db,1433;Database=metriflow_db;User Id=sa;Password=${DB_PASSWORD:-localpassword123!};TrustServerCertificate=True;
+      ConnectionStrings__Redis: redis:6379
+    ports:
+      - "8080:8080"
+    networks:
+      - metriflow-net
+
+  metriflow-correlation-worker:
+    container_name: metriflow-correlation-worker
+    build:
+      context: .
+      dockerfile: src/Execution/Metriflow.Worker/Dockerfile
+    restart: always
+    depends_on:
+      - rabbitmq
+      - redis
+    environment:
+        - RabbitMQ_HostName=rabbitmq
+        - RabbitMQ_Port=5672
+        - RabbitMQ_UserName=user
+        - RabbitMQ_Password=mypassword
+        - ConnectionStrings__Redis=redis:6379
+    networks:
+      - metriflow-net
+
+  metriflow-worker:
+    container_name: metriflow-worker
+    build:
+      context: .
+      dockerfile: src/Execution/Metriflow.Worker/Dockerfile
+    restart: always
+    depends_on:
+      - rabbitmq
+      - db
+    environment:
+        - RabbitMQ_HostName=rabbitmq
+        - RabbitMQ_Port=5672
+        - RabbitMQ_UserName=user
+        - RabbitMQ_Password=mypassword
+        - ConnectionStrings__Sqlserver=Server=db,1433;Database=metriflow_db;User Id=sa;Password=${DB_PASSWORD:-localpassword123!};TrustServerCertificate=True;
+    networks:
+      - metriflow-net
+
+  metriflow-producers:
+    container_name: metriflow-producers
+    build:
+      context: .
+      dockerfile: src/Execution/Metriflow.Producer/Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+        - RabbitMQ__HostName=rabbitmq
+        - RabbitMQ__Port=5672
+        - RabbitMQ__UserName=user
+        - RabbitMQ__Password=mypassword
+    networks:
+      - metriflow-net
+
+# ----------------------------------------
+# VOLUMES & NETWORKS
+# ----------------------------------------
+volumes:
+  sqlserver_data:
+
+networks:
+  metriflow-net:
+    driver: bridge
