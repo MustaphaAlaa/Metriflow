@@ -8,6 +8,5 @@
 **/**/obj/
 **/Resources/
 Resources/
-
-
-
+/Execution/Metriflow.Producer/data/*
+!/Execution/Metriflow.Producer/data/.gitkeep
