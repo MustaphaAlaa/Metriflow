@@ -1,55 +1,49 @@
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Metriflow.Correlation.Worker.Interfaces;
 using Metriflow.Messaging.interfaces;
 using Microsoft.Extensions.Caching.Distributed;
+using StackExchange.Redis;
 
 namespace Metriflow.Correlation.Worker;
 
 public class CorrelationWorker : BackgroundService
 {
     private readonly ILogger<CorrelationWorker> _logger;
-    private readonly IRabbitMQConsumer _consumer; 
+    private readonly IDatabase _redis;
+    private readonly IConsumer _consumer;
+    private readonly IHelper _helper;
 
     public CorrelationWorker(
+        IHelper helper,
+        IConsumer consumer,
         ILogger<CorrelationWorker> logger,
-        IRabbitMQConsumer consumer 
+        IConnectionMultiplexer redis
     )
     {
+        _helper = helper;
         _consumer = consumer;
-        _logger = logger; 
+        _logger = logger;
+        _redis = redis.GetDatabase();
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var analyticGA = await _consumer.CreateNewChannelAsync();
-        var analyticPSI = await _consumer.CreateNewChannelAsync();
+        var consume = _consumer.Consume(stoppingToken);
 
-        var psiTask = _consumer.ConsumeFromChannelAsync(
-            analyticPSI,
-            queueName: "PSI-Queue",
-            exchangeName: "analytics.raw",
-            routingKey: "analytics.raw.psi",
-            async (PSIRecord pa) =>
+        var batchMatchTask = Task.Run(
+            async () =>
             {
-                await Task.Delay(1000);
-                _logger.LogInformation($"MESSAGE FROM CONSUMER ---- PSI => {pa}");
-               
+                while (!stoppingToken.IsCancellationRequested)
+                {
+                    await _helper.MatchAll();
+                    await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken); // run every 2 seconds
+                }
             },
             stoppingToken
         );
 
-        var gaTask = _consumer.ConsumeFromChannelAsync(
-            analyticGA,
-            queueName: "GA-Queue",
-            exchangeName: "analytics.raw",
-            routingKey: "analytics.raw.ga",
-            async (GARecord ga) =>
-            {
-              
-                await Task.Delay(1000);
-                _logger.LogInformation($"MESSAGE FROM CONSUMER ---- GA => {ga}");
-            },
-            stoppingToken
-        );
-
-        await Task.WhenAll(psiTask, gaTask);
+        await Task.WhenAll(consume, batchMatchTask);
     }
 }
