@@ -12,12 +12,12 @@ public class CorrelationWorker : BackgroundService
 {
     private readonly ILogger<CorrelationWorker> _logger;
     private readonly IDatabase _redis;
-    private readonly IConsumer _consumer;
+    private readonly ICorrelationConsumer _consumer;
     // private readonly IHelper _helper;
 
     public CorrelationWorker(
         // IHelper helper,
-        IConsumer consumer,
+        ICorrelationConsumer consumer,
         ILogger<CorrelationWorker> logger,
         IConnectionMultiplexer redis
     )
