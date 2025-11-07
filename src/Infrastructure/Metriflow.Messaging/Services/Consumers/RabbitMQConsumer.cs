@@ -28,6 +28,9 @@ public class RabbitMQConsumer : IAsyncDisposable, IRabbitMQConsumer
     private readonly ILogger<RabbitMQConsumer> _logger;
     private IChannel? _sharedChannel;
 
+    private const int MaxRetryAttempts = 3;
+    private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(5);
+
     /// <summary>
     /// Create a new <see cref="RabbitMQConsumer"/>.
     /// </summary>
@@ -147,15 +150,34 @@ public class RabbitMQConsumer : IAsyncDisposable, IRabbitMQConsumer
                 if (message == null)
                 {
                     _logger.LogWarning(
-                        "Invalid or null message received from queue {QueueName}",
+                        "Invalid or null message received from queue {QueueName}. **NACK with Requeue=false.**",
                         queueName
                     );
+                    // Nack and DO NOT requeue on deserialization failure (dead letter is better)
+                    await channel.BasicNackAsync(args.DeliveryTag, multiple: false, requeue: false);
                     return;
                 }
 
-                await handleMessage(message);
+                var success = await this.HandleMessageWithRetryAsync(
+                    message,
+                    handleMessage,
+                    queueName,
+                    cancellationToken
+                );
 
-                await channel.BasicAckAsync(args.DeliveryTag, multiple: false);
+                if (success)
+                {
+                    await channel.BasicAckAsync(args.DeliveryTag, multiple: false);
+                }
+                else
+                {
+                    _logger.LogError(
+                        "All {Attempts} attempts failed for message from queue {QueueName}. **NACK with Requeue=true.**",
+                        MaxRetryAttempts,
+                        queueName
+                    );
+                    await channel.BasicNackAsync(args.DeliveryTag, multiple: false, requeue: true);
+                }
             }
             catch (Exception ex)
             {
@@ -176,6 +198,81 @@ public class RabbitMQConsumer : IAsyncDisposable, IRabbitMQConsumer
         {
             _logger.LogInformation("Consumer stopped for queue {QueueName}", queueName);
         }
+    }
+
+    /// <summary>
+    /// Attempts to process a message with a defined number of retries and a delay between attempts.
+    /// </summary>
+    /// <typeparam name="T">The message type.</typeparam>
+    /// <param name="message">The deserialized message payload.</param>
+    /// <param name="handleMessage">The external function to process the message (business logic).</param>
+    /// <param name="queueName">The name of the queue for logging purposes.</param>
+    /// <param name="cancellationToken">Cancellation token to respect shutdown requests.</param>
+    /// <returns>True if the message was successfully handled, false otherwise.</returns>
+    private async Task<bool> HandleMessageWithRetryAsync<T>(
+        T message,
+        Func<T, Task> handleMessage,
+        string queueName,
+        CancellationToken cancellationToken
+    )
+    {
+        for (int attempt = 1; attempt <= MaxRetryAttempts; attempt++)
+        {
+            try
+            {
+                _logger.LogInformation(
+                    $"Attempt {attempt}/{MaxRetryAttempts} to process message from queue {queueName}"
+                );
+
+                await handleMessage(message);
+
+                // Success: Break the loop and return true
+                _logger.LogInformation(
+                    "Message processed successfully on attempt {Attempt} from queue {QueueName}.",
+                    attempt,
+                    queueName
+                );
+                return true;
+            }
+            catch (Exception ex) when (attempt < MaxRetryAttempts)
+            {
+                // Log the failure, but only if we have more retries left
+                _logger.LogWarning(
+                    ex,
+                    "Message processing failed on attempt {Attempt} from queue {QueueName}. Retrying in {Delay} seconds...",
+                    attempt,
+                    queueName,
+                    RetryDelay.TotalSeconds
+                );
+
+                // Wait for the delay before the next attempt
+                try
+                {
+                    await Task.Delay(RetryDelay, cancellationToken);
+                }
+                catch (TaskCanceledException)
+                {
+                    // If cancellation is requested while waiting, stop retrying
+                    _logger.LogInformation(
+                        "Retry delay canceled for queue {QueueName}.",
+                        queueName
+                    );
+                    return false;
+                }
+            }
+            catch (Exception finalEx)
+            {
+                // Final failure after the last attempt
+                _logger.LogError(
+                    finalEx,
+                    "Final attempt {Attempt} failed to process message from queue {QueueName}. No more retries.",
+                    attempt,
+                    queueName
+                );
+                return false;
+            }
+        }
+        return false; // Should not be reached, but included for completeness
     }
 
     /// <inheritdoc/>
