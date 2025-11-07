@@ -48,7 +48,7 @@ public class Producer : IProducer
         await Task.Delay(1000);
         foreach (var psi in data)
         {
-            await Task.Delay(300);
+            await Task.Delay(1000);
             await _rabbitMQProducer.PublishToChannelAsync(
                 PSIChannel,
                 psi,
@@ -74,7 +74,7 @@ public class Producer : IProducer
         await Task.Delay(1000);
         foreach (var ga in data)
         {
-            await Task.Delay(200);
+            await Task.Delay(1000);
             await _rabbitMQProducer.PublishToChannelAsync(
                 GAChannel,
                 ga,
