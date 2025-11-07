@@ -29,14 +29,18 @@ public class RabbitMQProducer : IRabbitMQProducer, IAsyncDisposable
 
     public async Task InitializeSharedChannelAsync(string exchangeName)
     {
-        _sharedChannel = await _connection.CreateNewChannelAsync();
+        if (_sharedChannel is null)
+        {
+            _sharedChannel = await _connection.CreateNewChannelAsync();
+            _logger.LogInformation("Shared channel created.");
+        }
+
         await _sharedChannel.ExchangeDeclareAsync(
             exchange: exchangeName,
             type: ExchangeType.Direct,
             durable: true,
             autoDelete: false
         );
-        _logger.LogInformation("Shared channel created.");
     }
 
     public async Task<IChannel> CreateNewChannelAsync(string exchangeName)
