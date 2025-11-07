@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Metriflow.Correlation.Worker.Interfaces;
+using Metriflow.Domain;
 using Metriflow.Messaging.interfaces;
 using StackExchange.Redis;
 
@@ -20,18 +21,13 @@ public class Helper : IHelper
 {
     private readonly ILogger<Helper> _logger;
     private readonly IDatabase _redis;
+    private readonly ICombiner _Combiner;
 
-    public Helper(ILogger<Helper> logger, IRabbitMQConsumer consumer, IConnectionMultiplexer redis)
+    public Helper(ILogger<Helper> logger, ICombiner combiner, IConnectionMultiplexer redis)
     {
+        _Combiner = combiner;
         _logger = logger;
         _redis = redis.GetDatabase();
-    }
-
-    private Task GA_PSI_Combiner(GARecord ga, PSIRecord psi)
-    {
-        // Your processing logic here
-        _logger.LogInformation($"Processing GA + PSI for {ga.Page} on {ga.Date}");
-        return Task.CompletedTask;
     }
 
     public async Task MatchAll()
@@ -56,7 +52,7 @@ public class Helper : IHelper
             );
 
             // Combine data and produce it
-            GA_PSI_Combiner(ga, psi);
+            await _Combiner.GA_PSI_Combiner(ga, psi);
 
             await _redis.HashDeleteAsync("ga", "ga:" + key);
             await _redis.HashDeleteAsync("psi", "psi:" + key);

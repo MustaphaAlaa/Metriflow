@@ -12,8 +12,12 @@ builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("R
 builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
 
 builder.Services.AddScoped<IRabbitMQConsumer, RabbitMQConsumer>();
+builder.Services.AddScoped<IRabbitMQProducer, RabbitMQProducer>();
 builder.Services.AddScoped<IConsumerMessageHandler, ConsumerMessageHandler>();
 builder.Services.AddScoped<IConsumer, Consumer>();
+builder.Services.AddScoped<ICombiner, Combiner>();
+builder.Services.AddScoped<IRowRecordProducer, RawRecordProducer>();
+
 builder.Services.AddScoped<IHelper, Helper>();
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
