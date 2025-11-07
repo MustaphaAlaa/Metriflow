@@ -22,6 +22,5 @@ public class RawRecordProducer : IRowRecordProducer
             _exchangeName,
             "analytics.raw"
         );
-        _logger.LogInformation($"Raw Record → {rawRecord} is Published");
     }
 }

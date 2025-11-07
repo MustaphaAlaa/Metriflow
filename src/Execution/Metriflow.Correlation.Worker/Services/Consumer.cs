@@ -18,20 +18,17 @@ public class Consumer : IConsumer
 {
     private readonly ILogger<Consumer> _logger;
     private readonly IRabbitMQConsumer _consumer;
-    private readonly IDatabase _redis;
 
     private readonly IConsumerMessageHandler _consumerMessageHandler;
 
     public Consumer(
         ILogger<Consumer> logger,
         IRabbitMQConsumer consumer,
-        IConnectionMultiplexer redis,
         IConsumerMessageHandler consumerMessageHandler
     )
     {
         _logger = logger;
         _consumer = consumer;
-        _redis = redis.GetDatabase();
         _consumerMessageHandler = consumerMessageHandler;
     }
 
@@ -49,6 +46,7 @@ public class Consumer : IConsumer
     /// </remarks>
     public async Task Consume(CancellationToken stoppingToken)
     {
+        _logger.LogInformation("START CONSUMING............");
         this.ConsumeGA(stoppingToken);
         this.ConsumePSI(stoppingToken);
     }
@@ -67,12 +65,8 @@ public class Consumer : IConsumer
             routingKey: "analytics.raw.ga",
             async (GARecord ga) =>
             {
-                await _consumerMessageHandler.MessageHandler(
-                    ga,
-                    message: $"MESSAGE FROM CONSUMER ---- ga => {ga}",
-                    hashKey: "ga",
-                    fieldName: $"ga:{ga.Date}|{ga.Page}"
-                );
+                await Task.Delay(3000);
+                await _consumerMessageHandler.HandleIncomingRecordAsync("ga", ga);
             },
             stoppingToken
         );
@@ -92,12 +86,8 @@ public class Consumer : IConsumer
             routingKey: "analytics.raw.psi",
             async (PSIRecord psi) =>
             {
-                await _consumerMessageHandler.MessageHandler(
-                    psi,
-                    message: $"MESSAGE FROM CONSUMER ---- PSI => {psi}",
-                    hashKey: "psi",
-                    fieldName: $"psi:{psi.Date}|{psi.Page}"
-                );
+                await Task.Delay(3000);
+                await _consumerMessageHandler.HandleIncomingRecordAsync("psi", psi);
             },
             stoppingToken
         );
