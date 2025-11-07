@@ -55,6 +55,7 @@ public class RabbitMQConnection : IRabbitMQConnection, IDisposable
     {
         _connection.Dispose();
     }
+
     public async Task<IChannel> CreateNewChannelAsync()
     {
         var _channel = await _connection.CreateChannelAsync();
