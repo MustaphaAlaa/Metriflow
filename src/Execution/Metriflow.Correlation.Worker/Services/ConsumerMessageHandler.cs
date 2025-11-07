@@ -1,10 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Metriflow.Correlation.Worker.Interfaces;
+using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 
 namespace Metriflow.Correlation.Worker;
 
+/// <summary>
+/// Default implementation of <see cref="IConsumerMessageHandler"/>. Stores incoming records in Redis,
+/// tracks the maximum received date, and triggers matching/combining logic when appropriate.
+/// </summary>
 public class ConsumerMessageHandler : IConsumerMessageHandler
 {
     private readonly ILogger<CorrelationWorker> _logger;
@@ -14,6 +23,9 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
 
     readonly Object locker = new();
 
+    /// <summary>
+    /// Creates a new <see cref="ConsumerMessageHandler"/>.
+    /// </summary>
     public ConsumerMessageHandler(
         ILogger<CorrelationWorker> logger,
         IConnectionMultiplexer redis,
@@ -25,6 +37,7 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
         _redis = redis.GetDatabase();
     }
 
+    /// <inheritdoc />
     public async Task HandleIncomingRecordAsync<T>(string type, T record)
         where T : IAnalyticRecord
     {
@@ -106,6 +119,10 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
         }
     }
 
+    /// <summary>
+    /// Match previously-stored PSI and GA records for the given date, and trigger combining,
+    ///  then trigger DeleteFields method to delete them from redis after the publishing.
+    /// </summary>
     private async Task MatchRecords(DateOnly date)
     {
         var pp = await _redis.HashGetAllAsync("psi");
@@ -132,22 +149,47 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
             .ToHashSet();
 
         var commonKeys = psiKeys.Intersect(gaKeys);
+        var GA_PSI_List = await Get_GA_PSI_LIST(commonKeys);
+        ;
 
-        foreach (var key in commonKeys)
+        if (GA_PSI_List.Count > 0)
+            await _combiner.GA_PSI_Combiner(GA_PSI_List);
+
+        if (commonKeys.Count() > 0)
+            await DeleteFields(commonKeys);
+    }
+
+    /// <summary>
+    /// Retrieve combined GA/PSI records for the provided keys from Redis and deserialize them.
+    /// </summary>
+    private async Task<List<Tuple<GARecord, PSIRecord>>> Get_GA_PSI_LIST(IEnumerable<string> keys)
+    {
+        var lst = new List<Tuple<GARecord, PSIRecord>>();
+        foreach (var key in keys)
         {
             var gaBytes = await _redis.HashGetAsync("ga", key);
             var psiBytes = await _redis.HashGetAsync("psi", key);
 
-            var ga = JsonSerializer.Deserialize<GARecord>(gaBytes, JsonSetting.SerializerOptions);
+            var ga = JsonSerializer.Deserialize<GARecord>(gaBytes, JsonSetting.SerializerOptions)!;
 
             var psi = JsonSerializer.Deserialize<PSIRecord>(
                 psiBytes,
                 JsonSetting.SerializerOptions
-            );
+            )!;
 
-            // Combine data and produce it
-            await _combiner.GA_PSI_Combiner(ga, psi);
+            lst.Add(new Tuple<GARecord, PSIRecord>(ga, psi));
+        }
 
+        return lst;
+    }
+
+    /// <summary>
+    /// Delete the GA and PSI fields matching the provided keys from Redis.
+    /// </summary>
+    private async Task DeleteFields(IEnumerable<string> keys)
+    {
+        foreach (var key in keys)
+        {
             var gaDeleted = await _redis.HashDeleteAsync("ga", key);
             var psiDeleted = await _redis.HashDeleteAsync("psi", key);
         }

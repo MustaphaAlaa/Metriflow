@@ -16,4 +16,8 @@ public class RawRecord
     public int PerformanceScore { get; set; }
     public long LCP_MS { get; set; }
     public DateTime? ReceivedAt { get; set; }
+    public override string ToString()
+    {
+        return $" --- {this.Date} || {this.Page} --- ";
+    }
 }
