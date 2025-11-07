@@ -34,7 +34,7 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
 
     public async Task MessageHandler<T>(T obj, string message, string hashKey, string fieldName)
     {
-        await Task.Delay(1000);
+        await Task.Delay(10000);
         _logger.LogInformation(message);
 
         await _redis.HashSetAsync(
