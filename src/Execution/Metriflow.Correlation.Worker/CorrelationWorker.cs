@@ -13,16 +13,16 @@ public class CorrelationWorker : BackgroundService
     private readonly ILogger<CorrelationWorker> _logger;
     private readonly IDatabase _redis;
     private readonly IConsumer _consumer;
-    private readonly IHelper _helper;
+    // private readonly IHelper _helper;
 
     public CorrelationWorker(
-        IHelper helper,
+        // IHelper helper,
         IConsumer consumer,
         ILogger<CorrelationWorker> logger,
         IConnectionMultiplexer redis
     )
     {
-        _helper = helper;
+        // _helper = helper;
         _consumer = consumer;
         _logger = logger;
         _redis = redis.GetDatabase();
@@ -30,20 +30,23 @@ public class CorrelationWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await _redis.ExecuteAsync("FLUSHDB");
+  
         var consume = _consumer.Consume(stoppingToken);
 
-        var batchMatchTask = Task.Run(
-            async () =>
-            {
-                while (!stoppingToken.IsCancellationRequested)
-                {
-                    await _helper.MatchAll();
-                    await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken); // run every 2 seconds
-                }
-            },
-            stoppingToken
-        );
+        // var batchMatchTask = Task.Run(
+        //     async () =>
+        //     {
+        //         while (!stoppingToken.IsCancellationRequested)
+        //         {
+        //             await _helper.MatchAll();
+        //             await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken); // run every 2 seconds
+        //         }
+        //     },
+        //     stoppingToken
+        // );
 
-        await Task.WhenAll(consume, batchMatchTask);
+        await Task.WhenAll(consume);
+        // await Task.WhenAll(consume, batchMatchTask);
     }
 }

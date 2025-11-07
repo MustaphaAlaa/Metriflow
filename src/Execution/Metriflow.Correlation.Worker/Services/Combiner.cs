@@ -3,14 +3,12 @@ using Metriflow.Domain;
 
 namespace Metriflow.Correlation.Worker;
 
-
-
 public class Combiner : ICombiner
 {
-    private readonly ILogger<Helper> _logger;
+    private readonly ILogger<Combiner> _logger;
     private readonly IRowRecordProducer _producer;
 
-    public Combiner(ILogger<Helper> logger, IRowRecordProducer producer)
+    public Combiner(ILogger<Combiner> logger, IRowRecordProducer producer)
     {
         _logger = logger;
         this._producer = producer;
@@ -19,6 +17,7 @@ public class Combiner : ICombiner
     public async Task GA_PSI_Combiner(GARecord ga, PSIRecord psi)
     {
         _logger.LogInformation($"Combing GA + PSI for {ga.Page} on {ga.Date}");
+
         var raw = new RawRecord()
         {
             Date = ga.Date,
