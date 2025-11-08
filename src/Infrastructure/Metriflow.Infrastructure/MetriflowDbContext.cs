@@ -1,12 +1,11 @@
-using Metriflow.Domain.Entities;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Metriflow.Domain.Entities; 
 using Microsoft.EntityFrameworkCore;
 
 namespace Metriflow.Infrastructure;
 
 
 
-public partial class MetriflowDbContext : IdentityDbContext
+public partial class MetriflowDbContext :  DbContext
 {
     public MetriflowDbContext(DbContextOptions<MetriflowDbContext> options)
         : base(options) { }

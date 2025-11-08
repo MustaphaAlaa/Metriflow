@@ -99,8 +99,10 @@ services:
       dockerfile: src/Execution/Metriflow.Worker/Dockerfile
     restart: always
     depends_on:
-      - rabbitmq
-      - db
+      rabbitmq:
+        condition: service_healthy
+      db:
+        condition: service_started
     environment:
       - RabbitMQ__HostName=rabbitmq
       - RabbitMQ__Port=5672

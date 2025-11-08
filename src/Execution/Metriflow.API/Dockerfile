@@ -17,8 +17,8 @@ COPY ["src/Execution/Metriflow.API/Metriflow.API.csproj", "src/Execution/Metrifl
 COPY [ "src/Infrastructure/Metriflow.Infrastructure/Metriflow.Infrastructure.csproj","src/Infrastructure/Metriflow.Infrastructure/"]
 
 WORKDIR /src  
-COPY src/Core/ /src/Core/ 
-COPY src/Infrastructure/Metriflow.Infrastructure /src/Infrastructure/Metriflow.Infrastructure
+COPY src/Core/ src/Core/ 
+COPY src/Infrastructure/Metriflow.Infrastructure src/Infrastructure/Metriflow.Infrastructure
 COPY src/Execution/Metriflow.API src/Execution/Metriflow.API
 
 WORKDIR /src/src/Execution/Metriflow.API  
