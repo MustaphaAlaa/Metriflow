@@ -1,8 +1,8 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Metriflow.Correlation.Worker.Interfaces;
 using Metriflow.Messaging.interfaces;
 using Microsoft.Extensions.Logging;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Metriflow.Correlation.Worker;
 
