@@ -103,4 +103,4 @@ public interface IRabbitMQConsumer
     /// <param name="exchangeName">Exchange to prepare on the shared channel.</param>
     /// <returns>A <see cref="Task"/> that completes when initialization finishes.</returns>
     Task InitializeSharedChannelAsync(string queueName, string exchangeName);
-}
+ }
