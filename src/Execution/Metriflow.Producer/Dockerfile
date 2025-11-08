@@ -6,17 +6,13 @@ WORKDIR /src
 COPY  ["src/Core/Metriflow.Application/Metriflow.Application.csproj","src/Core/Metriflow.Application/"]
 COPY  ["src/Core/Metriflow.Domain/Metriflow.Domain.csproj","src/Core/Metriflow.Domain/"]
 # Execution
-COPY ["src/Execution/Metriflow.Worker/Metriflow.Worker.csproj", "src/Execution/Metriflow.Worker/"]
-COPY ["src/Execution/Metriflow.API/Metriflow.API.csproj", "src/Execution/Metriflow.API/"]
 COPY ["src/Execution/Metriflow.Producer/Metriflow.Producer.csproj","src/Execution/Metriflow.Producer/"]
-COPY ["src/Execution/Metriflow.Correlation.Worker/Metriflow.Correlation.Worker.csproj","src/Execution/Metriflow.Correlation.Worker/"]
-
-
-COPY [ "src/Infrastructure/Metriflow.Infrastructure/Metriflow.Infrastructure.csproj","src/Infrastructure/Metriflow.Infrastructure/"]
 COPY ["src/Infrastructure/Metriflow.Messaging/Metriflow.Messaging.csproj","src/Infrastructure/Metriflow.Messaging/"]
 
-# Copy rest of repository
-COPY ["src/", "src/"]
+WORKDIR /src
+COPY src/Execution/Metriflow.Producer src/Execution/Metriflow.Producer
+COPY src/Core   src/Core 
+COPY src/Infrastructure/Metriflow.Messaging src/Infrastructure/Metriflow.Messaging
 
 # Navigate to the specific project and publish
 WORKDIR /src/src/Execution/Metriflow.Producer

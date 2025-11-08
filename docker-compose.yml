@@ -92,11 +92,11 @@ services:
     networks:
       - metriflow-net
 
-  metriflow-worker:
-    container_name: metriflow-worker
+  metriflow-aggregation-worker:
+    container_name: metriflow-AggregationWorker
     build:
       context: .
-      dockerfile: src/Execution/Metriflow.Worker/Dockerfile
+      dockerfile: src/Execution/Metriflow.AggregationWorker/Dockerfile
     restart: always
     depends_on:
       rabbitmq:
