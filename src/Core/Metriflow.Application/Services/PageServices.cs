@@ -11,6 +11,7 @@ public class PageServices : IPageServices
     private readonly IUnitOfWork _unitOfWork;
     private readonly IBaseRepository<Page> _pageRepository;
     private readonly ILogger<PageServices> _logger;
+    private readonly Object _lock = new();
 
     public PageServices(IBaseRepository<Page> pageRepository,
         ILogger<PageServices> logger,
@@ -32,22 +33,26 @@ public class PageServices : IPageServices
     {
         if (combinedAnalyticsMessage is null)
             return null;
-        
+
         _logger.LogInformation($"Porccessing: {combinedAnalyticsMessage.Date} on Page {combinedAnalyticsMessage.Page}");
         combinedAnalyticsMessage.Page = combinedAnalyticsMessage.Page.ToLower();
         string path = combinedAnalyticsMessage.Page;
-
-        var page = await GetAsync(combinedAnalyticsMessage.Page);
-        if (page is null)
+        Page? page = default;
+        lock (_lock)
         {
-            _logger.LogInformation($"Creating Page: {path} --- Date: {combinedAnalyticsMessage.Date}");
-            page = await _pageRepository.CreateAsync(new Page
+            page = GetAsync(combinedAnalyticsMessage.Page).GetAwaiter().GetResult();
+            if (page is null)
             {
-                Path = path
-            });
+                _logger.LogInformation($"Creating Page: {path} --- Date: {combinedAnalyticsMessage.Date}");
+                page = _pageRepository.CreateAsync(new Page
+                {
+                    Path = path
+                }).GetAwaiter().GetResult();
+            }
+
+            _unitOfWork.SaveChangesAsync().GetAwaiter().GetResult();
         }
 
-        // await _unitOfWork.SaveChangesAsync();
         return page;
     }
 }

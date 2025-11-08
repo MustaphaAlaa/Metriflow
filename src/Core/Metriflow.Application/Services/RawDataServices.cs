@@ -27,6 +27,7 @@ public class RawDataServices : IRawDataServices
     {
         // IValidation.Validate()  ... Validate Page && Date Unique, etc...
 
+        var tm = new TimeOnly(0,0);
 
         var rawData = await _rawDataRepository.CreateAsync(new RawData
         {
@@ -36,7 +37,7 @@ public class RawDataServices : IRawDataServices
             Users = combinedAnalyticsMessage.Users,
             Sessions = combinedAnalyticsMessage.Sessions,
             Views = combinedAnalyticsMessage.Views,
-            Date = combinedAnalyticsMessage.Date,
+            Date = combinedAnalyticsMessage.Date.ToDateTime(tm),
         });
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation($"RawData Created Id => {rawData.Id} =>> {rawData.Date}  ");

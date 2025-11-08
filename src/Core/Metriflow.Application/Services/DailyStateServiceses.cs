@@ -24,6 +24,7 @@ public class DailyStateServiceses : IDailyStateServices
 
     public async Task<DailyStat> CreateDailyStat(List<CombinedAnalyticsMessage> combinedAnalyticsMessages)
     {
+        var tm = new TimeOnly(0,0);
         var dailyState = new DailyStat
         {
             TotalUsers = combinedAnalyticsMessages.Sum(r => r.Users),
@@ -31,10 +32,11 @@ public class DailyStateServiceses : IDailyStateServices
             TotalSessions = combinedAnalyticsMessages.Sum(r => r.Sessions),
             AvgPerformance = combinedAnalyticsMessages.Average(rc => rc.PerformanceScore),
             ReceivedAt = DateTime.UtcNow,
-            Date = combinedAnalyticsMessages[0].Date
+            Date =  combinedAnalyticsMessages[0].Date.ToDateTime(tm)
         };
         await _dailyStateRepository.CreateAsync(dailyState);
-        // await _unitOfWork.SaveChangesAsync();
+       
+       
         return dailyState;
     }
 }
