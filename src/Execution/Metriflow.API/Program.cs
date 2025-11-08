@@ -1,5 +1,10 @@
+using IRepository.Generic;
+using Metriflow.Application.Extensions;
+using Metriflow.Application.interfaces;
+using Metriflow.Application.Services;
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Repositories.Generic;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +17,16 @@ builder.Services.AddDbContext<MetriflowDbContext>(
     options => options.UseSqlServer(builder.Configuration.GetConnectionString("Sqlserver")),
     ServiceLifetime.Scoped
 );
+
+// builder.Services.AddApplicationLayer();
+
+builder.Services.AddScoped<IPageServices, PageServices>();
+builder.Services.AddScoped<IRawDataServices, RawDataServices>();
+builder.Services.AddScoped<IDailyStateServices, DailyStateServiceses>();
+
+builder.Services.AddTransient(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+
 
 var app = builder.Build();
 

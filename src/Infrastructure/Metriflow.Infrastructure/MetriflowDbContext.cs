@@ -1,14 +1,13 @@
-using Metriflow.Domain.Entities; 
 using Microsoft.EntityFrameworkCore;
 
 namespace Metriflow.Infrastructure;
 
-
-
-public partial class MetriflowDbContext :  DbContext
+public partial class MetriflowDbContext : DbContext
 {
     public MetriflowDbContext(DbContextOptions<MetriflowDbContext> options)
-        : base(options) { }
+        : base(options)
+    {
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

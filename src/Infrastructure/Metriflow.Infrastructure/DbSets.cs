@@ -9,4 +9,5 @@ public partial class MetriflowDbContext
     public DbSet<DailyStat> DailyStats;
     public DbSet<MonthlyStat> MonthlyStats;
     public DbSet<YearlyStat> YearlyStats;
+    public DbSet<RawData> RawDates;
 }

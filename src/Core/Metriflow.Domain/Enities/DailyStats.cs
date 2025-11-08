@@ -9,21 +9,21 @@ using Metriflow.Domain.interfaces;
 
 namespace Metriflow.Domain.Entities;
 
-public class DailyStat : IPageStats
+public class DailyStat  
 {
     public Guid Id { get; set; }
 
     // Unique Key (Business) - Needs Fluent API mapping for composite key
     public DateOnly Date { get; set; }
 
-    [ForeignKey("Key")]
-    public int PageId { get; set; }
+    // [ForeignKey("Key")]
+    // public int PageId { get; set; }
 
-    public int TotalUsers { get; set; }
+    public long TotalUsers { get; set; }
 
-    public int TotalSessions { get; set; }
-    public int TotalViews { get; set; }
+    public long TotalSessions { get; set; }
+    public long TotalViews { get; set; }
     public double AvgPerformance { get; set; }
     public DateTime ReceivedAt { get; set; }
-    public Page Page { get; set; }
+    // public Page Page { get; set; }
 }
