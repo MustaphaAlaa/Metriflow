@@ -21,7 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Execution", "Execution", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metriflow.API", "src\Execution\Metriflow.API\Metriflow.API.csproj", "{EDCFE396-5092-4342-9FBA-AEB8CB716690}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metriflow.Worker", "src\Execution\Metriflow.Worker\Metriflow.Worker.csproj", "{70607176-E4AA-4D64-974F-5BA343682A6D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metriflow.AggregationWorker", "src\Execution\Metriflow.AggregationWorker\Metriflow.AggregationWorker.csproj", "{70607176-E4AA-4D64-974F-5BA343682A6D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metriflow.Correlation.Worker", "src\Execution\Metriflow.Correlation.Worker\Metriflow.Correlation.Worker.csproj", "{1E251152-F86B-42C8-B330-A0633E178FE8}"
 EndProject

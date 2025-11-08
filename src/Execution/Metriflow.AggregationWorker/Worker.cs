@@ -1,6 +1,6 @@
-using Metriflow.Worker.Services;
+using Metriflow.AggregationWorker.Services;
 
-namespace Metriflow.Worker;
+namespace Metriflow.AggregationWorker;
 
 public class Worker : BackgroundService
 {

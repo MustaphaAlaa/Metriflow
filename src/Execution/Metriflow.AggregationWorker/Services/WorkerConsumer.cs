@@ -6,7 +6,7 @@ using Metriflow.Domain;
 using Metriflow.DTOs;
 using Metriflow.Messaging.interfaces;
 
-namespace Metriflow.Worker.Services;
+namespace Metriflow.AggregationWorker.Services;
 
 public interface IWorkerConsumer
 {
