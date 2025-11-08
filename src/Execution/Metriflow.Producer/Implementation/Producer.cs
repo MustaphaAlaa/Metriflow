@@ -1,4 +1,4 @@
-using Metriflow.Messaging.interfaces;
+using Metriflow.Application.interfaces;
 using Metriflow.Producers.Interfaces;
 using Microsoft.Extensions.Logging;
 

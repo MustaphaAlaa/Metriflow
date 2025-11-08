@@ -1,7 +1,7 @@
 using Metriflow.Infrastructure;
-using Metriflow.Messaging;
-using Metriflow.Messaging.Entities;
-using Metriflow.Messaging.interfaces;
+using Metriflow.Application;
+using Metriflow.Application.Entities;
+using Metriflow.Application.interfaces;
 using Metriflow.AggregationWorker;
 using Metriflow.AggregationWorker.Services;
 using Microsoft.EntityFrameworkCore;

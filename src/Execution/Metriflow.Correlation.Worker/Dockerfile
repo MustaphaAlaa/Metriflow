@@ -5,14 +5,12 @@ WORKDIR /src
 
 COPY  ["src/Core/Metriflow.Application/Metriflow.Application.csproj","src/Core/Metriflow.Application/"]
 COPY  ["src/Core/Metriflow.Domain/Metriflow.Domain.csproj","src/Core/Metriflow.Domain/"]
-COPY ["src/Infrastructure/Metriflow.Messaging/Metriflow.Messaging.csproj","src/Infrastructure/Metriflow.Messaging/"]
 COPY ["src/Execution/Metriflow.Correlation.Worker/Metriflow.Correlation.Worker.csproj","src/Execution/Metriflow.Correlation.Worker/"]
 
 # Copy rest of repository
 # COPY ["src/", "src/"]
 WORKDIR /src
-COPY src/Core   src/Core 
-COPY src/Infrastructure/Metriflow.Messaging src/Infrastructure/Metriflow.Messaging
+COPY src/Core   src/Core  
 COPY src/Execution/Metriflow.Correlation.Worker src/Execution/Metriflow.Correlation.Worker
 
 

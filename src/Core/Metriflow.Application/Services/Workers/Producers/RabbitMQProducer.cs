@@ -1,11 +1,11 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using Metriflow.Messaging.interfaces;
+using Metriflow.Application.interfaces;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 
-namespace Metriflow.Messaging;
+namespace Metriflow.Application;
 
 /// <summary>
 /// Implements the RabbitMQ message publishing functionality.

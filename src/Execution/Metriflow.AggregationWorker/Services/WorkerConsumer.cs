@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Metriflow.Domain;
 using Metriflow.DTOs;
-using Metriflow.Messaging.interfaces;
+using Metriflow.Application.interfaces;
 
 namespace Metriflow.AggregationWorker.Services;
 

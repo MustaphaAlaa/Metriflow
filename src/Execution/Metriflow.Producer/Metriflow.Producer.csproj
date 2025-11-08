@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Infrastructure\Metriflow.Messaging\Metriflow.Messaging.csproj" />
+    <ProjectReference Include="..\..\Core\Metriflow.Application\Metriflow.Application.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -1,4 +1,4 @@
-namespace Metriflow.Messaging.Entities;
+namespace Metriflow.Application.Entities;
 
 /// <summary>
 /// Configuration settings for RabbitMQ connection.
