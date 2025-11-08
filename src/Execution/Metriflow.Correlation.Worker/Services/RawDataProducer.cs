@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Metriflow.Correlation.Worker.Interfaces;
-using Metriflow.Domain;
 using Metriflow.DTOs;
 using Metriflow.Application.interfaces;
-using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Publishes <see cref="RawData"/> messages to the analytics RabbitMQ exchange.

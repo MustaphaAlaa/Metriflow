@@ -5,23 +5,41 @@ using System.Threading.Tasks;
 using Metriflow.Domain;
 using Metriflow.DTOs;
 using Metriflow.Application.interfaces;
+using IRepository.Generic;
+using Metriflow.AggregationWorker.Interfaces;
+using Metriflow.Domain.Entities;
 
 namespace Metriflow.AggregationWorker.Services;
 
-public interface IWorkerConsumer
+public interface IAggregationWorkerConsumer
 {
     Task Consume(CancellationToken cancellationToken);
 }
 
-public class WorkerConsumer : IWorkerConsumer
+public class AggregationWorkerConsumer : IAggregationWorkerConsumer
 {
-    private readonly ILogger<WorkerConsumer> _logger;
+    private readonly ILogger<AggregationWorkerConsumer> _logger;
     private readonly IRabbitMQConsumer _consumer;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IBaseRepository<DailyStat> _dailyStateRepository;
+    private readonly IBaseRepository<Page> _pageRepository;
+    private readonly IBaseRepository<RawData> _rawDataRepository;
+    private readonly IAggregationConsumer _aggregationConsumer;
 
-    public WorkerConsumer(ILogger<WorkerConsumer> logger, IRabbitMQConsumer consumer)
+    public AggregationWorkerConsumer(IBaseRepository<Page> pageRepository,
+        IBaseRepository<RawData> rawDataRepo,
+        ILogger<AggregationWorkerConsumer> logger,
+        IRabbitMQConsumer consumer,
+        IAggregationConsumer aggregationConsumer,
+        IUnitOfWork unitOfWork)
     {
+        _rawDataRepository = rawDataRepo;
+        _pageRepository = pageRepository;
         _logger = logger;
+        _unitOfWork = unitOfWork;
         _consumer = consumer;
+        _dailyStateRepository = _unitOfWork.GetRepository<DailyStat>();
+        _aggregationConsumer = aggregationConsumer;
     }
 
     public async Task Consume(CancellationToken cancellationToken)
@@ -35,16 +53,7 @@ public class WorkerConsumer : IWorkerConsumer
             queueName: "analytic.q",
             exchangeName: "analytics.raw",
             routingKey: "analytics.raw",
-            (List<CombinedAnalyticsMessage> rcs) =>
-            {
-                foreach (var rc in rcs)
-                {
-                    System.Console.WriteLine(
-                        $"From Worker Template, {rc.Date} -- {rc.Page} --  \n I'll be the one."
-                    );
-                }
-                return Task.CompletedTask;
-            },
+            async (List<CombinedAnalyticsMessage> rcs) => { await _aggregationConsumer.Consume(rcs); },
             cancellationToken
         );
     }

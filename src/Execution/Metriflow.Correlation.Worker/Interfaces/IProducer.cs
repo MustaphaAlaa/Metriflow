@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Metriflow.Domain;
+using Metriflow.Domain.Entities;
 using Metriflow.DTOs;
 
 namespace Metriflow.Correlation.Worker.Interfaces;

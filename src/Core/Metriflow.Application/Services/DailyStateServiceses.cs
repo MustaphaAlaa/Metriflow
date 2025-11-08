@@ -1,0 +1,40 @@
+using IRepository.Generic;
+using Metriflow.Application.interfaces;
+using Metriflow.Domain.Entities;
+using Metriflow.DTOs;
+using Microsoft.Extensions.Logging;
+
+namespace Metriflow.Application.Services;
+
+public class DailyStateServiceses : IDailyStateServices
+{
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IBaseRepository<DailyStat> _dailyStateRepository;
+    private readonly ILogger<DailyStateServiceses> _logger;
+
+    public DailyStateServiceses(IBaseRepository<DailyStat> dailyStateRepository,
+        ILogger<DailyStateServiceses> logger,
+        IUnitOfWork unitOfWork)
+    {
+        // _dailyStateRepository = _dailyStateRepository;
+        _logger = logger;
+        _unitOfWork = unitOfWork;
+        _dailyStateRepository = _unitOfWork.GetRepository<DailyStat>();
+    }
+
+    public async Task<DailyStat> CreateDailyStat(List<CombinedAnalyticsMessage> combinedAnalyticsMessages)
+    {
+        var dailyState = new DailyStat
+        {
+            TotalUsers = combinedAnalyticsMessages.Sum(r => r.Users),
+            TotalViews = combinedAnalyticsMessages.Sum(r => r.Views),
+            TotalSessions = combinedAnalyticsMessages.Sum(r => r.Sessions),
+            AvgPerformance = combinedAnalyticsMessages.Average(rc => rc.PerformanceScore),
+            ReceivedAt = DateTime.UtcNow,
+            Date = combinedAnalyticsMessages[0].Date
+        };
+        await _dailyStateRepository.CreateAsync(dailyState);
+        // await _unitOfWork.SaveChangesAsync();
+        return dailyState;
+    }
+}

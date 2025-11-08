@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <ProjectReference Include="..\..\Infrastructure\Metriflow.Infrastructure\Metriflow.Infrastructure.csproj" />
     <ProjectReference Include="..\Metriflow.Domain\Metriflow.Domain.csproj" />
   </ItemGroup>
   <PropertyGroup>

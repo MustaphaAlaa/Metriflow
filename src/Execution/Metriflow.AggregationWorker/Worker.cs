@@ -6,9 +6,9 @@ public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
 
-    private readonly IWorkerConsumer _workerConsumer;
+    private readonly IAggregationWorkerConsumer _workerConsumer;
 
-    public Worker(ILogger<Worker> logger, IWorkerConsumer workerConsumer)
+    public Worker(ILogger<Worker> logger, IAggregationWorkerConsumer workerConsumer)
     {
         _workerConsumer = workerConsumer;
         _logger = logger;

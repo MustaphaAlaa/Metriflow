@@ -3,7 +3,7 @@ using Metriflow.Domain.interfaces;
 
 namespace Metriflow.Domain.Entities;
 
-public class YearlyStat : IPageStats
+public class YearlyStat  
 {
     public Guid Id { get; set; }
 
