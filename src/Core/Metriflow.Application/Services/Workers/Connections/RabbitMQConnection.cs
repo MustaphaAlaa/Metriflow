@@ -1,10 +1,10 @@
-using Metriflow.Messaging.Entities;
-using Metriflow.Messaging.interfaces;
+using Metriflow.Application.Entities;
+using Metriflow.Application.interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
-namespace Metriflow.Messaging;
+namespace Metriflow.Application;
 
 /// <summary>
 /// Implements the RabbitMQ connection management functionality.

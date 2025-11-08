@@ -1,6 +1,6 @@
-﻿using Metriflow.Messaging;
-using Metriflow.Messaging.Entities;
-using Metriflow.Messaging.interfaces;
+﻿using Metriflow.Application;
+using Metriflow.Application.Entities;
+using Metriflow.Application.interfaces;
 using Metriflow.Producers.Implementation;
 using Metriflow.Producers.Interfaces;
 using Microsoft.Extensions.Configuration;

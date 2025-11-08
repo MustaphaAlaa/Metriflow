@@ -10,10 +10,12 @@ COPY ["src/Execution/Metriflow.AggregationWorker/Metriflow.AggregationWorker.csp
 
 # Infrastructure
 COPY [ "src/Infrastructure/Metriflow.Infrastructure/Metriflow.Infrastructure.csproj","src/Infrastructure/Metriflow.Infrastructure/"]
-COPY ["src/Infrastructure/Metriflow.Messaging/Metriflow.Messaging.csproj","src/Infrastructure/Metriflow.Messaging/"]
 
 
-COPY ["src/", "src/"]
+WORKDIR /src  
+COPY src/Core/ src/Core/ 
+COPY src/Infrastructure/Metriflow.Infrastructure src/Infrastructure/Metriflow.Infrastructure
+COPY src/Execution/Metriflow.AggregationWorker src/Execution/Metriflow.AggregationWorker
 
 WORKDIR /src/src/Execution/Metriflow.AggregationWorker
 RUN dotnet publish "Metriflow.AggregationWorker.csproj" -c Release -o /app/publish

@@ -1,11 +1,11 @@
 using System.Text;
 using System.Text.Json;
-using Metriflow.Messaging.interfaces;
+using Metriflow.Application.interfaces;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace Metriflow.Messaging;
+namespace Metriflow.Application;
 
 /// <summary>
 /// RabbitMQ consumer implementation that handles message consumption using
