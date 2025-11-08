@@ -1,7 +1,6 @@
-﻿using System.Linq.Expressions;
-using Entities.Infrastructure;
-using Entities.Models;
+﻿using System.Linq.Expressions; 
 using IRepository.Generic;
+using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace Repositories.Generic;
@@ -9,10 +8,9 @@ namespace Repositories.Generic;
 public class BaseRepository<TEntity> : IBaseRepository<TEntity>
     where TEntity : class
 {
-    // protected readonly KemetDbContext _db;
-    protected readonly KemetDbContext _db;
+    protected readonly MetriflowDbContext _db;
 
-    public BaseRepository(KemetDbContext context)
+    public BaseRepository(MetriflowDbContext context)
     {
         _db = context;
     }
