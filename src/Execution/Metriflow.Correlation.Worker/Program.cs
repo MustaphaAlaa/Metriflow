@@ -15,7 +15,7 @@ builder.Services.AddSingleton<IRabbitMQConsumer, RabbitMQConsumer>();
 builder.Services.AddSingleton<IRabbitMQProducer, RabbitMQProducer>();
 
 builder.Services.AddScoped<IConsumerMessageHandler, ConsumerMessageHandler>();
-builder.Services.AddScoped<IRowRecordProducer, RawRecordProducer>();
+builder.Services.AddScoped<IRowDataProducer, RawDataProducer>();
 
 builder.Services.AddScoped<ICorrelationConsumer, CorrelationConsumer>();
 builder.Services.AddScoped<ICombiner, Combiner>();

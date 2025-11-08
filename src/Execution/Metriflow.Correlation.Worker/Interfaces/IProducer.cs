@@ -1,17 +1,18 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Metriflow.Domain;
+using Metriflow.DTOs;
 
 namespace Metriflow.Correlation.Worker.Interfaces;
 
 /// <summary>
 /// Produces rows (raw analytic records) to an external messaging system.
 /// </summary>
-public interface IRowRecordProducer
+public interface IRowDataProducer
 {
     /// <summary>
-    /// Publish a collection of <see cref="RawRecord"/> objects to the configured destination.
+    /// Publish a collection of <see cref="RawData"/> objects to the configured destination.
     /// </summary>
     /// <param name="rawRecords">The list of raw records to publish.</param>
-    Task PublishRawRecord(List<RawRecord> rawRecords);
+    Task PublishRawRecord(List<CombinedAnalyticsMessage> combineAnalyticsMessages);
 }
