@@ -1,16 +1,16 @@
 using IRepository.Generic;
-using Entities.Infrastructure;
+using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Repositories.Generic;
 
 public class UnitOfWork : IUnitOfWork
 {
-    private readonly KemetDbContext _db;
+    private readonly MetriflowDbContext _db;
     private Dictionary<Type, object> _repositories;
     private IDbContextTransaction _transaction;
 
-    public UnitOfWork(KemetDbContext context)
+    public UnitOfWork(MetriflowDbContext context)
     {
         _db = context;
         _repositories = new();
