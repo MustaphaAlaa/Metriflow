@@ -2,8 +2,8 @@ using Metriflow.Infrastructure;
 using Metriflow.Messaging;
 using Metriflow.Messaging.Entities;
 using Metriflow.Messaging.interfaces;
-using Metriflow.Worker;
-using Metriflow.Worker.Services;
+using Metriflow.AggregationWorker;
+using Metriflow.AggregationWorker.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = Host.CreateApplicationBuilder(args);
