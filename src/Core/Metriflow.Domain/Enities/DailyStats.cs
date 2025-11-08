@@ -14,10 +14,8 @@ public class DailyStat
     public Guid Id { get; set; }
 
     // Unique Key (Business) - Needs Fluent API mapping for composite key
-    public DateOnly Date { get; set; }
-
-    // [ForeignKey("Key")]
-    // public int PageId { get; set; }
+    public DateTime Date { get; set; }
+ 
 
     public long TotalUsers { get; set; }
 
@@ -25,5 +23,5 @@ public class DailyStat
     public long TotalViews { get; set; }
     public double AvgPerformance { get; set; }
     public DateTime ReceivedAt { get; set; }
-    // public Page Page { get; set; }
+  
 }

@@ -15,7 +15,7 @@ public class RawData
     public Guid Id { get; set; } 
     [ForeignKey("Page")]
     public int PageId { get; set; }  
-    public DateOnly Date { get; set; }  
+    public DateTime Date { get; set; }  
     public long Users { get; set; }
     public long Sessions { get; set; }
     public long Views { get; set; }
