@@ -1,5 +1,5 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER $APP_UID
+# USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
@@ -7,11 +7,24 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["Metriflow.API/Metriflow.API.csproj", "Metriflow.API/"]
-RUN dotnet restore "Metriflow.API/Metriflow.API.csproj"
-COPY . .
-WORKDIR "/src/Metriflow.API"
-RUN dotnet build "./Metriflow.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
+# CORE
+COPY  ["src/Core/Metriflow.Application/Metriflow.Application.csproj","src/Core/Metriflow.Application/"]
+COPY  ["src/Core/Metriflow.Domain/Metriflow.Domain.csproj","src/Core/Metriflow.Domain/"]
+# Execution
+COPY ["src/Execution/Metriflow.API/Metriflow.API.csproj", "src/Execution/Metriflow.API/"]
+
+# Infrastructure
+COPY [ "src/Infrastructure/Metriflow.Infrastructure/Metriflow.Infrastructure.csproj","src/Infrastructure/Metriflow.Infrastructure/"]
+
+WORKDIR /src  
+COPY src/Core/ /src/Core/ 
+COPY src/Infrastructure/Metriflow.Infrastructure /src/Infrastructure/Metriflow.Infrastructure
+COPY src/Execution/Metriflow.API src/Execution/Metriflow.API
+
+WORKDIR /src/src/Execution/Metriflow.API  
+
+RUN dotnet restore "Metriflow.API.csproj"
+RUN dotnet build "Metriflow.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
