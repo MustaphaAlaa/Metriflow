@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Metriflow.Correlation.Worker.Interfaces;
 using Metriflow.Application.interfaces;
+using Metriflow.Correlation.Worker.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Metriflow.Correlation.Worker;
@@ -52,7 +52,7 @@ public class CorrelationConsumer : ICorrelationConsumer
             routingKey: "analytics.raw.ga",
             async (GARecord ga) =>
             {
-                await Task.Delay(3000);
+                await Task.Delay(1000);
                 await _consumerMessageHandler.HandleIncomingRecordAsync("ga", ga);
             },
             stoppingToken

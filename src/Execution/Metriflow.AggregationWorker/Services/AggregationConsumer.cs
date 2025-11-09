@@ -14,12 +14,13 @@ public class AggregationConsumer : IAggregationConsumer
     private readonly IRawDataServices _rawDataServices;
     private readonly ILogger<AggregationConsumer> _logger;
 
-    public AggregationConsumer(IRawDataServices rawDataServices,
+    public AggregationConsumer(
+        IRawDataServices rawDataServices,
         IDailyStateServices dailyStateServices,
         IPageServices pageServices,
-        ILogger<AggregationConsumer> logger
-        ,
-        IUnitOfWork unitOfWork)
+        ILogger<AggregationConsumer> logger,
+        IUnitOfWork unitOfWork
+    )
     {
         _logger = logger;
         _unitOfWork = unitOfWork;
@@ -33,21 +34,19 @@ public class AggregationConsumer : IAggregationConsumer
         if (combinedAnalyticsMessages.Count == 0)
             return;
 
-
         try
         {
             await _unitOfWork.BeginTransactionAsync();
-            
+
             foreach (var msg in combinedAnalyticsMessages)
             {
                 var page = await this._pageServices.CreatePage(msg);
-             
+
                 await _rawDataServices.CreateRawData(msg, page);
             }
 
-
             var dailyState = _dailyStateServices.CreateDailyStat(combinedAnalyticsMessages);
-        await    _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
             await _unitOfWork.CommitAsync();
         }
         catch (Exception e)
