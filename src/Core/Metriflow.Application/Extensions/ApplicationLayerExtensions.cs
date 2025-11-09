@@ -1,3 +1,4 @@
+using IRepository.Generic;
 using Metriflow.Application.interfaces;
 using Metriflow.Application.Services; 
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +10,8 @@ public static class ApplicationLayerExtensions
     public static void AddApplicationLayer(this IServiceCollection service)
     {
         service.AddScoped<IPageServices, PageServices>();
-        service.AddScoped<IDailyStateServices, DailyStateServiceses>();
         service.AddScoped<IRawDataServices, RawDataServices>();
+        service.AddScoped<IDailyStateServices, DailyStateServices>(); 
+
     }
 }

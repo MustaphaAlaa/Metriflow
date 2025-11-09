@@ -23,10 +23,10 @@ builder.Services.AddSingleton<IRabbitMQProducer, RabbitMQProducer>();
 builder.Services.AddScoped<IAggregationWorkerConsumer, AggregationWorkerConsumer>();
 builder.Services.AddScoped<IAggregationConsumer, AggregationConsumer>();
 
-// builder.Services.AddApplicationLayer();
-builder.Services.AddScoped<IPageServices, PageServices>();
-builder.Services.AddScoped<IRawDataServices, RawDataServices>();
-builder.Services.AddScoped<IDailyStateServices, DailyStateServiceses>();
+builder.Services.AddApplicationLayer();
+// builder.Services.AddScoped<IPageServices, PageServices>();
+// builder.Services.AddScoped<IRawDataServices, RawDataServices>();
+// builder.Services.AddScoped<IDailyStateServices, DailyStateServices>();
 
 builder.Services.AddTransient(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();

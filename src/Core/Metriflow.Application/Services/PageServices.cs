@@ -9,18 +9,20 @@ namespace Metriflow.Application.Services;
 public class PageServices : IPageServices
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IBaseRepository<Page> _pageRepository;
+    private readonly IPageRepository _pageRepository;
     private readonly ILogger<PageServices> _logger;
     private readonly Object _lock = new();
 
-    public PageServices(IBaseRepository<Page> pageRepository,
+    public PageServices(
+        IPageRepository pageRepository,
         ILogger<PageServices> logger,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork
+    )
     {
         // _pageRepository = pageRepository;
         _logger = logger;
         _unitOfWork = unitOfWork;
-        _pageRepository = _unitOfWork.GetRepository<Page>();
+        _pageRepository = pageRepository;
     }
 
     public async Task<Page> GetAsync(string path)
@@ -34,7 +36,9 @@ public class PageServices : IPageServices
         if (combinedAnalyticsMessage is null)
             return null;
 
-        _logger.LogInformation($"Porccessing: {combinedAnalyticsMessage.Date} on Page {combinedAnalyticsMessage.Page}");
+        _logger.LogInformation(
+            $"Porccessing: {combinedAnalyticsMessage.Date} on Page {combinedAnalyticsMessage.Page}"
+        );
         combinedAnalyticsMessage.Page = combinedAnalyticsMessage.Page.ToLower();
         string path = combinedAnalyticsMessage.Page;
         Page? page = default;
@@ -43,16 +47,24 @@ public class PageServices : IPageServices
             page = GetAsync(combinedAnalyticsMessage.Page).GetAwaiter().GetResult();
             if (page is null)
             {
-                _logger.LogInformation($"Creating Page: {path} --- Date: {combinedAnalyticsMessage.Date}");
-                page = _pageRepository.CreateAsync(new Page
-                {
-                    Path = path
-                }).GetAwaiter().GetResult();
+                _logger.LogInformation(
+                    $"Creating Page: {path} --- Date: {combinedAnalyticsMessage.Date}"
+                );
+                page = _pageRepository
+                    .CreateAsync(new Page { Path = path })
+                    .GetAwaiter()
+                    .GetResult();
             }
 
             _unitOfWork.SaveChangesAsync().GetAwaiter().GetResult();
         }
 
         return page;
+    }
+
+    public async Task<List<PageReportDto>> PageReport()
+    {
+        var report = await _pageRepository.PageReportAsync();
+        return report;
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions; 
+﻿using System.Linq.Expressions;
 using IRepository.Generic;
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
