@@ -5,19 +5,16 @@ using Microsoft.Extensions.Logging;
 
 namespace Metriflow.Application.Services;
 
-public class DailyStateCalculator : IDailyStateCalculator
+public class DailyStateCalculator : IDailyStatCalculator
 {
-
     private readonly ILogger<DailyStateCalculator> _logger;
 
-    public DailyStateCalculator(
-        ILogger<DailyStateCalculator> logger
-    )
+    public DailyStateCalculator(ILogger<DailyStateCalculator> logger)
     {
         _logger = logger;
     }
 
-    public async Task<DailyStat> CreateDailyStat(
+    public async Task<DailyStat> CalculateDailyStat(
         List<CombinedAnalyticsMessage> combinedAnalyticsMessages
     )
     {
@@ -31,6 +28,5 @@ public class DailyStateCalculator : IDailyStateCalculator
             ReceivedAt = DateTime.UtcNow,
             Date = combinedAnalyticsMessages[0].Date.ToDateTime(tm),
         };
-
     }
 }

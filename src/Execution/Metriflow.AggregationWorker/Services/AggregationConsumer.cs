@@ -10,14 +10,17 @@ public class AggregationConsumer : IAggregationConsumer
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPageServices _pageServices;
-    private readonly IDailyStateCalculator _dailyStateCalculator;
     private readonly IRawDataServices _rawDataServices;
     private readonly ILogger<AggregationConsumer> _logger;
-    IPageRepository _pageRepository;
+    private readonly IPageRepository _pageRepository;
+    private readonly IBaseRepository<RawData> _rawDataRepository;
+    private readonly IDailyStatCalculator _dailyStatCalculator;
+    private readonly IDailyStatRepository _dailyStatRepository;
 
     public AggregationConsumer(
         IRawDataServices rawDataServices,
-        IDailyStateCalculator dailyStateServices,
+        IDailyStatCalculator dailyStateServices,
+        IDailyStatRepository dailyStatRepository,
         IPageServices pageServices,
         IPageRepository pageRepository,
         ILogger<AggregationConsumer> logger,
@@ -26,10 +29,12 @@ public class AggregationConsumer : IAggregationConsumer
     {
         _logger = logger;
         _unitOfWork = unitOfWork;
-        _dailyStateCalculator = dailyStateServices;
+        _dailyStatCalculator = dailyStateServices;
+        _dailyStatRepository = dailyStatRepository;
         _rawDataServices = rawDataServices;
         _pageServices = pageServices;
         _pageRepository = pageRepository;
+        _rawDataRepository = _unitOfWork.GetRepository<RawData>();
     }
 
     public async Task Consume(List<CombinedAnalyticsMessage> combinedAnalyticsMessages)
@@ -43,12 +48,20 @@ public class AggregationConsumer : IAggregationConsumer
 
             foreach (var msg in combinedAnalyticsMessages)
             {
-                var normalizedPage = await this._pageServices.NormalizePage(msg);
+                var normalizedPage = await _pageServices.NormalizePage(msg);
                 var page = await _pageRepository.GetOrCreatePageAsync(normalizedPage);
-                await _rawDataServices.CreateRawData(msg, page);
+                var normalizedRawData = await _rawDataServices.NormalizeRawData(msg, page);
+                var rawData = await _rawDataRepository.CreateAsync(normalizedRawData);
+                await _unitOfWork.SaveChangesAsync();
+                _logger.LogInformation(
+                    $"RawData Created Id => {normalizedRawData.Id} =>> {normalizedRawData.Date}"
+                );
             }
 
-            var dailyState = _dailyStateCalculator.CreateDailyStat(combinedAnalyticsMessages);
+            var calculatedDailyState = await _dailyStatCalculator.CalculateDailyStat(
+                combinedAnalyticsMessages
+            );
+            var dailyStat = await _dailyStatRepository.CreateAsync(calculatedDailyState);
             await _unitOfWork.SaveChangesAsync();
             await _unitOfWork.CommitAsync();
         }

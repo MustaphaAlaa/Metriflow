@@ -5,5 +5,5 @@ namespace Metriflow.Application.interfaces;
 
 public interface IRawDataServices
 {
-    Task<RawData> CreateRawData(CombinedAnalyticsMessage combinedAnalyticsMessage, Page page);
+    Task<RawData> NormalizeRawData(CombinedAnalyticsMessage combinedAnalyticsMessage, Page page);
 }
