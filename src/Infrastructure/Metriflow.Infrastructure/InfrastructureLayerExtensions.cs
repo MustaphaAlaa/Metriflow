@@ -10,7 +10,7 @@ public static class InfrastructureLayerExtensions
     {
         service.AddScoped<IPageRepository, PageRepository>();
         service.AddScoped<IDailyStatRepository, DailyStatRepository>();
-        service.AddTransient(typeof(IBaseRepository<>), typeof(BaseRepository<>));
-        service.AddTransient(typeof(IUnitOfWork), typeof(UnitOfWork));
+        service.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+        service.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
     }
 }

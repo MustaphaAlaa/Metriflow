@@ -21,7 +21,7 @@ public class DailyStateServices : IDailyStateServices
         // _dailyStateRepository = _dailyStateRepository;
         _logger = logger;
         _unitOfWork = unitOfWork;
-        _dailyStateRepository = _unitOfWork.GetRepository<DailyStat>();
+        _dailyStateRepository = dailyStateRepository; //_unitOfWork.GetRepository<DailyStat>();
     }
 
     public async Task<DailyStat> CreateDailyStat(

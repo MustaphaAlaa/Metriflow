@@ -1,3 +1,4 @@
+using Infrastructure.Extensions;
 using IRepository.Generic;
 using Metriflow.Application.Extensions;
 using Metriflow.Infrastructure;
@@ -14,23 +15,20 @@ builder.Services.AddDbContext<MetriflowDbContext>(
 );
 
 builder.Services.AddApplicationLayer();
+builder.Services.AddInfrastructureLayer();
 
-// builder.Services.AddScoped<IPageServices, PageServices>();
-// builder.Services.AddScoped<IRawDataServices, RawDataServices>();
-// builder.Services.AddScoped<IDailyStateServices, DailyStateServices>();
-
-builder.Services.AddTransient(typeof(IBaseRepository<>), typeof(BaseRepository<>));
-builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<MetriflowDbContext>();
-    dbContext.Database.Migrate(); // This ensures migrations are applied
+    dbContext.Database.Migrate();
 }
 
-// Configure the HTTP request pipeline.
+ 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
