@@ -41,28 +41,6 @@ public class PageServices : IPageServices
             $"Processing: {combinedAnalyticsMessage.Date} on Page {combinedAnalyticsMessage.Page}"
         );
         combinedAnalyticsMessage.Page = combinedAnalyticsMessage.Page.ToLower();
-
-        string path = combinedAnalyticsMessage.Page;
-        // Page? page = default;
-        // lock (_lock)
-        // {
-        //     page = GetAsync(combinedAnalyticsMessage.Page).GetAwaiter().GetResult();
-        //     if (page is null)
-        //     {
-        //         _logger.LogInformation(
-        //             $"Creating Page: {path} --- Date: {combinedAnalyticsMessage.Date}"
-        //         );
-        //         page = _pageRepository
-        //             .CreateAsync(new Page { Path = path })
-        //             .GetAwaiter()
-        //             .GetResult();
-        //     }
-
-        //     _unitOfWork.SaveChangesAsync().GetAwaiter().GetResult();
-        // }
-
-        // return page;
-
         return combinedAnalyticsMessage;
     }
 

@@ -3,7 +3,7 @@ using Metriflow.DTOs;
 
 namespace Metriflow.Application.interfaces;
 
-public interface IDailyStateCalculator
+public interface IDailyStatCalculator
 {
-    Task<DailyStat> CreateDailyStat(List<CombinedAnalyticsMessage> combinedAnalyticsMessages);
+    Task<DailyStat> CalculateDailyStat(List<CombinedAnalyticsMessage> combinedAnalyticsMessages);
 }

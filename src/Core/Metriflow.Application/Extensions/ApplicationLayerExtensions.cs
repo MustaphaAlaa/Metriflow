@@ -11,6 +11,6 @@ public static class ApplicationLayerExtensions
     {
         service.AddScoped<IPageServices, PageServices>();
         service.AddScoped<IRawDataServices, RawDataServices>();
-        service.AddScoped<IDailyStateCalculator, DailyStateCalculator>();
+        service.AddScoped<IDailyStatCalculator, DailyStateCalculator>();
     }
 }
