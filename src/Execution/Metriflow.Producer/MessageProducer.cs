@@ -53,6 +53,7 @@ public class MessageProducer : IHostedService
         {
             _logger.LogInformation("Start sending data......");
 
+            await _seedData.SeedingData();
             var GARecords = _seedData.GARecords;
             var PSIRecords = _seedData.PSIRecords;
 

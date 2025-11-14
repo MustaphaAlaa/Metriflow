@@ -25,7 +25,6 @@ public class SeedData : ISeedData
     public SeedData(IHostEnvironment environment)
     {
         _environment = environment;
-        this.SeedingData().GetAwaiter().GetResult();
     }
 
     /// <summary>
@@ -47,10 +46,8 @@ public class SeedData : ISeedData
         return data;
     }
 
-    /// <summary>
-    /// Initializes both GA and PSI records from their respective JSON files.
-    /// </summary>
-    private async Task SeedingData()
+    /// <inheritdoc/>
+    public async Task SeedingData()
     {
         GARecords = await GetDataFromJSONAsync<GARecord>("GA-mock.json");
         PSIRecords = await GetDataFromJSONAsync<PSIRecord>("PSI-mock.json");

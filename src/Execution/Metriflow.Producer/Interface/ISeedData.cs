@@ -14,4 +14,9 @@ public interface ISeedData
     /// Gets the collection of Google Analytics (GA) records.
     /// </summary>
     public List<GARecord> GARecords { get; }
+
+    /// <summary>
+    /// Initializes both GA and PSI records from their respective JSON files.
+    /// /// </summary>
+    Task SeedingData();
 }
