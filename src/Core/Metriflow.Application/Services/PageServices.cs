@@ -19,7 +19,6 @@ public class PageServices : IPageServices
         IUnitOfWork unitOfWork
     )
     {
-        // _pageRepository = pageRepository;
         _logger = logger;
         _unitOfWork = unitOfWork;
         _pageRepository = pageRepository;
@@ -31,35 +30,40 @@ public class PageServices : IPageServices
         return page;
     }
 
-    public async Task<Page> CreatePage(CombinedAnalyticsMessage combinedAnalyticsMessage)
+    public async Task<CombinedAnalyticsMessage> NormalizePage(
+        CombinedAnalyticsMessage combinedAnalyticsMessage
+    )
     {
         if (combinedAnalyticsMessage is null)
             return null;
 
         _logger.LogInformation(
-            $"Porccessing: {combinedAnalyticsMessage.Date} on Page {combinedAnalyticsMessage.Page}"
+            $"Processing: {combinedAnalyticsMessage.Date} on Page {combinedAnalyticsMessage.Page}"
         );
         combinedAnalyticsMessage.Page = combinedAnalyticsMessage.Page.ToLower();
+
         string path = combinedAnalyticsMessage.Page;
-        Page? page = default;
-        lock (_lock)
-        {
-            page = GetAsync(combinedAnalyticsMessage.Page).GetAwaiter().GetResult();
-            if (page is null)
-            {
-                _logger.LogInformation(
-                    $"Creating Page: {path} --- Date: {combinedAnalyticsMessage.Date}"
-                );
-                page = _pageRepository
-                    .CreateAsync(new Page { Path = path })
-                    .GetAwaiter()
-                    .GetResult();
-            }
+        // Page? page = default;
+        // lock (_lock)
+        // {
+        //     page = GetAsync(combinedAnalyticsMessage.Page).GetAwaiter().GetResult();
+        //     if (page is null)
+        //     {
+        //         _logger.LogInformation(
+        //             $"Creating Page: {path} --- Date: {combinedAnalyticsMessage.Date}"
+        //         );
+        //         page = _pageRepository
+        //             .CreateAsync(new Page { Path = path })
+        //             .GetAwaiter()
+        //             .GetResult();
+        //     }
 
-            _unitOfWork.SaveChangesAsync().GetAwaiter().GetResult();
-        }
+        //     _unitOfWork.SaveChangesAsync().GetAwaiter().GetResult();
+        // }
 
-        return page;
+        // return page;
+
+        return combinedAnalyticsMessage;
     }
 
     public async Task<List<PageReportDto>> PageReport()

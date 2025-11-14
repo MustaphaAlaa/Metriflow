@@ -5,5 +5,5 @@ namespace Metriflow.Application.interfaces;
 
 public interface IPageServices
 {
-    Task<Page> CreatePage(CombinedAnalyticsMessage combinedAnalyticsMessage);
+    Task<CombinedAnalyticsMessage> NormalizePage(CombinedAnalyticsMessage combinedAnalyticsMessage);
 }

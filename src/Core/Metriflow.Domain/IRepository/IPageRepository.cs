@@ -7,4 +7,5 @@ namespace IRepository.Generic;
 public interface IPageRepository : IBaseRepository<Page>
 {
     Task<List<PageReportDto>> PageReportAsync();
+    Task<Page> GetOrCreatePageAsync(CombinedAnalyticsMessage combinedAnalyticsMessage);
 }
