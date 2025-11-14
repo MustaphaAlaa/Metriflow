@@ -3,17 +3,20 @@ using Metriflow.Domain.Entities;
 using Metriflow.DTOs;
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Repositories.Generic;
 
 public class PageRepository : BaseRepository<Page>, IPageRepository
 {
     protected readonly MetriflowDbContext _db;
+    private readonly ILogger<PageRepository> _logger;
 
-    public PageRepository(MetriflowDbContext context)
+    public PageRepository(MetriflowDbContext context, ILogger<PageRepository> logger)
         : base(context)
     {
         _db = context;
+        _logger = logger;
     }
 
     public async Task<List<PageReportDto>> PageReportAsync()
@@ -32,5 +35,18 @@ public class PageRepository : BaseRepository<Page>, IPageRepository
             .ToListAsync();
 
         return pageReports;
+    }
+
+    public async Task<Page> GetOrCreatePageAsync(CombinedAnalyticsMessage combinedAnalyticsMessage)
+    {
+        var page = await RetrieveAsync(page => page.Path == combinedAnalyticsMessage.Page);
+        if (page is null)
+        {
+            _logger.LogInformation(
+                $"Creating Page: {combinedAnalyticsMessage.Page} --- Date: {combinedAnalyticsMessage.Date}"
+            );
+            page = await CreateAsync(new Page { Path = combinedAnalyticsMessage.Page });
+        }
+        return page;
     }
 }

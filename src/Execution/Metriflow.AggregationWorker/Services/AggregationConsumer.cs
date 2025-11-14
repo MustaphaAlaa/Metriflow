@@ -10,23 +10,26 @@ public class AggregationConsumer : IAggregationConsumer
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPageServices _pageServices;
-    private readonly IDailyStateServices _dailyStateServices;
+    private readonly IDailyStateCalculator _dailyStateCalculator;
     private readonly IRawDataServices _rawDataServices;
     private readonly ILogger<AggregationConsumer> _logger;
+    IPageRepository _pageRepository;
 
     public AggregationConsumer(
         IRawDataServices rawDataServices,
-        IDailyStateServices dailyStateServices,
+        IDailyStateCalculator dailyStateServices,
         IPageServices pageServices,
+        IPageRepository pageRepository,
         ILogger<AggregationConsumer> logger,
         IUnitOfWork unitOfWork
     )
     {
         _logger = logger;
         _unitOfWork = unitOfWork;
-        _dailyStateServices = dailyStateServices;
+        _dailyStateCalculator = dailyStateServices;
         _rawDataServices = rawDataServices;
         _pageServices = pageServices;
+        _pageRepository = pageRepository;
     }
 
     public async Task Consume(List<CombinedAnalyticsMessage> combinedAnalyticsMessages)
@@ -40,12 +43,12 @@ public class AggregationConsumer : IAggregationConsumer
 
             foreach (var msg in combinedAnalyticsMessages)
             {
-                var page = await this._pageServices.CreatePage(msg);
-
+                var normalizedPage = await this._pageServices.NormalizePage(msg);
+                var page = await _pageRepository.GetOrCreatePageAsync(normalizedPage);
                 await _rawDataServices.CreateRawData(msg, page);
             }
 
-            var dailyState = _dailyStateServices.CreateDailyStat(combinedAnalyticsMessages);
+            var dailyState = _dailyStateCalculator.CreateDailyStat(combinedAnalyticsMessages);
             await _unitOfWork.SaveChangesAsync();
             await _unitOfWork.CommitAsync();
         }
