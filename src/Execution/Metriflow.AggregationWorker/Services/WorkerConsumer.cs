@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Metriflow.Domain;
-using Metriflow.DTOs;
-using Metriflow.Application.interfaces;
 using IRepository.Generic;
 using Metriflow.AggregationWorker.Interfaces;
+using Metriflow.Application.interfaces;
+using Metriflow.Domain;
 using Metriflow.Domain.Entities;
+using Metriflow.DTOs;
 
 namespace Metriflow.AggregationWorker.Services;
 
@@ -26,12 +26,14 @@ public class AggregationWorkerConsumer : IAggregationWorkerConsumer
     private readonly IBaseRepository<RawData> _rawDataRepository;
     private readonly IAggregationConsumer _aggregationConsumer;
 
-    public AggregationWorkerConsumer(IBaseRepository<Page> pageRepository,
+    public AggregationWorkerConsumer(
+        IBaseRepository<Page> pageRepository,
         IBaseRepository<RawData> rawDataRepo,
         ILogger<AggregationWorkerConsumer> logger,
         IRabbitMQConsumer consumer,
         IAggregationConsumer aggregationConsumer,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork
+    )
     {
         _rawDataRepository = rawDataRepo;
         _pageRepository = pageRepository;
@@ -53,7 +55,10 @@ public class AggregationWorkerConsumer : IAggregationWorkerConsumer
             queueName: "analytic.q",
             exchangeName: "analytics.raw",
             routingKey: "analytics.raw",
-            async (List<CombinedAnalyticsMessage> rcs) => { await _aggregationConsumer.Consume(rcs); },
+            async (List<CombinedAnalyticsMessage> rcs) =>
+            {
+                await _aggregationConsumer.Consume(rcs);
+            },
             cancellationToken
         );
     }
