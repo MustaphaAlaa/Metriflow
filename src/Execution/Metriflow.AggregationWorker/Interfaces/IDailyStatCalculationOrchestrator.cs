@@ -2,7 +2,7 @@ using Metriflow.DTOs;
 
 namespace Metriflow.AggregationWorker.Interfaces;
 
-public interface IDailyStatCalculationOrchestrator
+public interface IDailyStatOrchestrator
 {
     Task CalculateAndPersist(List<CombinedAnalyticsMessage> combinedAnalyticsMessages);
 }

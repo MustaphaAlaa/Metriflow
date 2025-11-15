@@ -9,11 +9,11 @@ namespace Metriflow.AggregationWorker.Services;
 public class AggregationConsumer : IAggregationConsumer
 {
     private readonly IRawDataIngestionOrchestrator _rawDataIngestionOrchestrator;
-    private readonly IDailyStatCalculationOrchestrator _dailyStatCalculationOrchestrator;
+    private readonly IDailyStatOrchestrator _dailyStatCalculationOrchestrator;
 
     public AggregationConsumer(
         IRawDataIngestionOrchestrator rawDataIngestionOrchestrator,
-        IDailyStatCalculationOrchestrator dailyStatCalculationOrchestrator
+        IDailyStatOrchestrator dailyStatCalculationOrchestrator
     )
     {
         _rawDataIngestionOrchestrator = rawDataIngestionOrchestrator;
