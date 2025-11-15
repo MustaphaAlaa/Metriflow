@@ -5,18 +5,18 @@ using Metriflow.DTOs;
 
 namespace Metriflow.AggregationWorker.Services;
 
-public class _dailyStatCalculationOrchestrator : IDailyStatCalculationOrchestrator
+public class DailyStatOrchestrator : IDailyStatOrchestrator
 {
     private readonly IDailyStatCalculator _dailyStatCalculator;
     private readonly IDailyStatRepository _dailyStatRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<_dailyStatCalculationOrchestrator> _logger;
+    private readonly ILogger<DailyStatOrchestrator> _logger;
 
-    public _dailyStatCalculationOrchestrator(
+    public DailyStatOrchestrator(
         IDailyStatCalculator dailyStatCalculator,
         IDailyStatRepository dailyStatRepository,
         IUnitOfWork unitOfWork,
-        ILogger<_dailyStatCalculationOrchestrator> logger
+        ILogger<DailyStatOrchestrator> logger
     )
     {
         _dailyStatCalculator = dailyStatCalculator;

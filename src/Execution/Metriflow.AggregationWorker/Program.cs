@@ -10,6 +10,7 @@ using Metriflow.Application.Extensions;
 using Metriflow.Application.interfaces;
 using Metriflow.Application.Services;
 using Metriflow.Infrastructure;
+using Metriflow.Infrastructure.EntitiesConfigurations;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Generic;
 
@@ -22,15 +23,13 @@ builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
 builder.Services.AddSingleton<IRabbitMQConsumer, RabbitMQConsumer>();
 builder.Services.AddSingleton<IRabbitMQProducer, RabbitMQProducer>();
 
-builder.Services.AddScoped<IAggregationWorkerConsumer, AggregationWorkerConsumer>();
-builder.Services.AddScoped<IAggregationConsumer, AggregationConsumer>();
-
-builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
 builder.Services.AddApplicationLayer();
 builder.Services.AddInfrastructureLayer();
 
+builder.Services.AddScoped<IAggregationWorkerConsumer, AggregationWorkerConsumer>();
+builder.Services.AddScoped<IAggregationConsumer, AggregationConsumer>();
+builder.Services.AddScoped<IRawDataIngestionOrchestrator, RawDataIngestionOrchestrator>();
+builder.Services.AddScoped<IDailyStatOrchestrator, DailyStatOrchestrator>();
 
 builder.Services.AddDbContext<MetriflowDbContext>(
     options => options.UseSqlServer(builder.Configuration.GetConnectionString("Sqlserver")),
