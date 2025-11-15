@@ -20,7 +20,7 @@ The system is designed to ingest raw data from mocked external web analytics sou
   Provides authenticated endpoints for authorized users to query aggregated analytics (daily, per page, and overview reports) using **JWT-based authentication**.
 
 - **Reliability & Fault Tolerance**  
-  Ensures message delivery integrity with **acknowledgment on success**, **retry logic (3 attempts with exponential backoff)**, and **dead-letter queue handling** for failed messages.
+  Ensures message delivery integrity with **acknowledgment on success**, **retry logic (3 attempts with exponential backoff)**.
 
 - **Containerized Infrastructure**  
   Fully orchestrated with **Docker Compose**, including the **API**, **Worker Services**, **SQL Server**, **RabbitMQ**, and **Redis** — ensuring easy local development and consistent deployment.
