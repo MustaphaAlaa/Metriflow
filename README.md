@@ -1,6 +1,6 @@
-# **Web Analytics Data Aggregator (ElectroPi Quest)**
+# **Metriflow: Web Analytics Data Aggregator**
 
-This repository contains the solution for the ElectroPi "Web Analytics Data Aggregator" quest. The system is designed to ingest raw data from mocked external web analytics sources (Google Analytics and PageSpeed Insights), process it through a real message broker (RabbitMQ), aggregate daily statistics, and expose secure reporting APIs.
+The system is designed to ingest raw data from mocked external web analytics sources (Google Analytics and PageSpeed Insights), process it through a real message broker (RabbitMQ), aggregate daily statistics, and expose secure reporting APIs.
 
 ## 🔑 Key Features
 
@@ -110,12 +110,12 @@ All reporting endpoints are secured using JWT Bearer Authentication.
 
 The primary reporting endpoints pull from the DailyStats table, which holds the aggregated data.
 
-| Table Name | Purpose                                  | Key Fields                                      |
-| :--------- | :--------------------------------------- | :---------------------------------------------- |
-| Users      | Authentication and Authorization         | Id, Email, PasswordHash                         |
-| Page | Store page's path to prevent redundancy data | Id, Path |
-| RawData    | Stores every combined record from GA/PSI | Date, PageId, Users, PerformanceScore             |
-| DailyStats | **Aggregated Report Data**               | Date, TotalUsers, AvgPerformance, LastUpdatedAt |
+| Table Name | Purpose                                      | Key Fields                                      |
+| :--------- | :------------------------------------------- | :---------------------------------------------- |
+| Users      | Authentication and Authorization             | Id, Email, PasswordHash                         |
+| Page       | Store page's path to prevent redundancy data | Id, Path                                        |
+| RawData    | Stores every combined record from GA/PSI     | Date, PageId, Users, PerformanceScore           |
+| DailyStats | **Aggregated Report Data**                   | Date, TotalUsers, AvgPerformance, LastUpdatedAt |
 
 ## **✨ Bonus Features Implemented**
 
