@@ -18,10 +18,7 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
 {
     private readonly ILogger<CorrelationWorker> _logger;
     private readonly IDatabase _redis;
-    private readonly ICombiner _combiner;
-    private const string MaxDateKey = "analytics:max_date";
-
-    readonly Object locker = new();
+    private readonly ICombiner _combiner; 
 
     /// <summary>
     /// Creates a new <see cref="ConsumerMessageHandler"/>.
@@ -41,13 +38,35 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
     public async Task HandleIncomingRecordAsync<T>(string type, T record)
         where T : IAnalyticRecord
     {
-        _logger.LogInformation($"Start Handling incoming Request, {type} ==> {record}");
+        _logger.LogInformation("Start Handling incoming Request, {type} ==> {record}", type, record);
 
+        var date = await SaveNewRecordAsync(type, record);
+
+        var maxDateUpdated = await TryUpdateMaxDate(date.ToString());
+
+        if (maxDateUpdated)
+        {
+            _logger.LogInformation(
+                $"Successfully updated MaxDate to {date}. Triggering combine for the previous day."
+            );
+
+            await this.MatchRecords(date);
+        }
+        else
+        {
+            _logger.LogDebug(
+                "Incoming date {date} is not greater than current max date. No combine triggered.",
+                date
+            );
+        }
+    }
+
+    private async Task<DateOnly> SaveNewRecordAsync<T>(string type, T record) where T : IAnalyticRecord
+    {
         DateOnly date = record.Date;
         string page = record.Page;
 
-        string fieldKey = $"{date}|{page}";
-
+        string fieldKey = $"{date.ToString("yyyy-MM-dd")}|{page}";
         await _redis.HashSetAsync(
             key: type,
             hashFields: new HashEntry[]
@@ -59,65 +78,28 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
             }
         );
 
-        _logger.LogDebug($"Saved record for type '{type}' with key '{fieldKey}'.");
-
-        lock (locker)
-        {
-            RedisValue maxDateValue = _redis.StringGetAsync(MaxDateKey).GetAwaiter().GetResult();
-
-            DateOnly currentMaxDate =
-                maxDateValue.HasValue
-                && DateOnly.TryParse(maxDateValue.ToString(), out DateOnly parsedDate)
-                    ? parsedDate
-                    : DateOnly.MinValue;
-
-            _logger.LogWarning($"Current Max data in the redis => {currentMaxDate}");
-            if (date > currentMaxDate)
-            {
-                var originalMaxDateValue = _redis
-                    .StringGetSetAsync(MaxDateKey, date.ToString())
-                    .GetAwaiter()
-                    .GetResult();
-
-                _logger.LogWarning(
-                    $"Original Max Date {originalMaxDateValue} --------- New Max Date {MaxDateKey}"
-                );
-
-                if (originalMaxDateValue.HasValue)
-                {
-                    if (DateOnly.TryParse(originalMaxDateValue.ToString(), out DateOnly oldMaxDate))
-                    {
-                        if (date > oldMaxDate)
-                        {
-                            _logger.LogInformation(
-                                $"Successfully updated MaxDate to {date}. Triggering combine for OLD max date: {oldMaxDate}."
-                            );
-
-                            this.MatchRecords(date).GetAwaiter().GetResult();
-                        }
-                        else
-                        {
-                            _logger.LogDebug(
-                                $"Race condition: Max date already updated by another process to {date}. Skipping MatchDay."
-                            );
-                        }
-                    }
-                }
-                else
-                {
-                    _logger.LogInformation(
-                        $"Initialized MaxDate to {date}. No previous date to combine."
-                    );
-                }
-            }
-            else
-            {
-                _logger.LogDebug(
-                    $"Incoming date {date} is not beyond current max date {currentMaxDate}. No combine triggered."
-                );
-            }
-        }
+        _logger.LogDebug("Saved record for type '{type}' with key '{fieldKey}'.", type, fieldKey);
+        return date;
     }
+
+    private async Task<bool> TryUpdateMaxDate(string date)
+    {
+        string lubaScript = @" local current = redis.call('GET', KEYS[1])
+            if (not current) or (ARGV[1] > current) then
+                redis.call('SET', KEYS[1], ARGV[1])
+                return 1
+            else
+                return 0
+            end
+            ";
+
+        var result = await _redis.ScriptEvaluateAsync(lubaScript, new RedisKey[] { "analytics:max_date" },
+            new RedisValue[] { date });
+
+
+        return (int)result == 1;
+    }
+
 
     /// <summary>
     /// Match previously-stored PSI and GA records for the given date, and trigger combining,
@@ -125,18 +107,19 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
     /// </summary>
     private async Task MatchRecords(DateOnly date)
     {
-        var pp = await _redis.HashGetAllAsync("psi");
-        var gg = await _redis.HashGetAllAsync("ga");
+        var psiRecords = await _redis.HashGetAllAsync("psi");
+        var gaRecords = await _redis.HashGetAllAsync("ga");
 
-        if (pp.Length != gg.Length)
+        if (psiRecords.Length != gaRecords.Length)
         {
             _logger.LogInformation(
                 "Cannot match and delete psi and ga the records not same length"
             );
+            throw new Exception();
         }
 
-        var psiFields = pp.Select(p => p.Name);
-        var gaFields = gg.Select(g => g.Name);
+        var psiFields = psiRecords.Select(p => p.Name);
+        var gaFields = gaRecords.Select(g => g.Name);
 
         var psiKeys = psiFields
             .Where(psi => !psi.StartsWith(date.ToString()))
@@ -149,7 +132,7 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
             .ToHashSet();
 
         var commonKeys = psiKeys.Intersect(gaKeys);
-        var GA_PSI_List = await Get_GA_PSI_LIST(commonKeys);
+        var GA_PSI_List = await GetGaPsiListAsync(commonKeys);
         ;
 
         if (GA_PSI_List.Count > 0)
@@ -162,9 +145,20 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
     /// <summary>
     /// Retrieve combined GA/PSI records for the provided keys from Redis and deserialize them.
     /// </summary>
-    private async Task<List<Tuple<GARecord, PSIRecord>>> Get_GA_PSI_LIST(IEnumerable<string> keys)
+    private async Task<List<Tuple<GARecord, PSIRecord>>> GetGaPsiListAsync(IEnumerable<string> keys)
     {
+        var tasks = keys.Select(async key =>
+        {
+            var t1 = _redis.HashGetAsync("ga", key);
+            var t2 = _redis.HashGetAsync("psi", key);
+
+            await Task.WhenAll(t1, t2);
+            return (key, t1, t2);
+        });
+        
         var lst = new List<Tuple<GARecord, PSIRecord>>();
+        return lst;
+        
         foreach (var key in keys)
         {
             var gaBytes = await _redis.HashGetAsync("ga", key);
