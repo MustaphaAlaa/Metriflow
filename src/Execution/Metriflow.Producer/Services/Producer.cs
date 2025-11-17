@@ -1,6 +1,8 @@
+using System.Linq.Expressions;
 using Metriflow.Application.interfaces;
 using Metriflow.Producers.Interfaces;
 using Microsoft.Extensions.Logging;
+using RabbitMQ.Client;
 
 namespace Metriflow.Producers.Implementation;
 
@@ -28,8 +30,8 @@ public class Producer : IProducer
     /// <inheritdoc/>
     public async Task Produce(List<GARecord> gaData, List<PSIRecord> paData)
     {
-        var gaTask = SentGA(gaData);
-        var paTask = SentPSI(paData);
+        var gaTask = SendGA(gaData);
+        var paTask = SendPSI(paData);
 
         await Task.WhenAll(gaTask, paTask);
     }
@@ -42,21 +44,9 @@ public class Producer : IProducer
     /// Uses a dedicated channel and includes delays between messages (300ms)
     /// and an initial delay of 1000ms before starting.
     /// </remarks>
-    private async Task SentPSI(List<PSIRecord> data)
+    private async Task SendPSI(List<PSIRecord> data)
     {
-        using var PSIChannel = await _rabbitMQProducer.CreateNewChannelAsync(_exchangeName);
-        await Task.Delay(1000);
-        foreach (var psi in data)
-        {
-            await Task.Delay(2000);
-            await _rabbitMQProducer.PublishToChannelAsync(
-                PSIChannel,
-                psi,
-                _exchangeName,
-                "analytics.raw.psi"
-            );
-            _logger.LogInformation($"PSI → {psi}");
-        }
+        await this.Publish("PSI", data, "analytics.raw.psi");
     }
 
     /// <summary>
@@ -67,21 +57,33 @@ public class Producer : IProducer
     /// Uses a dedicated channel and includes delays between messages (200ms)
     /// and an initial delay of 1000ms before starting.
     /// </remarks>
-    private async Task SentGA(List<GARecord> data)
+    private async Task SendGA(List<GARecord> data)
     {
-        using var GAChannel = await _rabbitMQProducer.CreateNewChannelAsync(_exchangeName);
+        await this.Publish("GA", data, "analytics.raw.ga");
+    }
 
-        await Task.Delay(1000);
-        foreach (var ga in data)
+    private async Task Publish<T>(string type, IList<T> list, string routingKey)
+        where T : IAnalyticRecord
+    {
+        var max_date = new DateOnly();
+        using var channel = await _rabbitMQProducer.CreateNewChannelAsync(_exchangeName);
+
+        await Task.Delay(3000);
+
+        foreach (var record in list)
         {
-            await Task.Delay(2000);
+            if (max_date < record.Date)
+            {
+                await Task.Delay(100);
+                max_date = record.Date;
+            }
             await _rabbitMQProducer.PublishToChannelAsync(
-                GAChannel,
-                ga,
+                channel,
+                record,
                 _exchangeName,
-                "analytics.raw.ga"
+                routingKey
             );
-            _logger.LogInformation($"GA → {ga}");
+            _logger.LogInformation("{type} → {record}", type, record);
         }
     }
 }
