@@ -18,7 +18,7 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
 {
     private readonly ILogger<CorrelationWorker> _logger;
     private readonly IDatabase _redis;
-    private readonly ICombiner _combiner; 
+    private readonly ICombiner _combiner;
 
     /// <summary>
     /// Creates a new <see cref="ConsumerMessageHandler"/>.
@@ -35,10 +35,19 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
     }
 
     /// <inheritdoc />
-    public async Task HandleIncomingRecordAsync<T>(string type, T record)
+    public async Task HandleIncomingRecordAsync<T>(string type, IList<T> record)
         where T : IAnalyticRecord
     {
-        _logger.LogInformation("Start Handling incoming Request, {type} ==> {record}", type, record);
+        if (record is null || record.Count == 0)
+        {
+            _logger.LogDebug("HandleIncomingRecordAsync called with no items; nothing to handle.");
+            return;
+        }
+        _logger.LogInformation(
+            "Start Handling incoming Request, {type} ==> {record}",
+            type,
+            record
+        );
 
         var date = await SaveNewRecordAsync(type, record);
 
@@ -61,30 +70,40 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
         }
     }
 
-    private async Task<DateOnly> SaveNewRecordAsync<T>(string type, T record) where T : IAnalyticRecord
+    private async Task<DateOnly> SaveNewRecordAsync<T>(string type, IList<T> record)
+        where T : IAnalyticRecord
     {
-        DateOnly date = record.Date;
-        string page = record.Page;
+        DateOnly date = default;
+        foreach (var rec in record)
+        {
+            date = rec.Date;
+            var page = rec.Page;
 
-        string fieldKey = $"{date.ToString("yyyy-MM-dd")}|{page}";
-        await _redis.HashSetAsync(
-            key: type,
-            hashFields: new HashEntry[]
-            {
-                new HashEntry(
-                    fieldKey,
-                    JsonSerializer.SerializeToUtf8Bytes(record, JsonSetting.SerializerOptions)
-                ),
-            }
-        );
+            var fieldKey = $"{date.ToString("yyyy-MM-dd")}|{page.ToString()}";
+            await _redis.HashSetAsync(
+                key: type,
+                hashFields: new HashEntry[]
+                {
+                    new HashEntry(
+                        fieldKey.ToString(),
+                        JsonSerializer.SerializeToUtf8Bytes(rec, JsonSetting.SerializerOptions)
+                    ),
+                }
+            );
+            _logger.LogDebug(
+                "Saved record for type '{type}' with key '{fieldKey}'.",
+                type,
+                fieldKey
+            );
+        }
 
-        _logger.LogDebug("Saved record for type '{type}' with key '{fieldKey}'.", type, fieldKey);
         return date;
     }
 
     private async Task<bool> TryUpdateMaxDate(string date)
     {
-        string lubaScript = @" local current = redis.call('GET', KEYS[1])
+        string lubaScript =
+            @" local current = redis.call('GET', KEYS[1])
             if (not current) or (ARGV[1] > current) then
                 redis.call('SET', KEYS[1], ARGV[1])
                 return 1
@@ -93,13 +112,14 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
             end
             ";
 
-        var result = await _redis.ScriptEvaluateAsync(lubaScript, new RedisKey[] { "analytics:max_date" },
-            new RedisValue[] { date });
-
+        var result = await _redis.ScriptEvaluateAsync(
+            lubaScript,
+            new RedisKey[] { "analytics:max_date" },
+            new RedisValue[] { date }
+        );
 
         return (int)result == 1;
     }
-
 
     /// <summary>
     /// Match previously-stored PSI and GA records for the given date, and trigger combining,
@@ -147,18 +167,8 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
     /// </summary>
     private async Task<List<Tuple<GARecord, PSIRecord>>> GetGaPsiListAsync(IEnumerable<string> keys)
     {
-        var tasks = keys.Select(async key =>
-        {
-            var t1 = _redis.HashGetAsync("ga", key);
-            var t2 = _redis.HashGetAsync("psi", key);
-
-            await Task.WhenAll(t1, t2);
-            return (key, t1, t2);
-        });
-        
         var lst = new List<Tuple<GARecord, PSIRecord>>();
-        return lst;
-        
+
         foreach (var key in keys)
         {
             var gaBytes = await _redis.HashGetAsync("ga", key);
