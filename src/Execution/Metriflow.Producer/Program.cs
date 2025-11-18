@@ -36,5 +36,13 @@ internal class Program
             .Build();
 
         await host.RunAsync();
+
+
+        Console.WriteLine("!!!!Producer shut down");
+        Console.WriteLine("!!!!Producer shut down");
+        Console.WriteLine("!!!!Producer shut down");
+        Console.WriteLine("!!!!Producer shut down");
+        Console.WriteLine("!!!!Producer shut down");
+        Console.WriteLine("!!!!Producer shut down");
     }
 }

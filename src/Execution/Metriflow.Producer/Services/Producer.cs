@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Linq.Expressions;
 using Metriflow.Application.interfaces;
 using Metriflow.Producers.Interfaces;
@@ -28,10 +29,10 @@ public class Producer : IProducer
     }
 
     /// <inheritdoc/>
-    public async Task Produce(List<GARecord> gaData, List<PSIRecord> paData)
+    public async Task Produce(List<GARecord> gaData, List<PSIRecord> psiData)
     {
-        var gaTask = SendGA(gaData);
-        var paTask = SendPSI(paData);
+        var gaTask = SendGaAsync(gaData);
+        var paTask = SendPsiAsync(psiData);
 
         await Task.WhenAll(gaTask, paTask);
     }
@@ -44,7 +45,7 @@ public class Producer : IProducer
     /// Uses a dedicated channel and includes delays between messages (300ms)
     /// and an initial delay of 1000ms before starting.
     /// </remarks>
-    private async Task SendPSI(List<PSIRecord> data)
+    private async Task SendPsiAsync(List<PSIRecord> data)
     {
         await this.Publish("PSI", data, "analytics.raw.psi");
     }
@@ -57,7 +58,7 @@ public class Producer : IProducer
     /// Uses a dedicated channel and includes delays between messages (200ms)
     /// and an initial delay of 1000ms before starting.
     /// </remarks>
-    private async Task SendGA(List<GARecord> data)
+    private async Task SendGaAsync(List<GARecord> data)
     {
         await this.Publish("GA", data, "analytics.raw.ga");
     }
@@ -65,25 +66,35 @@ public class Producer : IProducer
     private async Task Publish<T>(string type, IList<T> list, string routingKey)
         where T : IAnalyticRecord
     {
-        var max_date = new DateOnly();
         using var channel = await _rabbitMQProducer.CreateNewChannelAsync(_exchangeName);
 
-        await Task.Delay(3000);
+        await Task.Delay(1500);
+        var dayRecords = new List<T>();
 
+        var buffer = new DateOnly();
+    
         foreach (var record in list)
         {
-            if (max_date < record.Date)
+
+            if (buffer < record.Date)
             {
-                await Task.Delay(100);
-                max_date = record.Date;
+                await _rabbitMQProducer.PublishToChannelAsync(
+                    channel,
+                    dayRecords,
+                    _exchangeName,
+                    routingKey
+                );
+                dayRecords.Clear();
+                buffer = record.Date;
             }
-            await _rabbitMQProducer.PublishToChannelAsync(
-                channel,
-                record,
-                _exchangeName,
-                routingKey
-            );
+
             _logger.LogInformation("{type} → {record}", type, record);
+            dayRecords.Add(record);
         }
+
+        if (dayRecords.Count > 0)
+            await _rabbitMQProducer.PublishToChannelAsync(channel, dayRecords, _exchangeName, routingKey);
+
+        dayRecords.Clear();
     }
 }

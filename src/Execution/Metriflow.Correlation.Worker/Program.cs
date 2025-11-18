@@ -13,7 +13,6 @@ builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
 
 builder.Services.AddSingleton<IRabbitMQConsumer, RabbitMQConsumer>();
 builder.Services.AddSingleton<IRabbitMQProducer, RabbitMQProducer>();
-
 builder.Services.AddScoped<IConsumerMessageHandler, ConsumerMessageHandler>();
 builder.Services.AddScoped<IRowDataProducer, RawDataProducer>();
 

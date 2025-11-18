@@ -15,6 +15,6 @@ public interface IConsumerMessageHandler
     /// <typeparam name="T">The record type, must implement <see cref="IAnalyticRecord"/>.</typeparam>
     /// <param name="type">A short type identifier (for example, "ga" or "psi").</param>
     /// <param name="record">The record instance to be handled.</param>
-    Task HandleIncomingRecordAsync<T>(string type, T record)
+    Task HandleIncomingRecordAsync<T>(string type, IList<T> record)
         where T : IAnalyticRecord;
 }
