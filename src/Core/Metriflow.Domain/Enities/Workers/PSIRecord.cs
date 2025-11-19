@@ -1,7 +1,7 @@
  
 public class PSIRecord : IAnalyticRecord
 {
-    public DateOnly Date { get; set; }
+    public DateTime Date { get; set; }
     public string Page { get; set; }
     public int PerformanceScore { get; set; }
     public long LCP_MS { get; set; }

@@ -1,6 +1,6 @@
 public class GARecord : IAnalyticRecord
 {
-    public DateOnly Date { get; set; }
+    public DateTime Date { get; set; }
     public string Page { get; set; }
     public long Users { get; set; }
     public long Views { get; set; }
