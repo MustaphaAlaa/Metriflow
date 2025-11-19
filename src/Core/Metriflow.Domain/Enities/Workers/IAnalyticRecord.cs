@@ -4,6 +4,6 @@
 /// </summary>
 public interface IAnalyticRecord
 {
-    DateOnly Date { get; }
+    DateTime Date { get; }
     string Page { get; }
 }

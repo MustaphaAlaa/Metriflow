@@ -29,7 +29,7 @@ internal class Program
                     services.AddHostedService<MessageProducer>();
                     services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
                     services.AddSingleton<IRabbitMQProducer, RabbitMQProducer>();
-                    services.AddScoped<ISeedData, SeedData>();
+                    services.AddScoped<IStreamData, StreamData>();
                     services.AddScoped<IProducer, Producer>();
                 }
             )

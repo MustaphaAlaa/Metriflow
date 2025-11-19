@@ -28,42 +28,19 @@ public class Producer : IProducer
         _rabbitMQProducer = rabbitMQProducer;
     }
 
-    /// <inheritdoc/>
-    public async Task Produce(List<GARecord> gaData, List<PSIRecord> psiData)
-    {
-        var gaTask = SendGaAsync(gaData);
-        var paTask = SendPsiAsync(psiData);
 
-        await Task.WhenAll(gaTask, paTask);
-    }
-
-    /// <summary>
-    /// Publishes PSI records to RabbitMQ with controlled delays.
-    /// </summary>
-    /// <param name="data">The PSI records to publish.</param>
-    /// <remarks>
-    /// Uses a dedicated channel and includes delays between messages (300ms)
-    /// and an initial delay of 1000ms before starting.
-    /// </remarks>
-    private async Task SendPsiAsync(List<PSIRecord> data)
+    public async Task ProducePSIAsync(IList<PSIRecord> data)
     {
         await this.Publish("PSI", data, "analytics.raw.psi");
     }
 
-    /// <summary>
-    /// Publishes GA records to RabbitMQ with controlled delays.
-    /// </summary>
-    /// <param name="data">The GA records to publish.</param>
-    /// <remarks>
-    /// Uses a dedicated channel and includes delays between messages (200ms)
-    /// and an initial delay of 1000ms before starting.
-    /// </remarks>
-    private async Task SendGaAsync(List<GARecord> data)
+
+    public async Task ProduceGAAsync(IList<GARecord> data)
     {
         await this.Publish("GA", data, "analytics.raw.ga");
     }
 
-    private async Task Publish<T>(string type, IList<T> list, string routingKey)
+    private async Task Publish<T>(string type, IList<T> data, string routingKey)
         where T : IAnalyticRecord
     {
         using var channel = await _rabbitMQProducer.CreateNewChannelAsync(_exchangeName);
@@ -71,12 +48,10 @@ public class Producer : IProducer
         await Task.Delay(1500);
         var dayRecords = new List<T>();
 
-        var buffer = new DateOnly();
-    
-        foreach (var record in list)
-        {
 
-            if (buffer < record.Date)
+        foreach (var record in data)
+        {
+            if (record.Date.Hour % 6 == 0 && dayRecords.Count > 0)
             {
                 await _rabbitMQProducer.PublishToChannelAsync(
                     channel,
@@ -85,7 +60,6 @@ public class Producer : IProducer
                     routingKey
                 );
                 dayRecords.Clear();
-                buffer = record.Date;
             }
 
             _logger.LogInformation("{type} → {record}", type, record);

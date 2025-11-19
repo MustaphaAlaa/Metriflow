@@ -11,7 +11,7 @@ namespace Metriflow.Producers.Implementation;
 public class MessageProducer : IHostedService
 {
     private readonly IRabbitMQConnection _rabbitMQConnection;
-    private readonly ISeedData _seedData;
+    private readonly IStreamData _streamData;
     private readonly IHostApplicationLifetime _appLifetime;
     private readonly ILogger<MessageProducer> _logger;
 
@@ -20,12 +20,12 @@ public class MessageProducer : IHostedService
     /// <summary>
     /// Initializes a new instance of the MessageProducer class.
     /// </summary>
-    /// <param name="seedData">The seed data provider for analytics records.</param>
+    /// <param name="streamData">The seed data provider for analytics records.</param>
     /// <param name="producer">The producer instance for publishing messages.</param>
     /// <param name="appLifetime">The application lifetime control.</param>
     /// <param name="logger">The logger instance for logging service events.</param>
     public MessageProducer(
-        ISeedData seedData,
+        IStreamData streamData,
         IProducer producer,
         IHostApplicationLifetime appLifetime,
         ILogger<MessageProducer> logger
@@ -34,7 +34,7 @@ public class MessageProducer : IHostedService
         _logger = logger;
         _producer = producer;
         _appLifetime = appLifetime;
-        _seedData = seedData;
+        _streamData = streamData;
     }
 
     /// <summary>
@@ -53,11 +53,19 @@ public class MessageProducer : IHostedService
         {
             _logger.LogInformation("Start sending data......");
 
-            await _seedData.SeedingData();
-            var GARecords = _seedData.GARecords;
-            var PSIRecords = _seedData.PSIRecords;
+            // await _streamData.SeedingData();
+            // var GARecords = _streamData.GARecords;
+            // var PSIRecords = _streamData.PSIRecords;
+            //
+            //
+            // await _producer.Produce(GARecords, PSIRecords);
 
-            await _producer.Produce(GARecords, PSIRecords);
+            var GA = _streamData.RunPipelineAsync<GARecord>("GA-mock.json", 5000,
+                (gaRecords) => _producer.ProduceGAAsync(gaRecords));
+
+            var PSI = _streamData.RunPipelineAsync<PSIRecord>("PSI-mock.json", 5000,
+                (psiRecords) => _producer.ProducePSIAsync(psiRecords));
+            await Task.WhenAll(GA, PSI);
 
             _logger.LogInformation("All files is processed.");
         }
