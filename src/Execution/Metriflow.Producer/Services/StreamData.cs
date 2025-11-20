@@ -1,8 +1,10 @@
 using System.Text.Json;
 using System.Threading.Channels;
+using Metriflow.Application.interfaces;
 using Metriflow.Correlation.Worker;
 using Metriflow.Producers.Interfaces;
 using Microsoft.Extensions.Hosting;
+using RabbitMQ.Client;
 
 namespace Metriflow.Producers.Implementation;
 
@@ -13,16 +15,13 @@ namespace Metriflow.Producers.Implementation;
 public class StreamData : IStreamData
 {
     private readonly IHostEnvironment _environment;
+    private readonly IRabbitMQProducer _rabbitMQProducer;
 
-    /// <summary>
-    /// Initializes a new instance of the SeedData class and loads mock data.
-    /// </summary>
-    /// <param name="environment">The host environment for accessing content root path.</param>
-    public StreamData(IHostEnvironment environment)
+    public StreamData(IHostEnvironment environment, IRabbitMQProducer rabbitMqProducer)
     {
         _environment = environment;
+        _rabbitMQProducer = rabbitMqProducer;
     }
-
 
     private async IAsyncEnumerable<T> StreamDataFromJSONAsync<T>(string filename)
     {
@@ -32,102 +31,15 @@ public class StreamData : IStreamData
 
         await foreach (var record in JsonSerializer.DeserializeAsyncEnumerable<T>(fs))
         {
-            if (record != null) yield return record;
+            if (record != null)
+                yield return record;
         }
     }
 
-    // private static async IAsyncEnumerable<List<T>> ToBatches<T>(
-    //     IAsyncEnumerable<T> source, int batchSize)
-    // {
-    //     var batch = new List<T>(batchSize);
-    //
-    //     await foreach (var item in source)
-    //     {
-    //         batch.Add(item);
-    //         if (batch.Count == batchSize)
-    //         {
-    //             yield return batch;
-    //             batch = new List<T>(batchSize);
-    //         }
-    //     }
-    //
-    //     if (batch.Count > 0)
-    //         yield return batch;
-    // }
-
-    /// <inheritdoc/>
-    // public async Task SeedingData()
-    // {
-    //     GARecords = GetDataFromJSONAsync<GARecord>("GA-mock.json");
-    //     PSIRecords = GetDataFromJSONAsync<PSIRecord>("PSI-mock.json");
-    // }
-    // public async Task RunPipelineAsync<T>(
-    //     string filePath,
-    //     int batchSize,
-    //     int workers,
-    //     Func<List<T>, Task> produceAsync,
-    //     CancellationToken token = default)
-    // {
-    //     // bounded buffer avoids RAM explosion
-    //     var channel = Channel.CreateBounded<List<T>>(capacity: workers * 2);
-    //
-    //     // --- READER TASK ---
-    //     var readerTask = Task.Run(async () =>
-    //     {
-    //         try
-    //         {
-    //             await foreach (var batch in ToBatches(StreamDataFromJSONAsync<T>(filePath), batchSize))
-    //             {
-    //                 await channel.Writer.WriteAsync(batch, token);
-    //             }
-    //         }
-    //         finally
-    //         {
-    //             channel.Writer.Complete();
-    //         }
-    //     });
-    //
-    //     // --- WORKERS ---
-    //
-    //     var workerTasks = Workers(channel, workers, produceAsync, token);
-    //     // wait all
-    //     await readerTask;
-    //     await Task.WhenAll(workerTasks);
-    // }
-    //
-    // private async Task<List<Task>> Workers<T>(Channel<List<T>> channel, int workers, Func<List<T>, Task> produceAsync, 
-    //     , CancellationToken token = default)
-    // {
-    //     var workerTasks = Enumerable.Range(0, workers)
-    //         .Select(_ => Task.Run(async () =>
-    //         {
-    //             await foreach (var batch in channel.Reader.ReadAllAsync(token))
-    //             {
-    //                 await produceAsync(batch); // RabbitMQ publishing
-    //             }
-    //         }))
-    //         .ToList();
-    //     return workerTasks;
-    // }
-
-    // // ----------- PARSER -----------
-    // private async IAsyncEnumerable<T> StreamJsonAsync<T>(string filename)
-    // {
-    //     var path = Path.Combine(_environment.ContentRootPath, "data", filename);
-    //
-    //     await using var fs = File.OpenRead(path);
-    //
-    //     await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<T>(fs))
-    //     {
-    //         if (item != null)
-    //             yield return item;
-    //     }
-    // }
-
-    // ----------- BATCHER -----------
     private static async IAsyncEnumerable<List<T>> BatchAsync<T>(
         IAsyncEnumerable<T> source,
-        int size)
+        int size
+    )
     {
         var buffer = new List<T>(size);
 
@@ -146,17 +58,84 @@ public class StreamData : IStreamData
             yield return buffer;
     }
 
-    // ----------- PIPELINE RUNNER -----------
     public async Task RunPipelineAsync<T>(
         string jsonFile,
         int batchSize,
-        Func<List<T>, Task> onBatch)
+        Func<List<T>, IChannel, Task> onBatch
+    )
     {
-        var stream = StreamDataFromJSONAsync<T>(jsonFile);
+        var channel = Channel.CreateBounded<List<T>>(
+            new BoundedChannelOptions(50)
+            {
+                SingleWriter = true,
+                SingleReader = false,
+                FullMode = BoundedChannelFullMode.Wait,
+            }
+        );
 
-        await foreach (var batch in BatchAsync(stream, batchSize))
+        var producerTask = ProducerTask(jsonFile, batchSize, channel);
+
+        var workers = WorkersTask(channel, onBatch);
+
+        await Task.WhenAll(workers.Prepend(producerTask));
+    }
+
+    private List<Task> WorkersTask<T>(
+        Channel<List<T>> channel,
+        Func<List<T>, IChannel, Task> onBatch
+    )
+    {
+        const int patchPublishSize = 6000;
+        var workers = Enumerable
+            .Range(0, 4) // 4 workers
+            .Select(_ =>
+                Task.Run(async () =>
+                {
+                    var rabbitMQChannel = await _rabbitMQProducer.CreateNewChannelAsync(
+                        "analytics.raw"
+                    );
+                    var accumulator = new List<T>(patchPublishSize);
+                    await foreach (var batch in channel.Reader.ReadAllAsync())
+                    {
+                        accumulator.AddRange(batch);
+                        if (accumulator.Count >= patchPublishSize)
+                        {
+                            await onBatch(
+                                accumulator.Take(patchPublishSize).ToList(),
+                                rabbitMQChannel
+                            );
+                            accumulator.RemoveRange(0, patchPublishSize);
+                        }
+                    }
+
+                    if (accumulator.Count > 0)
+                    {
+                        await onBatch(accumulator, rabbitMQChannel);
+                    }
+                })
+            )
+            .ToList();
+        return workers;
+    }
+
+    private Task ProducerTask<T>(string jsonFile, int batchSize, Channel<List<T>> channel)
+    {
+        var Producer = Task.Run(async () =>
         {
-            await onBatch(batch);
-        }
+            try
+            {
+                var stream = StreamDataFromJSONAsync<T>(jsonFile);
+
+                await foreach (var batch in BatchAsync(stream, batchSize))
+                {
+                    await channel.Writer.WriteAsync(batch);
+                }
+            }
+            finally
+            {
+                channel.Writer.Complete();
+            }
+        });
+        return Producer;
     }
 }

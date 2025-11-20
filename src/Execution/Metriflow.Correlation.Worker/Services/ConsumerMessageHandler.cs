@@ -70,10 +70,10 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
         }
     }
 
-    private async Task<DateOnly> SaveNewRecordAsync<T>(string type, IList<T> record)
+    private async Task<DateTime> SaveNewRecordAsync<T>(string type, IList<T> record)
         where T : IAnalyticRecord
     {
-        DateOnly date = default;
+        DateTime date = default;
         foreach (var rec in record)
         {
             date = rec.Date;
@@ -125,7 +125,7 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
     /// Match previously-stored PSI and GA records for the given date, and trigger combining,
     ///  then trigger DeleteFields method to delete them from redis after the publishing.
     /// </summary>
-    private async Task MatchRecords(DateOnly date)
+    private async Task MatchRecords(DateTime date)
     {
         var psiRecords = await _redis.HashGetAllAsync("psi");
         var gaRecords = await _redis.HashGetAllAsync("ga");

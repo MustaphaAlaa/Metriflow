@@ -18,7 +18,7 @@ public class DailyStateCalculator : IDailyStatCalculator
         List<CombinedAnalyticsMessage> combinedAnalyticsMessages
     )
     {
-        var tm = new TimeOnly(0, 0);
+        
         return new DailyStat
         {
             TotalUsers = combinedAnalyticsMessages.Sum(r => r.Users),
@@ -26,7 +26,7 @@ public class DailyStateCalculator : IDailyStatCalculator
             TotalSessions = combinedAnalyticsMessages.Sum(r => r.Sessions),
             AvgPerformance = combinedAnalyticsMessages.Average(rc => rc.PerformanceScore),
             ReceivedAt = DateTime.UtcNow,
-            Date = combinedAnalyticsMessages[0].Date.ToDateTime(tm),
+            Date = combinedAnalyticsMessages[0].Date ,
         };
     }
 }
