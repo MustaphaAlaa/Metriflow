@@ -1,3 +1,5 @@
+using RabbitMQ.Client;
+
 namespace Metriflow.Producers.Interfaces;
 
 /// <summary>
@@ -8,5 +10,5 @@ public interface IStreamData
     Task RunPipelineAsync<T>(
         string jsonFile,
         int batchSize,
-        Func<List<T>, Task> onBatch);
+        Func<List<T>, IChannel, Task> onBatch);
 }

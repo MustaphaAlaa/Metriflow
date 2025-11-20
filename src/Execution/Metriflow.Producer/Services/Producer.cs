@@ -17,58 +17,34 @@ public class Producer : IProducer
     private readonly string _exchangeName = "analytics.raw";
     private ILogger<Producer> _logger;
 
-    /// <summary>
-    /// Initializes a new instance of the Producer class.
-    /// </summary>
-    /// <param name="rabbitMQProducer">The RabbitMQ producer instance for message publishing.</param>
-    /// <param name="logger">The logger instance for logging producer events.</param>
     public Producer(IRabbitMQProducer rabbitMQProducer, ILogger<Producer> logger)
     {
         _logger = logger;
         _rabbitMQProducer = rabbitMQProducer;
     }
 
-
-    public async Task ProducePSIAsync(IList<PSIRecord> data)
+    public async Task ProducePSIAsync(IList<PSIRecord> data, IChannel channel)
     {
-        await this.Publish("PSI", data, "analytics.raw.psi");
+        await this.Publish("PSI", data, "analytics.raw.psi", channel);
     }
 
-
-    public async Task ProduceGAAsync(IList<GARecord> data)
+    public async Task ProduceGAAsync(IList<GARecord> data, IChannel channel)
     {
-        await this.Publish("GA", data, "analytics.raw.ga");
+        await this.Publish("GA", data, "analytics.raw.ga", channel);
     }
 
-    private async Task Publish<T>(string type, IList<T> data, string routingKey)
+    private async Task Publish<T>(string type, IList<T> data, string routingKey, IChannel channel)
         where T : IAnalyticRecord
     {
-        using var channel = await _rabbitMQProducer.CreateNewChannelAsync(_exchangeName);
-
-        await Task.Delay(1500);
-        var dayRecords = new List<T>();
-
-
-        foreach (var record in data)
-        {
-            if (record.Date.Hour % 6 == 0 && dayRecords.Count > 0)
-            {
-                await _rabbitMQProducer.PublishToChannelAsync(
-                    channel,
-                    dayRecords,
-                    _exchangeName,
-                    routingKey
-                );
-                dayRecords.Clear();
-            }
-
-            _logger.LogInformation("{type} → {record}", type, record);
-            dayRecords.Add(record);
-        }
-
-        if (dayRecords.Count > 0)
-            await _rabbitMQProducer.PublishToChannelAsync(channel, dayRecords, _exchangeName, routingKey);
-
-        dayRecords.Clear();
+        await _rabbitMQProducer.PublishToChannelAsync(channel, data, _exchangeName, routingKey);
+        _logger.LogInformation("Running on Thread: {thread}", Thread.CurrentThread.ManagedThreadId);
+        _logger.LogInformation(
+            "On routing key: {routingKey}, {type} → numbers of records has been published {record}, From: {from}, To: {to}",
+            routingKey,
+            type,
+            data.Count,
+            data[0].Date,
+            data[data.Count - 1].Date
+        );
     }
 }

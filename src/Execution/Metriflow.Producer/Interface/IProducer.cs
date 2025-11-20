@@ -1,3 +1,5 @@
+using RabbitMQ.Client;
+
 namespace Metriflow.Producers.Interfaces;
 
 /// <summary>
@@ -5,8 +7,8 @@ namespace Metriflow.Producers.Interfaces;
 /// </summary>
 public interface IProducer
 {
-    Task ProducePSIAsync(IList<PSIRecord> data);
+    Task ProducePSIAsync(IList<PSIRecord> data, IChannel channel);
 
 
-    Task ProduceGAAsync(IList<GARecord> data);
+    Task ProduceGAAsync(IList<GARecord> data, IChannel channel);
 }
