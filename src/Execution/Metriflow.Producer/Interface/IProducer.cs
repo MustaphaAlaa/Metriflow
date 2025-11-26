@@ -9,6 +9,5 @@ public interface IProducer
 {
     Task ProducePSIAsync(PSIRecord[] data, IChannel channel);
 
-
     Task ProduceGAAsync(GARecord[] data, IChannel channel);
 }
