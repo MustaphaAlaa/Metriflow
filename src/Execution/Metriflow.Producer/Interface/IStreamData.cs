@@ -10,5 +10,5 @@ public interface IStreamData
     Task RunPipelineAsync<T>(
         string jsonFile,
         int batchSize,
-        Func<List<T>, IChannel, Task> onBatch);
+        Func<T[], IChannel, Task> onBatch);
 }

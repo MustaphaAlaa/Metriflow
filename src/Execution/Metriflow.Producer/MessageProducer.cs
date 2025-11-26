@@ -18,7 +18,6 @@ public class MessageProducer : IHostedService
 
     private readonly IProducer _producer;
 
-    
     public MessageProducer(
         IStreamData streamData,
         IProducer producer,
@@ -32,19 +31,23 @@ public class MessageProducer : IHostedService
         _streamData = streamData;
     }
 
-    
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         try
         {
-            _logger.LogInformation("Start sending data......"); 
+            _logger.LogInformation("Start sending data......");
 
+            var GA = _streamData.RunPipelineAsync<GARecord>(
+                "GA-mock.json",
+                1500,
+                (gaRecords, channel) => _producer.ProduceGAAsync(gaRecords, channel)
+            );
 
-            var GA = _streamData.RunPipelineAsync<GARecord>("GA-mock.json", 1500,
-                (gaRecords, channel) => _producer.ProduceGAAsync(gaRecords, channel));
-
-            var PSI = _streamData.RunPipelineAsync<PSIRecord>("PSI-mock.json", 1500,
-                (psiRecords, channel) => _producer.ProducePSIAsync(psiRecords, channel));
+            var PSI = _streamData.RunPipelineAsync<PSIRecord>(
+                "PSI-mock.json",
+                1500,
+                (psiRecords, channel) => _producer.ProducePSIAsync(psiRecords, channel)
+            );
             await Task.WhenAll(GA, PSI);
 
             _logger.LogInformation("All files is processed.");

@@ -7,8 +7,8 @@ namespace Metriflow.Producers.Interfaces;
 /// </summary>
 public interface IProducer
 {
-    Task ProducePSIAsync(IList<PSIRecord> data, IChannel channel);
+    Task ProducePSIAsync(PSIRecord[] data, IChannel channel);
 
 
-    Task ProduceGAAsync(IList<GARecord> data, IChannel channel);
+    Task ProduceGAAsync(GARecord[] data, IChannel channel);
 }

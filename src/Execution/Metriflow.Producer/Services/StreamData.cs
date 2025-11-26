@@ -28,7 +28,6 @@ public class StreamData : IStreamData
         var filePath = Path.Combine(_environment.ContentRootPath, "data", filename);
 
         await using var fs = File.OpenRead(filePath);
-
         await foreach (var record in JsonSerializer.DeserializeAsyncEnumerable<T>(fs))
         {
             if (record != null)
@@ -36,35 +35,36 @@ public class StreamData : IStreamData
         }
     }
 
-    private static async IAsyncEnumerable<List<T>> BatchAsync<T>(
+    private static async IAsyncEnumerable<T[]> BatchAsync<T>(
         IAsyncEnumerable<T> source,
         int size
     )
     {
-        var buffer = new List<T>(size);
+        var buffer = new T[size];
+        int count = 0;
 
         await foreach (var item in source)
         {
-            buffer.Add(item);
+            buffer[count++] = item;
 
-            if (buffer.Count == size)
+            if (buffer.Length == size)
             {
                 yield return buffer;
-                buffer = new List<T>(size);
+                buffer = new T[size];
             }
         }
 
-        if (buffer.Count > 0)
+        if (buffer.Length > 0)
             yield return buffer;
     }
 
     public async Task RunPipelineAsync<T>(
         string jsonFile,
         int batchSize,
-        Func<List<T>, IChannel, Task> onBatch
+        Func<T[], IChannel, Task> onBatch
     )
     {
-        var channel = Channel.CreateBounded<List<T>>(
+        var channel = Channel.CreateBounded<T[]>(
             new BoundedChannelOptions(50)
             {
                 SingleWriter = true,
@@ -81,8 +81,8 @@ public class StreamData : IStreamData
     }
 
     private List<Task> WorkersTask<T>(
-        Channel<List<T>> channel,
-        Func<List<T>, IChannel, Task> onBatch
+        Channel<T[]> channel,
+        Func<T[], IChannel, Task> onBatch
     )
     {
         const int patchPublishSize = 6000;
@@ -94,23 +94,33 @@ public class StreamData : IStreamData
                     var rabbitMQChannel = await _rabbitMQProducer.CreateNewChannelAsync(
                         "analytics.raw"
                     );
-                    var accumulator = new List<T>(patchPublishSize);
+
+
+                    var arr = new T[patchPublishSize];
+                    short count = 0;
                     await foreach (var batch in channel.Reader.ReadAllAsync())
                     {
-                        accumulator.AddRange(batch);
-                        if (accumulator.Count >= patchPublishSize)
+                        foreach (var obj in batch)
                         {
-                            await onBatch(
-                                accumulator.Take(patchPublishSize).ToList(),
-                                rabbitMQChannel
-                            );
-                            accumulator.RemoveRange(0, patchPublishSize);
+                            arr[count++] = obj;
+                            if (arr.Length == patchPublishSize)
+                            {
+                                await onBatch(
+                                    arr,
+                                    rabbitMQChannel
+                                );
+                                count = 0;
+                            }
                         }
                     }
 
-                    if (accumulator.Count > 0)
+
+                    if (count > 0)
                     {
-                        await onBatch(accumulator, rabbitMQChannel);
+                        await onBatch(
+                            arr,
+                            rabbitMQChannel
+                        );
                     }
                 })
             )
@@ -118,7 +128,7 @@ public class StreamData : IStreamData
         return workers;
     }
 
-    private Task ProducerTask<T>(string jsonFile, int batchSize, Channel<List<T>> channel)
+    private Task ProducerTask<T>(string jsonFile, int batchSize, Channel<T[]> channel)
     {
         var Producer = Task.Run(async () =>
         {

@@ -23,12 +23,12 @@ public class Producer : IProducer
         _rabbitMQProducer = rabbitMQProducer;
     }
 
-    public async Task ProducePSIAsync(IList<PSIRecord> data, IChannel channel)
+    public async Task ProducePSIAsync(PSIRecord[] data, IChannel channel)
     {
         await this.Publish("PSI", data, "analytics.raw.psi", channel);
     }
 
-    public async Task ProduceGAAsync(IList<GARecord> data, IChannel channel)
+    public async Task ProduceGAAsync(GARecord[] data, IChannel channel)
     {
         await this.Publish("GA", data, "analytics.raw.ga", channel);
     }
