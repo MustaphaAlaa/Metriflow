@@ -1,0 +1,14 @@
+
+
+*.user
+*.bkp
+*.dtmp
+
+**/**/bin/
+**/**/obj/
+**/Resources/
+Resources/
+ 
+
+
+
