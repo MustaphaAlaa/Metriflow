@@ -1,7 +1,7 @@
 public class GARecord : IAnalyticRecord
 {
-    public DateTime Date { get; set; }
-    public string Page { get; set; }
+    public long Date { get; set; }
+    public byte Page { get; set; }
     public long Users { get; set; }
     public long Views { get; set; }
     public long Sessions { get; set; }

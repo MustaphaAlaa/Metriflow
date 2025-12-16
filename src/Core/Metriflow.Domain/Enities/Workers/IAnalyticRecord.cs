@@ -4,6 +4,6 @@
 /// </summary>
 public interface IAnalyticRecord
 {
-    DateTime Date { get; }
-    string Page { get; }
+    long Date { get; }
+   byte Page { get; }
 }

@@ -5,11 +5,9 @@
     }
   ],
   "settings": {
-    "editor.fontFamily": "Fira Code",
-    "editor.fontSize": 19,
+    "editor.fontSize": 15,
     "editor.fontLigatures": true,
     "terminal.integrated.fontSize": 16,
-    "terminal.integrated.fontFamily": "Fira Code",
     "terminal.integrated.lineHeight": 3.1,
     "workbench.colorTheme": "Default Dark Modern",
     "window.zoomLevel": 1,
