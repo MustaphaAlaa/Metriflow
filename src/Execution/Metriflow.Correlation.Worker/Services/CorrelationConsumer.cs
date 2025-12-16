@@ -44,20 +44,7 @@ public class CorrelationConsumer : ICorrelationConsumer
     /// </summary>
     private async Task ConsumeGA(CancellationToken stoppingToken)
     {
-        // var analyticGA = await _consumer.CreateNewChannelAsync();
-
-        // var gaTask = _consumer.ConsumeFromChannelAsync(
-        //     analyticGA,
-        //     queueName: "GA-Queue",
-        //     exchangeName: "analytics.raw",
-        //     routingKey: "analytics.raw.ga",
-        //     async (GARecord ga) =>
-        //     {
-        //         await Task.Delay(1000);
-        //         await _consumerMessageHandler.HandleIncomingRecordAsync("ga", ga);
-        //     },
-        //     stoppingToken
-        // );
+        
         await this.ConsumeGeneric(
             queueName: "GA-Queue",
             routingKey: "analytics.raw.ga",
@@ -75,20 +62,6 @@ public class CorrelationConsumer : ICorrelationConsumer
     /// </summary>
     private async Task ConsumePSI(CancellationToken stoppingToken)
     {
-        // var analyticPSI = await _consumer.CreateNewChannelAsync();
-
-        // var psiTask = _consumer.ConsumeFromChannelAsync(
-        //     analyticPSI,
-        //     queueName: "PSI-Queue",
-        //     exchangeName: "analytics.raw",
-        //     routingKey: "analytics.raw.psi",
-        //     async (PSIRecord psi) =>
-        //     {
-        //         await Task.Delay(3000);
-        //         await _consumerMessageHandler.HandleIncomingRecordAsync("psi", psi);
-        //     },
-        //     stoppingToken
-        // );
 
         await ConsumeGeneric(
             queueName: "PSI-Queue",

@@ -1,8 +1,8 @@
-using Metriflow.Correlation.Worker;
-using Metriflow.Correlation.Worker.Interfaces;
 using Metriflow.Application;
 using Metriflow.Application.Entities;
 using Metriflow.Application.interfaces;
+using Metriflow.Correlation.Worker;
+using Metriflow.Correlation.Worker.Interfaces;
 using RabbitMQ.Client;
 using StackExchange.Redis;
 

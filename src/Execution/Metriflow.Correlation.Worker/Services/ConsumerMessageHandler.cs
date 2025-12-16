@@ -51,23 +51,32 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
 
         var date = await SaveNewRecordAsync(type, record);
 
-        var maxDateUpdated = await TryUpdateMaxDate(date.ToString());
+        // var maxDateUpdated = await TryUpdateMaxDate(date.ToString());
 
-        if (maxDateUpdated)
-        {
-            _logger.LogInformation(
-                $"Successfully updated MaxDate to {date}. Triggering combine for the previous day."
-            );
+        // if (maxDateUpdated)
+        // {
+        //     _logger.LogInformation(
+        //         $"Successfully updated MaxDate to {date}. Triggering combine for the previous day."
+        //     );
 
-            await this.MatchRecords(date);
-        }
-        else
-        {
-            _logger.LogDebug(
-                "Incoming date {date} is not greater than current max date. No combine triggered.",
-                date
-            );
-        }
+        //     await this.MatchRecords(date);
+        // }
+        // else
+        // {
+        //     _logger.LogDebug(
+        //         "Incoming date {date} is not greater than current max date. No combine triggered.",
+        //         date
+        //     );
+        // }
+    }
+
+    private long GetTheDayOfTicks<T>(T record)
+        where T : IAnalyticRecord
+    {
+        var ticks = record.Date % TimeSpan.TicksPerDay;
+        if (ticks == 0)
+            return record.Date;
+        return record.Date - ticks;
     }
 
     private async Task<DateTime> SaveNewRecordAsync<T>(string type, IList<T> record)
@@ -76,126 +85,29 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
         DateTime date = default;
         foreach (var rec in record)
         {
-            date = rec.Date;
-            var page = rec.Page;
-
-            var fieldKey = $"{date.ToString("yyyy-MM-dd")}|{page.ToString()}";
-            await _redis.HashSetAsync(
-                key: type,
-                hashFields: new HashEntry[]
-                {
-                    new HashEntry(
-                        fieldKey.ToString(),
-                        JsonSerializer.SerializeToUtf8Bytes(rec, JsonSetting.SerializerOptions)
-                    ),
-                }
-            );
+            var listName = $"{type}|{GetTheDayOfTicks(rec)}|{rec.Page}";
+            var listLength = await _redis.ListRightPushAsync(listName, rec.Date);
+            if (listLength == 24 && type == "ga")
+            {
+                await _redis.ListLeftPushAsync(
+                    enRedisListsNames.CompletedListPSI.ToString(),
+                    listName
+                );
+            }
+            else if (listLength == 24 && type == "psi")
+            {
+                await _redis.ListLeftPushAsync(
+                    enRedisListsNames.CompletedListGA.ToString(),
+                    listName
+                );
+            }
             _logger.LogDebug(
                 "Saved record for type '{type}' with key '{fieldKey}'.",
                 type,
-                fieldKey
+                listName
             );
         }
 
         return date;
-    }
-
-    private async Task<bool> TryUpdateMaxDate(string date)
-    {
-        string lubaScript =
-            @" local current = redis.call('GET', KEYS[1])
-            if (not current) or (ARGV[1] > current) then
-                redis.call('SET', KEYS[1], ARGV[1])
-                return 1
-            else
-                return 0
-            end
-            ";
-
-        var result = await _redis.ScriptEvaluateAsync(
-            lubaScript,
-            new RedisKey[] { "analytics:max_date" },
-            new RedisValue[] { date }
-        );
-
-        return (int)result == 1;
-    }
-
-    /// <summary>
-    /// Match previously-stored PSI and GA records for the given date, and trigger combining,
-    ///  then trigger DeleteFields method to delete them from redis after the publishing.
-    /// </summary>
-    private async Task MatchRecords(DateTime date)
-    {
-        var psiRecords = await _redis.HashGetAllAsync("psi");
-        var gaRecords = await _redis.HashGetAllAsync("ga");
-
-        if (psiRecords.Length != gaRecords.Length)
-        {
-            _logger.LogInformation(
-                "Cannot match and delete psi and ga the records not same length"
-            );
-            throw new Exception();
-        }
-
-        var psiFields = psiRecords.Select(p => p.Name);
-        var gaFields = gaRecords.Select(g => g.Name);
-
-        var psiKeys = psiFields
-            .Where(psi => !psi.StartsWith(date.ToString()))
-            .Select(f => f.ToString().Replace("psi:", ""))
-            .ToHashSet();
-
-        var gaKeys = gaFields
-            .Where(ga => !ga.StartsWith(date.ToString()))
-            .Select(f => f.ToString().Replace("ga:", ""))
-            .ToHashSet();
-
-        var commonKeys = psiKeys.Intersect(gaKeys);
-        var GA_PSI_List = await GetGaPsiListAsync(commonKeys);
-        ;
-
-        if (GA_PSI_List.Count > 0)
-            await _combiner.GA_PSI_Combiner(GA_PSI_List);
-
-        if (commonKeys.Count() > 0)
-            await DeleteFields(commonKeys);
-    }
-
-    /// <summary>
-    /// Retrieve combined GA/PSI records for the provided keys from Redis and deserialize them.
-    /// </summary>
-    private async Task<List<Tuple<GARecord, PSIRecord>>> GetGaPsiListAsync(IEnumerable<string> keys)
-    {
-        var lst = new List<Tuple<GARecord, PSIRecord>>();
-
-        foreach (var key in keys)
-        {
-            var gaBytes = await _redis.HashGetAsync("ga", key);
-            var psiBytes = await _redis.HashGetAsync("psi", key);
-
-            var ga = JsonSerializer.Deserialize<GARecord>(gaBytes, JsonSetting.SerializerOptions)!;
-
-            var psi = JsonSerializer.Deserialize<PSIRecord>(
-                psiBytes,
-                JsonSetting.SerializerOptions
-            )!;
-
-            lst.Add(new Tuple<GARecord, PSIRecord>(ga, psi));
-        }
-
-        return lst;
-    }
-
-    /// <summary>
-    /// Delete the GA and PSI fields matching the provided keys from Redis.
-    /// </summary>
-    private async Task DeleteFields(IEnumerable<string> keys)
-    {
-        foreach (var key in keys)
-        {
-            var gaDeleted = await _redis.HashDeleteAsync("ga", key);
-            var psiDeleted = await _redis.HashDeleteAsync("psi", key);
-        }
     }
 }

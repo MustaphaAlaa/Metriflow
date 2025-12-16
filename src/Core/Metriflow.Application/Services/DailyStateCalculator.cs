@@ -26,7 +26,7 @@ public class DailyStateCalculator : IDailyStatCalculator
             TotalSessions = combinedAnalyticsMessages.Sum(r => r.Sessions),
             AvgPerformance = combinedAnalyticsMessages.Average(rc => rc.PerformanceScore),
             ReceivedAt = DateTime.UtcNow,
-            Date = combinedAnalyticsMessages[0].Date ,
+            //!!!! Date = combinedAnalyticsMessages[0].Date ,
         };
     }
 }

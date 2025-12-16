@@ -1,4 +1,3 @@
- 
 public class PSIRecord : IAnalyticRecord
 {
     public long Date { get; set; }
