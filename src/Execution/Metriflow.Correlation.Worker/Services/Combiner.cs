@@ -25,7 +25,7 @@ public class Combiner : ICombiner
     }
 
     /// <inheritdoc />
-    public async Task GA_PSI_Combiner(List<Tuple<GARecord, PSIRecord>>? GA_PSI_LIST)
+    public async Task GA_PSI_Combiner(List<recordGA_PSI>? GA_PSI_LIST)
     {
         if (GA_PSI_LIST is null || GA_PSI_LIST.Count == 0)
         {
@@ -37,18 +37,18 @@ public class Combiner : ICombiner
         foreach (var tuple in GA_PSI_LIST)
         {
             _logger.LogInformation(
-                $"Combing GA + PSI for {tuple.Item2.Page} on {tuple.Item2.Date}"
+                $"Combing GA + PSI for {tuple.PSIRecord.Page} on {tuple.PSIRecord.Date}"
             );
             rawRecords.Add(
                 new CombinedAnalyticsMessage()
                 {
-                    Date = tuple.Item1.Date,
-                    Page = tuple.Item1.Page,
-                    Sessions = tuple.Item1.Sessions,
-                    Users = tuple.Item1.Users,
-                    Views = tuple.Item1.Views,
-                    PerformanceScore = tuple.Item2.PerformanceScore,
-                    LCP_ms = tuple.Item2.LCP_MS,
+                    Date = tuple.GARecord.Date,
+                    Page = tuple.GARecord.Page,
+                    Sessions = tuple.GARecord.Sessions,
+                    Users = tuple.GARecord.Users,
+                    Views = tuple.GARecord.Views,
+                    PerformanceScore = tuple.PSIRecord.PerformanceScore,
+                    LCP_ms = tuple.PSIRecord.LCP_MS,
                 }
             );
         }
