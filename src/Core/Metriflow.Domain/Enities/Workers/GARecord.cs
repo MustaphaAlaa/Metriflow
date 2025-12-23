@@ -1,3 +1,9 @@
+using Metriflow.Domain.CustomAttributes;
+using Metriflow.Domain.Interfaces;
+
+namespace Metriflow.Domain.Entities.Workers;
+
+[AnalyticRecord("GA")]
 public class GARecord : IAnalyticRecord
 {
     public long Date { get; set; }

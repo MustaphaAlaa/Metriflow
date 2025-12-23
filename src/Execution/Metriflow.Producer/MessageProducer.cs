@@ -1,5 +1,6 @@
 using System.Threading.Channels;
 using Metriflow.Application.interfaces;
+using Metriflow.Domain.Entities.Workers;
 using Metriflow.Producers.Interfaces;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

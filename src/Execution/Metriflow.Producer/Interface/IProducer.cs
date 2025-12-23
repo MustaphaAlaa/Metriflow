@@ -1,3 +1,4 @@
+using Metriflow.Domain.Entities.Workers;
 using RabbitMQ.Client;
 
 namespace Metriflow.Producers.Interfaces;

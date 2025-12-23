@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Linq.Expressions;
 using Metriflow.Application.interfaces;
+using Metriflow.Domain.Entities.Workers;
+using Metriflow.Domain.Interfaces;
 using Metriflow.Producers.Interfaces;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;

@@ -1,6 +1,5 @@
 namespace Metriflow.Domain.interfaces;
 
-// 1. Interface for Code Structure
 public interface IPageStats
 {
     int PageId { get; set; }

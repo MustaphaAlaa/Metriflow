@@ -1,3 +1,4 @@
+namespace Metriflow.Domain.enums;
 public enum enPages : byte
 {
     home = 1 ,
