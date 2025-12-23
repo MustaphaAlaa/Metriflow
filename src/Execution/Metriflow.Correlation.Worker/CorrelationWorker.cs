@@ -3,6 +3,14 @@ using StackExchange.Redis;
 
 namespace Metriflow.Correlation.Worker;
 
+
+public class MatcherAndProducerWorker : BackgroundService
+{
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        throw new NotImplementedException();
+    }
+}
 public class CorrelationWorker : BackgroundService
 {
     private readonly ILogger<CorrelationWorker> _logger;

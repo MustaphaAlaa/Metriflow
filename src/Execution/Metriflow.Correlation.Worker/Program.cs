@@ -8,6 +8,7 @@ using StackExchange.Redis;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<CorrelationWorker>();
+builder.Services.AddHostedService<MatcherAndProducerWorker>();
 builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMQ"));
 builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
 
@@ -17,7 +18,8 @@ builder.Services.AddScoped<IConsumerMessageHandler, ConsumerMessageHandler>();
 builder.Services.AddScoped<IRowDataProducer, RawDataProducer>();
 
 builder.Services.AddScoped<ICorrelationConsumer, CorrelationConsumer>();
-builder.Services.AddScoped<ICombiner, Combiner>();
+builder.Services.AddScoped<IRecordsMatcher, RecordsMatcher>();
+builder.Services.AddScoped<IRedisQueriesCorrelation, RedisQueriesCorrelation>();
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
