@@ -7,8 +7,8 @@
   "settings": {
     "editor.fontSize": 13,
     "editor.fontLigatures": true,
-    "terminal.integrated.fontSize": 16,
-    "terminal.integrated.lineHeight": 3.1,
+    "terminal.integrated.fontSize": 12,
+    "terminal.integrated.lineHeight": 1.7,
     "workbench.colorTheme": "Hyper",
     "window.zoomLevel": 1,
     "cSpell.words": ["Metriflow"]
