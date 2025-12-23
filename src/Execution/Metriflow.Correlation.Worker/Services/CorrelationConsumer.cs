@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Metriflow.Application.interfaces;
 using Metriflow.Correlation.Worker.Interfaces;
+using Metriflow.Domain.Entities.Workers;
 using Microsoft.Extensions.Logging;
 
 namespace Metriflow.Correlation.Worker;
@@ -44,14 +45,13 @@ public class CorrelationConsumer : ICorrelationConsumer
     /// </summary>
     private async Task ConsumeGA(CancellationToken stoppingToken)
     {
-        
         await this.ConsumeGeneric(
             queueName: "GA-Queue",
             routingKey: "analytics.raw.ga",
             async (List<GARecord> ga) =>
             {
                 // await Task.Delay(1000);
-                await _consumerMessageHandler.HandleIncomingRecordAsync("ga", ga);
+                await _consumerMessageHandler.HandleIncomingRecordAsync("GA", ga);
             },
             stoppingToken
         );
@@ -62,14 +62,13 @@ public class CorrelationConsumer : ICorrelationConsumer
     /// </summary>
     private async Task ConsumePSI(CancellationToken stoppingToken)
     {
-
         await ConsumeGeneric(
             queueName: "PSI-Queue",
             routingKey: "analytics.raw.psi",
             async (List<PSIRecord> psi) =>
             {
                 // await Task.Delay(3000);
-                await _consumerMessageHandler.HandleIncomingRecordAsync("psi", psi);
+                await _consumerMessageHandler.HandleIncomingRecordAsync<PSIRecord>("PSI", psi);
             },
             stoppingToken
         );

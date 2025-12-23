@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Metriflow.Domain;
+using Metriflow.Domain.Interfaces;
 
 namespace Metriflow.Correlation.Worker.Interfaces;
 

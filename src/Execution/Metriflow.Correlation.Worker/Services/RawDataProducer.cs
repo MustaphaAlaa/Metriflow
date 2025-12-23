@@ -24,7 +24,7 @@ public class RawDataProducer : IRowDataProducer
     }
 
     /// <inheritdoc />
-    public async Task PublishRawRecord(List<CombinedAnalyticsMessage> combineAnalyticsMessages)
+    public async Task PublishRawRecord(IEnumerable<CombinedAnalyticsMessage> combineAnalyticsMessages)
     {
         if (combineAnalyticsMessages is null)
         {

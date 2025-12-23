@@ -4,17 +4,10 @@ namespace Metriflow.Correlation.Worker.Interfaces;
 
 public interface IRedisQueriesCorrelation
 {
-    Task<(RedisValue[] GAKeys, RedisValue[] PSIKeys)> GetListsKeys();
-    void PopAndAddListsItemsTo(
-        ITransaction transaction,
-        List<Task<RedisValue>> redisValueGA,
-        string gaKey,
-        List<Task<RedisValue>> redisValuePSI,
-        string psiKey
+    Task<Dictionary<string, IEnumerable<RedisValue>>> ExecutePopTransactionAsync(
+        IEnumerable<string> listsKeys,
+        int expectedListLength = 24
     );
-    (Task<long>, Task<long>) RemoveKeysFromCompletedLists(
-        ITransaction transaction,
-        string gaKey,
-        string psiKey
-    );
+    Task<Dictionary<enRedisCompletedListsNames, IEnumerable<string>>> GetCompletedListsKeys();
+    Task<bool> RemoveKeysFromCompletedLists(IEnumerable<string> listsKeys);
 }

@@ -1,7 +1,8 @@
 namespace Metriflow.Correlation.Worker.Interfaces;
 
-public enum enRedisListsNames
+public enum enRedisCompletedListsNames: byte
 {
     CompletedListGA,
-    CompletedListPSI
+    CompletedListPSI,
+    Count
 }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Metriflow.Correlation.Worker.Interfaces;
+using Metriflow.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 
@@ -18,18 +19,12 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
 {
     private readonly ILogger<CorrelationWorker> _logger;
     private readonly IDatabase _redis;
-    private readonly ICombiner _combiner;
 
     /// <summary>
     /// Creates a new <see cref="ConsumerMessageHandler"/>.
     /// </summary>
-    public ConsumerMessageHandler(
-        ILogger<CorrelationWorker> logger,
-        IConnectionMultiplexer redis,
-        ICombiner combiner
-    )
+    public ConsumerMessageHandler(ILogger<CorrelationWorker> logger, IConnectionMultiplexer redis)
     {
-        _combiner = combiner;
         _logger = logger;
         _redis = redis.GetDatabase();
     }
@@ -50,24 +45,6 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
         );
 
         var date = await SaveNewRecordAsync(type, record);
-
-        // var maxDateUpdated = await TryUpdateMaxDate(date.ToString());
-
-        // if (maxDateUpdated)
-        // {
-        //     _logger.LogInformation(
-        //         $"Successfully updated MaxDate to {date}. Triggering combine for the previous day."
-        //     );
-
-        //     await this.MatchRecords(date);
-        // }
-        // else
-        // {
-        //     _logger.LogDebug(
-        //         "Incoming date {date} is not greater than current max date. No combine triggered.",
-        //         date
-        //     );
-        // }
     }
 
     private long GetTheDayOfTicks<T>(T record)
@@ -82,6 +59,10 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
     private async Task<DateTime> SaveNewRecordAsync<T>(string type, IList<T> record)
         where T : IAnalyticRecord
     {
+        //!!! SOLID Doesn't Applied Correctly Here !!!
+        //!!note:
+        // I will let it as it, and I'll comeback later and I'll refactor it.
+        // I need to move forward for now.
         DateTime date = default;
         foreach (var rec in record)
         {
@@ -90,14 +71,14 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
             if (listLength == 24 && type == "ga")
             {
                 await _redis.ListLeftPushAsync(
-                    enRedisListsNames.CompletedListPSI.ToString(),
+                    enRedisCompletedListsNames.CompletedListPSI.ToString(),
                     listName
                 );
             }
             else if (listLength == 24 && type == "psi")
             {
                 await _redis.ListLeftPushAsync(
-                    enRedisListsNames.CompletedListGA.ToString(),
+                    enRedisCompletedListsNames.CompletedListGA.ToString(),
                     listName
                 );
             }
