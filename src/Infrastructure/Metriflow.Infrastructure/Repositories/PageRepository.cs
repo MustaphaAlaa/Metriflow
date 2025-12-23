@@ -39,13 +39,17 @@ public class PageRepository : BaseRepository<Page>, IPageRepository
 
     public async Task<Page> GetOrCreatePageAsync(CombinedAnalyticsMessage combinedAnalyticsMessage)
     {
-        var page = await RetrieveAsync(page => page.Path == combinedAnalyticsMessage.Page);
+        var page = await RetrieveAsync(page =>
+            page.Path == ((enPages)combinedAnalyticsMessage.Page).ToString()
+        );
         if (page is null)
         {
             _logger.LogInformation(
                 $"Creating Page: {combinedAnalyticsMessage.Page} --- Date: {combinedAnalyticsMessage.Date}"
             );
-            page = await CreateAsync(new Page { Path = combinedAnalyticsMessage.Page });
+            page = await CreateAsync(
+                new Page { Path = ((enPages)combinedAnalyticsMessage.Page).ToString() }
+            );
         }
         return page;
     }

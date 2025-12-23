@@ -9,13 +9,13 @@ using Metriflow.Domain.interfaces;
 
 namespace Metriflow.Domain.Entities;
 
-public class DailyStat  
+public class DailyStat
 {
     public Guid Id { get; set; }
 
     // Unique Key (Business) - Needs Fluent API mapping for composite key
     public DateTime Date { get; set; }
- 
+
 
     public long TotalUsers { get; set; }
 
@@ -23,5 +23,5 @@ public class DailyStat
     public long TotalViews { get; set; }
     public double AvgPerformance { get; set; }
     public DateTime ReceivedAt { get; set; }
-  
+
 }

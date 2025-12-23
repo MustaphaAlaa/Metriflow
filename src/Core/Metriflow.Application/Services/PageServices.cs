@@ -40,7 +40,7 @@ public class PageServices : IPageServices
         _logger.LogInformation(
             $"Processing: {combinedAnalyticsMessage.Date} on Page {combinedAnalyticsMessage.Page}"
         );
-        combinedAnalyticsMessage.Page = combinedAnalyticsMessage.Page.ToLower();
+        combinedAnalyticsMessage.Page = combinedAnalyticsMessage.Page;
         return combinedAnalyticsMessage;
     }
 

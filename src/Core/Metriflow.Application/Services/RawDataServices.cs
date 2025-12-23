@@ -29,7 +29,7 @@ public class RawDataServices : IRawDataServices
             Users = combinedAnalyticsMessage.Users,
             Sessions = combinedAnalyticsMessage.Sessions,
             Views = combinedAnalyticsMessage.Views,
-            Date = combinedAnalyticsMessage.Date.ToDateTime(tm),
+            //!!!! Date = combinedAnalyticsMessage.Date ,
         };
 
         return rawData;

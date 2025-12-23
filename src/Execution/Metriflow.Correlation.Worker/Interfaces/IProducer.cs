@@ -15,5 +15,5 @@ public interface IRowDataProducer
     /// Publish a collection of <see cref="RawData"/> objects to the configured destination.
     /// </summary>
     /// <param name="rawRecords">The list of raw records to publish.</param>
-    Task PublishRawRecord(List<CombinedAnalyticsMessage> combineAnalyticsMessages);
+    Task PublishRawRecord(IEnumerable<CombinedAnalyticsMessage> combineAnalyticsMessages);
 }
