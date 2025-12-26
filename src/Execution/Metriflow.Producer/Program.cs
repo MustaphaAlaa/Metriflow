@@ -1,8 +1,12 @@
 ﻿using Metriflow.Application;
 using Metriflow.Application.Entities;
+using Metriflow.Application.Extensions;
 using Metriflow.Application.interfaces;
+using Metriflow.Application.Interfaces.Workers;
+using Metriflow.Application.Services;
+using Metriflow.Messages.Connections;
+using Metriflow.Messages.Extensions;
 using Metriflow.Producers.Implementation;
-using Metriflow.Producers.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -27,22 +31,27 @@ internal class Program
                     services.Configure<RabbitMqSettings>(configuration.GetSection("RabbitMQ"));
 
                     services.AddHostedService<MessageProducer>();
-                    services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
-                    services.AddSingleton<IRabbitMQProducer, RabbitMQProducer>();
-                    services.AddScoped<IStreamData, StreamData>();
-                    services.AddScoped<IProducer, Producer>();
+                    services.AddSingleton<IMessageBrokerConnection, RabbitMqConnection>();
+                    // services.AddSingleton<IMessageBrokerProducer, RabbitMqProducer>();
+                    //
+                    // services.AddScoped<IStreamData, StreamData>();
+
+
+                    services.AddApplicationLayerDiJsonReader();
+                    
+                    services.AddApplicationLayerDiMessagesServices();
+                    services.AddRabbitMqDi();
+                    // services.AddScoped<IProducer, Producer>();
+
+
                 }
             )
             .Build();
 
         await host.RunAsync();
-
-
-        Console.WriteLine("!!!!Producer shut down");
-        Console.WriteLine("!!!!Producer shut down");
-        Console.WriteLine("!!!!Producer shut down");
-        Console.WriteLine("!!!!Producer shut down");
-        Console.WriteLine("!!!!Producer shut down");
-        Console.WriteLine("!!!!Producer shut down");
+        
     }
 }
+
+
+

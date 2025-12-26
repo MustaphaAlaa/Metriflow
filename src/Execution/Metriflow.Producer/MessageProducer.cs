@@ -1,7 +1,7 @@
 using System.Threading.Channels;
 using Metriflow.Application.interfaces;
+using Metriflow.Application.Interfaces.Workers;
 using Metriflow.Domain.Entities.Workers;
-using Metriflow.Producers.Interfaces;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -12,42 +12,48 @@ namespace Metriflow.Producers.Implementation;
 /// </summary>
 public class MessageProducer : IHostedService
 {
-    private readonly IRabbitMQConnection _rabbitMQConnection;
+    // private readonly IMessageBrokerConnection _messageBrokerConnection;
     private readonly IStreamData _streamData;
     private readonly IHostApplicationLifetime _appLifetime;
     private readonly ILogger<MessageProducer> _logger;
-
+    private readonly IHostEnvironment _environment;
     private readonly IProducer _producer;
 
     public MessageProducer(
         IStreamData streamData,
         IProducer producer,
         IHostApplicationLifetime appLifetime,
-        ILogger<MessageProducer> logger
+        ILogger<MessageProducer> logger,
+            IHostEnvironment environment
     )
     {
         _logger = logger;
         _producer = producer;
         _appLifetime = appLifetime;
         _streamData = streamData;
+        _environment =    environment;
     }
 
+    private string JsonFilePath(string filename) =>  Path.Combine(_environment.ContentRootPath, "data",filename); 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         try
         {
-            _logger.LogInformation("Start sending data......");
 
+            _logger.LogInformation("Start sending data......");
+            var gaMockJson =  this.JsonFilePath( "GA-mock.json") ;
+            var psiMockJson = this.JsonFilePath( "PSI-mock.json") ;
+            
             var GA = _streamData.RunPipelineAsync<GARecord>(
-                "GA-mock.json",
-                1500,
-                (gaRecords, channel) => _producer.ProduceGAAsync(gaRecords, channel)
+               gaMockJson,
+                2300,
+                (gaRecords) => _producer.PublishAnalyticRecords(gaRecords,"analytics.raw.GA","analytics.raw.GA")
             );
 
             var PSI = _streamData.RunPipelineAsync<PSIRecord>(
-                "PSI-mock.json",
-                1500,
-                (psiRecords, channel) => _producer.ProducePSIAsync(psiRecords, channel)
+                psiMockJson,
+                2300,
+                (psiRecords) => _producer.PublishAnalyticRecords(psiRecords, "analytics.raw.PSI","analytics.raw.PSI")
             );
             await Task.WhenAll(GA, PSI);
 
