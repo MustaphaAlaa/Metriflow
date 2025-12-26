@@ -13,7 +13,7 @@ namespace Metriflow.Application.interfaces;
 /// Implementations are expected to deserialize the raw message payload into <typeparamref name="T"/>
 /// and invoke the provided <paramref name="handleMessage"/> callback for each message.
 /// </remarks>
-public interface IRabbitMQConsumer
+public interface IMessageBrokerConsumer
 {
     /// <summary>
     /// Consume messages of type <typeparamref name="T"/> using the supplied channel.

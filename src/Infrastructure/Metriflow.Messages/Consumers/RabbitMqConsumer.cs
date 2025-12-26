@@ -9,7 +9,7 @@ namespace Metriflow.Application;
 
 /// <summary>
 /// RabbitMQ consumer implementation that handles message consumption using
-/// RabbitMQ channels created from an injected <see cref="IRabbitMQConnection"/>.
+/// RabbitMQ channels created from an injected <see cref="IMessageBrokerConnection"/>.
 /// </summary>
 /// <remarks>
 /// - Declares the exchange and queue (durable, non-auto-delete) and binds them
@@ -22,22 +22,22 @@ namespace Metriflow.Application;
 /// - Cancellation is honored via the provided <see cref="CancellationToken"/> passed to <see cref="ConsumeFromChannelAsync{T}"/>
 ///   (the method awaits an infinite delay that completes when the token is canceled).
 /// </remarks>
-public class RabbitMQConsumer : IAsyncDisposable, IRabbitMQConsumer
+public class RabbitMqConsumer : IAsyncDisposable, IMessageBrokerConsumer
 {
-    private readonly IRabbitMQConnection _connection;
-    private readonly ILogger<RabbitMQConsumer> _logger;
+    private readonly IMessageBrokerConnection _connection;
+    private readonly ILogger<RabbitMqConsumer> _logger;
     private IChannel? _sharedChannel;
 
     private const int MaxRetryAttempts = 3;
     private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(5);
 
     /// <summary>
-    /// Create a new <see cref="RabbitMQConsumer"/>.
+    /// Create a new <see cref="RabbitMqConsumer"/>.
     /// </summary>
     /// <param name="connection">Connection provider used to create channels.</param>
     /// <param name="logger">Logger used to record lifecycle and error events.</param>
     /// <exception cref="ArgumentNullException">If <paramref name="connection"/> or <paramref name="logger"/> is null.</exception>
-    public RabbitMQConsumer(IRabbitMQConnection connection, ILogger<RabbitMQConsumer> logger)
+    public RabbitMqConsumer(IMessageBrokerConnection connection, ILogger<RabbitMqConsumer> logger)
     {
         _connection = connection;
         _logger = logger;

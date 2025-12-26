@@ -5,7 +5,7 @@ namespace Metriflow.Application.interfaces;
 /// <summary>
 /// Interface defining the contract for managing RabbitMQ connections.
 /// </summary>
-public interface IRabbitMQConnection
+public interface IMessageBrokerConnection
 {
     /// <summary>
     /// Creates a new RabbitMQ channel asynchronously.

@@ -4,21 +4,21 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
-namespace Metriflow.Application;
+namespace Metriflow.Messages.Connections;
 
 /// <summary>
 /// Implements the RabbitMQ connection management functionality.
 /// </summary>
-public class RabbitMQConnection : IRabbitMQConnection, IDisposable
+public class RabbitMqConnection : IMessageBrokerConnection, IDisposable
 {
     private readonly IConnection _connection;
 
     private readonly RabbitMqSettings _settings;
-    private readonly ILogger<RabbitMQConnection> _logger;
+    private readonly ILogger<RabbitMqConnection> _logger;
 
-    public RabbitMQConnection(
+    public RabbitMqConnection(
         IOptions<RabbitMqSettings> options,
-        ILogger<RabbitMQConnection> logger
+        ILogger<RabbitMqConnection> logger
     )
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));

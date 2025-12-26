@@ -2,26 +2,27 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Metriflow.Application.interfaces;
+using Metriflow.Application.Interfaces.Workers;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 
-namespace Metriflow.Application;
+namespace Metriflow.Messages.Producers;
 
 /// <summary>
 /// Implements the RabbitMQ message publishing functionality.
 /// </summary>
-public class RabbitMQProducer : IRabbitMQProducer, IAsyncDisposable
+public class RabbitMqProducer : IMessageBrokerProducer, IAsyncDisposable
 {
-    private readonly IRabbitMQConnection _connection;
-    private readonly ILogger<RabbitMQProducer> _logger;
+    private readonly IMessageBrokerConnection _connection;
+    private readonly ILogger<RabbitMqProducer> _logger;
     private IChannel? _sharedChannel;
 
     /// <summary>
-    /// Initializes a new instance of the RabbitMQProducer class.
+    /// Initializes a new instance of the RabbitMqProducer class.
     /// </summary>
     /// <param name="connection">The RabbitMQ connection instance.</param>
     /// <param name="logger">The logger instance for logging producer events.</param>
-    public RabbitMQProducer(IRabbitMQConnection connection, ILogger<RabbitMQProducer> logger)
+    public RabbitMqProducer(IMessageBrokerConnection connection, ILogger<RabbitMqProducer> logger)
     {
         _connection = connection;
         _logger = logger;
@@ -104,5 +105,15 @@ public class RabbitMQProducer : IRabbitMQProducer, IAsyncDisposable
     {
         if (_sharedChannel != null)
             await _sharedChannel.CloseAsync();
+    }
+
+    public async Task PublishAsync<T>(T message, string exchangeName, string routingKey, bool sharedChannel = false)
+    {
+        if (sharedChannel)
+        {
+             await this.InitializeSharedChannelAsync(exchangeName);
+            await this.PublishWithSharedChannelAsync(message, exchangeName, routingKey);
+        } 
+        else  await this.PublishWithNewChannelAsync(message, exchangeName, routingKey);
     }
 }
