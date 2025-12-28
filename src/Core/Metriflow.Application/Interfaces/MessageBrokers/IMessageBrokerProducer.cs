@@ -1,4 +1,3 @@
-
 namespace Metriflow.Application.Interfaces.Workers;
 
 /// <summary>
