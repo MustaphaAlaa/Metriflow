@@ -17,7 +17,7 @@ public class RedisServices : ICacheService
 
     public async Task TruncateAsync()
     {
-        await _redis.ExecuteAsync("FLUSHDB");
+          await _redis.ExecuteAsync("FLUSHDB");
     }
     public async Task<long> AddFirstAsync(string key, string value)
     {

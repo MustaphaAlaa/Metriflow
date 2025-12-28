@@ -1,5 +1,6 @@
 using IRepository.Generic;
 using Metriflow.Domain.Entities;
+using Metriflow.Domain.enums;
 using Metriflow.DTOs;
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -19,12 +20,12 @@ public class PageRepository : BaseRepository<Page>, IPageRepository
         _logger = logger;
     }
 
-    public async Task<List<PageReportDto>> PageReportAsync()
+    public async Task<List<PageReport>> PageReportAsync()
     {
         var pageReports = await _db
             .RawDatas.Include(r => r.Page)
             .GroupBy(r => new { r.PageId, r.Page.Path })
-            .Select(g => new PageReportDto
+            .Select(g => new PageReport
             {
                 Path = g.Key.Path,
                 TotalUsers = g.Sum(x => x.Users),

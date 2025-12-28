@@ -1,4 +1,5 @@
 using Metriflow.Domain.Entities;
+using Metriflow.Domain.enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 

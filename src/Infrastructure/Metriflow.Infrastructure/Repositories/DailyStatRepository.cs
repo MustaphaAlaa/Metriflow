@@ -16,12 +16,12 @@ public class DailyStatRepository : BaseRepository<DailyStat>, IDailyStatReposito
         _db = context;
     }
 
-    public async Task<List<PageReportDto>> PageReportAsync()
+    public async Task<List<PageReport>> PageReportAsync()
     {
         var pageReports = await _db
             .RawDatas.Include(r => r.Page)
             .GroupBy(r => new { r.PageId, r.Page.Path })
-            .Select(g => new PageReportDto
+            .Select(g => new PageReport
             {
                 Path = g.Key.Path,
                 TotalUsers = g.Sum(x => x.Users),
@@ -34,11 +34,11 @@ public class DailyStatRepository : BaseRepository<DailyStat>, IDailyStatReposito
         return pageReports;
     }
 
-    public Task<OverviewReportDto> StatsOverviewAsync()
+    public Task<OverviewReport> StatsOverviewAsync()
     {
         var overview = _db
             .RawDatas.GroupBy(r => 1)
-            .Select(g => new OverviewReportDto
+            .Select(g => new OverviewReport
             {
                 TotalUsers = g.Sum(x => x.Users),
                 TotalSessions = g.Sum(x => x.Sessions),
