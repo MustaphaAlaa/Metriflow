@@ -1,6 +1,5 @@
 using Metriflow.Application.interfaces;
 using Metriflow.Domain.Entities;
-using Metriflow.DTOs;
 using Microsoft.Extensions.Logging;
 
 namespace Metriflow.Application.Services;

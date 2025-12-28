@@ -1,38 +1,43 @@
+using Metriflow.Application.Interfaces.Caches;
 using Metriflow.Correlation.Worker.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 
 namespace Metriflow.Correlation.Worker;
 
-
 public class MatcherAndProducerWorker : BackgroundService
 {
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        throw new NotImplementedException();
+       // var ca = stoppingToken.CanBeCanceled;
+     await  Task.Delay(2222);
     }
 }
+
 public class CorrelationWorker : BackgroundService
 {
     private readonly ILogger<CorrelationWorker> _logger;
-    private readonly IDatabase _redis;
-    private readonly ICorrelationConsumer _consumer;
+    private readonly IServiceScopeFactory _serviceScopeFactory; 
 
     public CorrelationWorker(
-        ICorrelationConsumer consumer,
-        ILogger<CorrelationWorker> logger,
-        IConnectionMultiplexer redis
+        IServiceScopeFactory serviceScopeFactory,
+        ILogger<CorrelationWorker> logger
     )
     {
-        _consumer = consumer;
+        _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
-        _redis = redis.GetDatabase();
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await _redis.ExecuteAsync("FLUSHDB");
 
-        var consume = _consumer.Consume(stoppingToken);
+        using var scope = _serviceScopeFactory.CreateScope();
+        var scopedProvider = scope.ServiceProvider;
+        var redis = scopedProvider.GetRequiredService<ICacheService>();
+        await redis.TruncateAsync();
+
+        var consumer = scopedProvider.GetRequiredService<ICorrelationConsumer>();
+        var consume = consumer.Consume(stoppingToken);
 
         await Task.WhenAll(consume);
     }

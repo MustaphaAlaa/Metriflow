@@ -13,7 +13,7 @@ namespace Metriflow.Correlation.Worker;
 public class CorrelationConsumer : ICorrelationConsumer
 {
     private readonly ILogger<CorrelationConsumer> _logger;
-    private readonly IRabbitMQConsumer _consumer;
+    private readonly IMessageBrokerConsumer _consumer;
 
     private readonly IConsumerMessageHandler _consumerMessageHandler;
 
@@ -22,7 +22,7 @@ public class CorrelationConsumer : ICorrelationConsumer
     /// </summary>
     public CorrelationConsumer(
         ILogger<CorrelationConsumer> logger,
-        IRabbitMQConsumer consumer,
+        IMessageBrokerConsumer consumer,
         IConsumerMessageHandler consumerMessageHandler
     )
     {
@@ -45,12 +45,17 @@ public class CorrelationConsumer : ICorrelationConsumer
     /// </summary>
     private async Task ConsumeGA(CancellationToken stoppingToken)
     {
+                _logger.LogInformation("START CONSUMING \n -- From Queue: GA-Queue \n -- From Exchange: analytics.raw.ga"); 
+
+        
         await this.ConsumeGeneric(
             queueName: "GA-Queue",
-            routingKey: "analytics.raw.ga",
+            routingKey: "analytics.raw.GA",
             async (List<GARecord> ga) =>
             {
-                // await Task.Delay(1000);
+                _logger.LogInformation($"{ga.Count} of GA records are received.");
+                // await Task.Delay(3000);
+              
                 await _consumerMessageHandler.HandleIncomingRecordAsync("GA", ga);
             },
             stoppingToken
@@ -64,9 +69,10 @@ public class CorrelationConsumer : ICorrelationConsumer
     {
         await ConsumeGeneric(
             queueName: "PSI-Queue",
-            routingKey: "analytics.raw.psi",
+            routingKey: "analytics.raw.PSI",
             async (List<PSIRecord> psi) =>
             {
+                _logger.LogInformation($"{psi.Count} of PSI records are received.");
                 // await Task.Delay(3000);
                 await _consumerMessageHandler.HandleIncomingRecordAsync<PSIRecord>("PSI", psi);
             },

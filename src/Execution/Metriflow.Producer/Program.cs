@@ -21,29 +21,20 @@ internal class Program
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .Build();
+            .Build(); 
 
         var host = Host.CreateDefaultBuilder(args)
             .ConfigureServices(
                 (hostContext, services) =>
                 {
                     var configuration = hostContext.Configuration;
-                    services.Configure<RabbitMqSettings>(configuration.GetSection("RabbitMQ"));
-
+                     services.Configure<RabbitMqSettings>(configuration.GetSection("RabbitMQ"));
                     services.AddHostedService<MessageProducer>();
-                    services.AddSingleton<IMessageBrokerConnection, RabbitMqConnection>();
-                    // services.AddSingleton<IMessageBrokerProducer, RabbitMqProducer>();
-                    //
-                    // services.AddScoped<IStreamData, StreamData>();
-
-
-                    services.AddApplicationLayerDiJsonReader();
+                     services.AddSingleton<IMessageBrokerConnection, RabbitMqConnection>();
+                    services.AddRabbitMqDi( );
                     
+                    services.AddApplicationLayerDiJsonReader();
                     services.AddApplicationLayerDiMessagesServices();
-                    services.AddRabbitMqDi();
-                    // services.AddScoped<IProducer, Producer>();
-
-
                 }
             )
             .Build();

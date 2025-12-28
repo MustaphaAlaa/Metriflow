@@ -1,8 +1,8 @@
 using System.Collections;
-using Metriflow.Domain.Entities.Workers;
-using Metriflow.DTOs;
+using Metriflow.Domain.Entities;
+using Metriflow.Domain.Entities.Workers; 
 
-namespace Metriflow.Correlation.Worker;
+namespace Metriflow.Application.Worker;
 
 public static class AnalyticRecordsCombiner
 {
@@ -11,7 +11,7 @@ public static class AnalyticRecordsCombiner
         return records.ContainsKey(typeof(GARecord)) && records.ContainsKey(typeof(PSIRecord));
     }
 
-    public static IEnumerable<CombinedAnalyticsMessage> Combine(Dictionary<Type, IList> records)
+    public static IList<CombinedAnalyticsMessage> Combine(Dictionary<Type, IList> records)
     {
         var gaRecords = records[typeof(GARecord)].Cast<GARecord>();
         var psiRecords = records[typeof(PSIRecord)].Cast<PSIRecord>();
@@ -31,7 +31,7 @@ public static class AnalyticRecordsCombiner
                     PerformanceScore = psi.PerformanceScore,
                     LCP_ms = psi.LCP_MS,
                 }
-        );
+        ).ToList();
         return result;
     }
 }

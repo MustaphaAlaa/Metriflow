@@ -1,7 +1,7 @@
 using IRepository.Generic;
 using Metriflow.Application.interfaces;
 using Metriflow.Domain.Entities;
-using Metriflow.DTOs;
+using Metriflow.Domain.Entities.Reports;
 using Microsoft.Extensions.Logging;
 
 namespace Metriflow.Application.Services;
@@ -44,7 +44,7 @@ public class PageServices : IPageServices
         return combinedAnalyticsMessage;
     }
 
-    public async Task<List<PageReportDto>> PageReport()
+    public async Task<List<PageReport>> PageReport()
     {
         var report = await _pageRepository.PageReportAsync();
         return report;

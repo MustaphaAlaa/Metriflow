@@ -13,7 +13,6 @@
     <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Interfaces\IMessageBrokers\" />
-    <Folder Include="Services\Workers\" />
+    <Folder Include="Models\DTO\" />
   </ItemGroup>
 </Project>
