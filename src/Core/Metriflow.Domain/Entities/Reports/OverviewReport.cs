@@ -1,6 +1,6 @@
-namespace Metriflow.DTOs;
+namespace Metriflow.Domain.Entities.Reports;
 
-public class OverviewReportDto
+public class OverviewReport
 {
     public long TotalUsers { get; set; }
     public long TotalSessions { get; set; }

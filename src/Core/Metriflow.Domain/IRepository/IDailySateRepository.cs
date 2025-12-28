@@ -1,9 +1,9 @@
 using Metriflow.Domain.Entities;
-using Metriflow.DTOs;
+using Metriflow.Domain.Entities.Reports;
 
 namespace IRepository.Generic;
 
 public interface IDailyStatRepository : IBaseRepository<DailyStat>
 {
-    Task<OverviewReportDto> StatsOverviewAsync();
+    Task<OverviewReport> StatsOverviewAsync();
 }

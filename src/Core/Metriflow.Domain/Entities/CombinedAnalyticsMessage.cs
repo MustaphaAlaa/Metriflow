@@ -1,4 +1,4 @@
-namespace Metriflow.DTOs;
+namespace Metriflow.Domain.Entities;
 
 public class CombinedAnalyticsMessage
 {
