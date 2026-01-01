@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Metriflow.Application.Interfaces.Caches;
 using Metriflow.Application.Models.Enums;
 using Metriflow.Correlation.Worker.Interfaces;
+using Metriflow.Domain.Entities.Enums;
 using Metriflow.Domain.Interfaces;
 
 namespace Metriflow.Correlation.Worker;
@@ -30,7 +31,7 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
     }
 
     /// <inheritdoc />
-    public async Task HandleIncomingRecordAsync<T>(string type, IList<T> record)
+    public async Task HandleIncomingRecordAsync<T>(enTypesKey type, IList<T> record)
         where T : IAnalyticRecord
     {
         if (record is null || record.Count == 0)
@@ -38,10 +39,10 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
             _logger.LogDebug("HandleIncomingRecordAsync called with no items; nothing to handle.");
             return;
         }
+
         _logger.LogInformation(
-            "Start Handling incoming Request, {type} ==> {record}",
-            type,
-            record
+            "Start Handling incoming Request, for type: {type}",
+            type
         );
 
         var date = await SaveNewRecordAsync(type, record);
@@ -56,7 +57,7 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
         return record.Date - ticks;
     }
 
-    private async Task<DateTime> SaveNewRecordAsync<T>(string type, IList<T> record)
+    private async Task<DateTime> SaveNewRecordAsync<T>(enTypesKey type, IList<T> record)
         where T : IAnalyticRecord
     {
         //!!! SOLID Doesn't Applied Correctly Here !!!
@@ -66,25 +67,28 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
         DateTime date = default;
         foreach (var rec in record)
         {
-            var listName = $"{type}|{GetTheDayOfTicks(rec)}|{rec.Page}";
-         // Alternative of Json could be used to lighter in serialization and deserialization.
-         // But I'll keep Json because I don't have time.
+            //the completed lists will take the shared key instead of the full key to be easier and faster in th combination
+            var sharedListName = $"{GetTheDayOfTicks(rec)}|{rec.Page}";
+            var listName = $"{type}|{sharedListName}";
+
+            // Alternative of Json could be used to lighter in serialization and deserialization.
+            // But I'll keep Json because I don't have time.
+
             var recordJson = JsonSerializer.Serialize(rec);
             var listLength = await _redis.AddLastAsync(listName, recordJson);
-            if (listLength == 24 && type == "GA")
+        
+            if (listLength != 24)
+                continue;
+
+            var completedList = type switch
             {
-                await _redis.AddLastAsync(
-                    enCompletedListsNames.CompletedListPSI.ToString(),
-                    listName
-                );
-            }
-            else if (listLength == 24 && type == "PSI")
-            {
-                await _redis.AddLastAsync(
-                    enCompletedListsNames.CompletedListGA.ToString(),
-                    listName
-                );
-            }
+                enTypesKey.GA  => enCompletedListsNames.CompletedListGA,
+                enTypesKey.PSI => enCompletedListsNames.CompletedListPSI,
+                _ => throw new ArgumentOutOfRangeException(nameof(type))
+            };
+
+            await _redis.AddLastAsync(completedList.ToString(), sharedListName);
+
             _logger.LogInformation(
                 "Saved record for type '{type}' with key '{fieldKey}'.",
                 type,

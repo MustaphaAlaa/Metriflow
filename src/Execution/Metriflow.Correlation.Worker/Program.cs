@@ -1,5 +1,5 @@
 using Metriflow.Application.Entities;
-using Metriflow.Application.interfaces;
+using Metriflow.Application.Interfaces;
 using Metriflow.Correlation.Worker;
 using Metriflow.Correlation.Worker.Interfaces;
 using Metriflow.Messages.Connections;

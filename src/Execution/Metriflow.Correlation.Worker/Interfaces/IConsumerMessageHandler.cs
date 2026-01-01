@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Metriflow.Domain;
+using Metriflow.Domain.Entities.Enums;
 using Metriflow.Domain.Interfaces;
 
 namespace Metriflow.Correlation.Worker.Interfaces;
@@ -16,6 +17,6 @@ public interface IConsumerMessageHandler
     /// <typeparam name="T">The record type, must implement <see cref="IAnalyticRecord"/>.</typeparam>
     /// <param name="type">A short type identifier (for example, "ga" or "psi").</param>
     /// <param name="record">The record instance to be handled.</param>
-    Task HandleIncomingRecordAsync<T>(string type, IList<T> record)
+    Task HandleIncomingRecordAsync<T>(enTypesKey type, IList<T> record)
         where T : IAnalyticRecord;
 }

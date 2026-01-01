@@ -1,7 +1,8 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Metriflow.Application.interfaces;
+using Metriflow.Application.Interfaces;
 using Metriflow.Correlation.Worker.Interfaces;
+using Metriflow.Domain.Entities.Enums;
 using Metriflow.Domain.Entities.Workers;
 using Microsoft.Extensions.Logging;
 
@@ -49,14 +50,17 @@ public class CorrelationConsumer : ICorrelationConsumer
 
         
         await this.ConsumeGeneric(
-            queueName: "GA-Queue",
-            routingKey: "analytics.raw.GA",
+            queueName: $"{enTypesKey.GA}-Queue",
+            routingKey: $"analytics.raw.{enTypesKey.GA}",
             async (List<GARecord> ga) =>
             {
-                _logger.LogInformation($"{ga.Count} of GA records are received.");
+                _logger.LogInformation($"{ga.Count} of {enTypesKey.GA} records are received.");
+                // _logger.LogDebug($"{ga.Count} of {enTypesKey.GA} records are received.");
+                // Console.WriteLine  
+                // ($"{ga.Count} of {enTypesKey.GA} records are received.");
                 // await Task.Delay(3000);
               
-                await _consumerMessageHandler.HandleIncomingRecordAsync("GA", ga);
+                await _consumerMessageHandler.HandleIncomingRecordAsync( enTypesKey.GA , ga);
             },
             stoppingToken
         );
@@ -68,13 +72,13 @@ public class CorrelationConsumer : ICorrelationConsumer
     private async Task ConsumePSI(CancellationToken stoppingToken)
     {
         await ConsumeGeneric(
-            queueName: "PSI-Queue",
-            routingKey: "analytics.raw.PSI",
+            queueName: $"{enTypesKey.PSI}-Queue",
+            routingKey: $"analytics.raw.{enTypesKey.PSI}",
             async (List<PSIRecord> psi) =>
             {
-                _logger.LogInformation($"{psi.Count} of PSI records are received.");
+                _logger.LogInformation($"{psi.Count} of {enTypesKey.PSI} records are received.");
                 // await Task.Delay(3000);
-                await _consumerMessageHandler.HandleIncomingRecordAsync<PSIRecord>("PSI", psi);
+                await _consumerMessageHandler.HandleIncomingRecordAsync<PSIRecord>(enTypesKey.PSI, psi);
             },
             stoppingToken
         );
@@ -87,10 +91,10 @@ public class CorrelationConsumer : ICorrelationConsumer
         CancellationToken stoppingToken
     )
     {
-        var analyticPSI = await _consumer.CreateNewChannelAsync();
+        var analyticChannel = await _consumer.CreateNewChannelAsync();
 
         var psiTask = _consumer.ConsumeFromChannelAsync(
-            analyticPSI,
+            analyticChannel,
             queueName,
             exchangeName: "analytics.raw",
             routingKey,

@@ -5,14 +5,6 @@ using StackExchange.Redis;
 
 namespace Metriflow.Correlation.Worker;
 
-public class MatcherAndProducerWorker : BackgroundService
-{
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-       // var ca = stoppingToken.CanBeCanceled;
-     await  Task.Delay(2222);
-    }
-}
 
 public class CorrelationWorker : BackgroundService
 {
