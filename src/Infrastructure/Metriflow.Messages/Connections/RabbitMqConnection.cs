@@ -1,5 +1,5 @@
 using Metriflow.Application.Entities;
-using Metriflow.Application.interfaces;
+using Metriflow.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;

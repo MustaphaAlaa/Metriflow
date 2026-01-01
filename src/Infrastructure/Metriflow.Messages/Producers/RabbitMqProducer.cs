@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using Metriflow.Application.interfaces;
+using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Workers;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
