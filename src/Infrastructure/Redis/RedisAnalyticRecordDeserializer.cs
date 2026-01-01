@@ -28,20 +28,20 @@ public   class RedisAnalyticRecordDeserializer : IAnalyticRecordsDeserializer
             t => (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(t))!
         );
 
-        foreach (var (key, values) in redisData)
+        foreach (var (listKey, recordsBytes) in redisData)
         {
-            var prefix = key.Split('|')[0];
+            var prefix = listKey.Split('|')[0];
 
             if (!_analyticReadTypesDictionary.TryGetValue(prefix, out var recordType))
                 continue;
 
             var list = result[recordType];
 
-            foreach (var value in values)
+            foreach (var value in recordsBytes)
             {
                 if (value?.Length ==0)
                 {
-                    _logger.LogWarning("Null Redis value for key {Key}", key);
+                    _logger.LogWarning("Null Redis value for key {Key}", listKey);
                     continue;
                 }
 
@@ -54,7 +54,7 @@ public   class RedisAnalyticRecordDeserializer : IAnalyticRecordsDeserializer
                 }
                 catch (JsonException ex)
                 {
-                    _logger.LogError(ex, "Failed to deserialize record for key {Key}", key);
+                    _logger.LogError(ex, "Failed to deserialize record for key {Key}", listKey);
                 }
             }
         }

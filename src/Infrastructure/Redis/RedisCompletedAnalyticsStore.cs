@@ -18,7 +18,7 @@ public class RedisCompletedAnalyticsStore  : IAnalyticsCacheServices
 
     public async Task<
         Dictionary<enCompletedListsNames, IEnumerable<string>>
-    > GetCompletedListsKeys()
+    > GetCompletedListsKeysAsync()
     {
         var listKeysBatch = _redis.CreateBatch();
 
@@ -31,14 +31,18 @@ public class RedisCompletedAnalyticsStore  : IAnalyticsCacheServices
 
         listKeysBatch.Execute();
 
-        await Task.WhenAll(pending.Values);
-
+        await Task.WhenAll(pending.Values); 
         var result = new Dictionary<enCompletedListsNames, IEnumerable<string>>();
   
         foreach (var (key, value) in pending)
         {
             var res = await value;
-              result[key] = res.Select(rv => RedisKeyParser.ExtractId(rv)); 
+              result[key] = res.Select(rv =>
+              {
+                  var st =
+                      rv.ToString();
+                  return st;
+              }); 
         }
             
         return result;
@@ -73,8 +77,14 @@ public class RedisCompletedAnalyticsStore  : IAnalyticsCacheServices
 
             foreach (var key in listsKeys)
             {
-                transaction.AddCondition(Condition.ListLengthEqual(key, expectedListLength));
-                var popTasks = new Task<RedisValue>[expectedListLength];
+                // transaction.AddCondition(Condition.ListLengthEqual(key, expectedListLength));
+            var  listLenght =   transaction.ListLengthAsync(key);
+             
+            await transaction.ExecuteAsync();
+            
+            if(listLenght.Result != expectedListLength)
+                continue;
+            var popTasks = new Task<RedisValue>[expectedListLength];
 
                 for (int i = 0; i < expectedListLength; i++)
                 {
@@ -100,7 +110,8 @@ public class RedisCompletedAnalyticsStore  : IAnalyticsCacheServices
             foreach (var (key, task) in pending)
             {
                 var lst = await Task.WhenAll(task);
-                result[key] = lst.Cast<byte[]>(); //.Select(rv=> RedisKeyParser.ExtractId(rv.ToString()));
+                result[key] = lst.Select(r=> (byte[])r);//Cast<byte>(); //.Select(rv=> RedisKeyParser.ExtractId(rv.ToString()));
+                int x = 3;
             }
 
             return result;
@@ -128,9 +139,12 @@ public class RedisCompletedAnalyticsStore  : IAnalyticsCacheServices
         {
             foreach (var key in listsKeys)
             {
+                    var prefixIndex = key.IndexOf("|");
+                    var sharedKey = key[(prefixIndex+1)..];
                 foreach (var e in Enum.GetValues<enCompletedListsNames>())
                 {
-                    transaction.ListRemoveAsync((e).ToString(), key);
+                    var CompletedListName = e.ToString();
+                    transaction.ListRemoveAsync(CompletedListName, sharedKey,0);
                 }
             }
 

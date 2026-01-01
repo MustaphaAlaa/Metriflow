@@ -17,36 +17,39 @@ public class RedisServices : ICacheService
 
     public async Task TruncateAsync()
     {
-          await _redis.ExecuteAsync("FLUSHDB");
+        await _redis.ExecuteAsync("FLUSHDB");
     }
+
+
+
     public async Task<long> AddFirstAsync(string key, string value)
     {
         try
         {
-          var length =   await _redis.ListLeftPushAsync(key, value);
-          return length;
+            var length = await _redis.ListLeftPushAsync(key, value);
+            return length;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
             throw;
         }
     }
-    
+
     public async Task<long> AddLastAsync(string key, string value)
     {
         try
         {
-             
-          var length =   await _redis.ListRightPushAsync(key, value);
-          return length;
+
+            var length = await _redis.ListRightPushAsync(key, value);
+            return length;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
             throw;
         }
     }
-    
-    
+
+
 }
