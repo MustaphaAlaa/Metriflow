@@ -1,0 +1,25 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0
+
+WORKDIR /app
+
+# Copy csproj files first (for restore caching)
+COPY src/Core/Metriflow.Application/Metriflow.Application.csproj src/Core/Metriflow.Application/
+COPY src/Core/Metriflow.Domain/Metriflow.Domain.csproj src/Core/Metriflow.Domain/
+COPY src/Infrastructure/Metriflow.Infrastructure/Metriflow.Infrastructure.csproj src/Infrastructure/Metriflow.Infrastructure/
+COPY src/Infrastructure/Metriflow.Messages/Metriflow.Messages.csproj src/Infrastructure/Metriflow.Messages/
+COPY src/Execution/Metriflow.AggregationWorker/Metriflow.AggregationWorker.csproj src/Execution/Metriflow.AggregationWorker/
+
+RUN dotnet restore src/Execution/Metriflow.AggregationWorker/Metriflow.AggregationWorker.csproj
+
+# Copy the rest of the source
+COPY src ./src
+
+WORKDIR /app/src/Execution/Metriflow.AggregationWorker
+
+# Dev defaults
+ENV ASPNETCORE_ENVIRONMENT=Development
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
+
+# Run directly from source
+CMD ["dotnet", "run"]
+

@@ -41,6 +41,39 @@ internal class Program
 
         await host.RunAsync();
         
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
+        System.Console.WriteLine("I'm done");
     }
 }
 

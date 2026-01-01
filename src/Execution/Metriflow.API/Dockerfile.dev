@@ -1,0 +1,29 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0
+
+WORKDIR /app
+
+# Copy csproj files first (for restore caching)
+COPY src/Core/Metriflow.Application/Metriflow.Application.csproj src/Core/Metriflow.Application/
+COPY src/Core/Metriflow.Domain/Metriflow.Domain.csproj src/Core/Metriflow.Domain/
+COPY src/Infrastructure/Metriflow.Infrastructure/Metriflow.Infrastructure.csproj src/Infrastructure/Metriflow.Infrastructure/
+COPY src/Execution/Metriflow.API/Metriflow.API.csproj src/Execution/Metriflow.API/
+
+RUN dotnet restore src/Execution/Metriflow.API/Metriflow.API.csproj
+
+# Copy the rest of the source
+COPY src ./src
+
+WORKDIR /app/src/Execution/Metriflow.API
+
+# Expose ports
+EXPOSE 8080
+EXPOSE 8081
+
+# Dev defaults
+ENV ASPNETCORE_ENVIRONMENT=Development
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
+ENV ASPNETCORE_URLS=http://+:8080
+
+# Run directly from source
+CMD ["dotnet", "run"]
+

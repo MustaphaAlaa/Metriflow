@@ -1,0 +1,187 @@
+services:
+  # ----------------------------------------
+  # INFRASTRUCTURE SERVICES
+  # ----------------------------------------
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: metriflow-sqlserver-dev
+    restart: always
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: ${DB_PASSWORD:-localpassword123!}
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data_dev:/var/opt/mssql
+    networks:
+      - metriflow-net-dev
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: metriflow-rabbitmq-dev
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: mypassword
+    ports:
+      - "5672:5672" # AMQP
+      - "15672:15672" # Management UI
+    networks:
+      - metriflow-net-dev
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 5s
+      timeout: 15s
+      retries: 5
+      start_period: 20s
+
+  redis:
+    image: redis:7-alpine
+    container_name: metriflow-redis-dev
+    restart: always
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    networks:
+      - metriflow-net-dev
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ----------------------------------------
+  # APPLICATION SERVICES
+  # ----------------------------------------
+
+  # metriflow-api:
+  #   container_name: metriflow-api-dev
+  #   build:
+  #     context: .
+  #     dockerfile: src/Execution/Metriflow.API/Dockerfile.dev
+  #   restart: always
+  #   depends_on:
+  #     - db
+  #     - redis
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     - DOTNET_USE_POLLING_FILE_WATCHER=true
+  #     - ConnectionStrings__Sqlserver=Server=db,1433;Database=metriflow_db;User Id=sa;Password=${DB_PASSWORD:-localpassword123!};TrustServerCertificate=True;
+  #     - ConnectionStrings__Redis=redis:6379
+  #     - ASPNETCORE_URLS=http://+:8080
+  #   ports:
+  #     - "8080:8080"
+  #     - "8081:8081"
+  #   volumes:
+  #     # Mount source code for hot reload
+  #     - ./src:/app/src:ro
+  #   networks:
+  #     - metriflow-net-dev
+
+  metriflow-correlation-worker:
+    container_name: metriflow-correlation-worker-dev
+    build:
+      context: .
+      dockerfile: src/Execution/Metriflow.Correlation.Worker/Dockerfile.dev
+    restart: always
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_USE_POLLING_FILE_WATCHER=true
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=user
+      - RabbitMQ__Password=mypassword
+      - ConnectionStrings__Redis=redis:6379
+    volumes:
+      # Mount source code for hot reload
+      - ./src:/app/src
+    networks:
+      - metriflow-net-dev
+
+  # metriflow-aggregation-worker:
+  #   container_name: metriflow-aggregation-worker-dev
+  #   build:
+  #     context: .
+  #     dockerfile: src/Execution/Metriflow.AggregationWorker/Dockerfile.dev
+  #   restart: always
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #     db:
+  #       condition: service_started
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     - DOTNET_USE_POLLING_FILE_WATCHER=true
+  #     - RabbitMQ__HostName=rabbitmq
+  #     - RabbitMQ__Port=5672
+  #     - RabbitMQ__UserName=user
+  #     - RabbitMQ__Password=mypassword
+  #     - ConnectionStrings__Sqlserver=Server=db,1433;Database=metriflow_db;User Id=sa;Password=${DB_PASSWORD:-localpassword123!};TrustServerCertificate=True;
+  #   volumes:
+  #     # Mount source code for hot reload
+  #     - ./src:/app/src:ro
+  #   networks:
+  #     - metriflow-net-dev
+
+  metriflow-matcher-worker:
+    container_name: metriflow-matcher-worker-dev
+    build:
+      context: .
+      dockerfile: src/Execution/Metriflow.Matcher.Worker/Dockerfile.dev
+    restart: always
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_USE_POLLING_FILE_WATCHER=true
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=user
+      - RabbitMQ__Password=mypassword
+      - ConnectionStrings__Redis=redis:6379
+    volumes:
+      # Mount source code for hot reload
+      - ./src:/app/src
+    networks:
+      - metriflow-net-dev
+
+  metriflow-producer:
+    container_name: metriflow-producer-dev
+    build:
+      context: .
+      dockerfile: src/Execution/Metriflow.Producer/Dockerfile.dev
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_USE_POLLING_FILE_WATCHER=true
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=user
+      - RabbitMQ__Password=mypassword
+    volumes:
+      # Mount source code for hot reload
+      - ./src:/app/src
+    networks:
+      - metriflow-net-dev
+
+# ----------------------------------------
+# VOLUMES & NETWORKS
+# ----------------------------------------
+volumes:
+  sqlserver_data_dev:
+
+networks:
+  metriflow-net-dev:
+    driver: bridge
+
