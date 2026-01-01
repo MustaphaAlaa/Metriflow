@@ -8,6 +8,6 @@ public interface IAnalyticsCacheServices
         IEnumerable<string> listsKeys,
         int expectedListLength = 24
     );
-    Task<Dictionary<enCompletedListsNames, IEnumerable<string>>> GetCompletedListsKeys();
+    Task<Dictionary<enCompletedListsNames, IEnumerable<string>>> GetCompletedListsKeysAsync();
     Task<bool> RemoveKeysFromCompletedLists(IEnumerable<string> listsKeys);
 }

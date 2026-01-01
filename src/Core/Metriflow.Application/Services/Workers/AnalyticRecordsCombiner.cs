@@ -1,17 +1,20 @@
 using System.Collections;
+using Metriflow.Application.Interfaces;
 using Metriflow.Domain.Entities;
 using Metriflow.Domain.Entities.Workers; 
 
 namespace Metriflow.Application.Worker;
 
-public static class AnalyticRecordsCombiner
+
+
+public class AnalyticRecordsCombiner : IAnalyticRecordsCombiner
 {
-    public static bool CanCombine(Dictionary<Type, IList> records)
+    public bool CanCombine(Dictionary<Type, IList> records)
     {
         return records.ContainsKey(typeof(GARecord)) && records.ContainsKey(typeof(PSIRecord));
     }
 
-    public static IList<CombinedAnalyticsMessage> Combine(Dictionary<Type, IList> records)
+    public IList<CombinedAnalyticsMessage> Combine(Dictionary<Type, IList> records)
     {
         var gaRecords = records[typeof(GARecord)].Cast<GARecord>();
         var psiRecords = records[typeof(PSIRecord)].Cast<PSIRecord>();

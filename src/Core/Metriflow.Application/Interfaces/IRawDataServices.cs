@@ -1,6 +1,6 @@
 using Metriflow.Domain.Entities;
 
-namespace Metriflow.Application.interfaces;
+namespace Metriflow.Application.Interfaces;
 
 public interface IRawDataServices
 {

@@ -1,4 +1,4 @@
-using Metriflow.Application.interfaces;
+using Metriflow.Application.Interfaces;
 using Metriflow.Domain.Entities;
 using Microsoft.Extensions.Logging;
 

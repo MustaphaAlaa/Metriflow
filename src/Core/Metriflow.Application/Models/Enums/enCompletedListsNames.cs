@@ -1,8 +1,7 @@
 namespace Metriflow.Application.Models.Enums;
 
-public enum enCompletedListsNames: byte
+public enum enCompletedListsNames : byte
 {
     CompletedListGA,
-    CompletedListPSI,
-    Count
+    CompletedListPSI
 }

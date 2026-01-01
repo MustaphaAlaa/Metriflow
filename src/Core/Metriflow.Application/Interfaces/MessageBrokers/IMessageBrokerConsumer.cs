@@ -1,6 +1,6 @@
 using RabbitMQ.Client;
 
-namespace Metriflow.Application.interfaces;
+namespace Metriflow.Application.Interfaces;
 
 /// <summary>
 /// Abstraction for consuming messages from RabbitMQ.

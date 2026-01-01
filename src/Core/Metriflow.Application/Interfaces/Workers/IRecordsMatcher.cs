@@ -6,7 +6,6 @@ namespace Metriflow.Application.Interfaces;
 public interface IRecordsMatcher
 {
     Task MatchRecords(
-        Dictionary<enCompletedListsNames, IEnumerable<string>> listsKeys,
-        string[] listsPrefixes
+        Dictionary<enCompletedListsNames, IEnumerable<string>> listsKeys
     );
 }
