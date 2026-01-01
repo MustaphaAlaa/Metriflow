@@ -23,9 +23,6 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="data\" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="data\**\*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

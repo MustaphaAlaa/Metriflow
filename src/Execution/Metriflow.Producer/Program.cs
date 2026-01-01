@@ -1,7 +1,7 @@
 ﻿using Metriflow.Application;
 using Metriflow.Application.Entities;
 using Metriflow.Application.Extensions;
-using Metriflow.Application.interfaces;
+using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Workers;
 using Metriflow.Application.Services;
 using Metriflow.Messages.Connections;

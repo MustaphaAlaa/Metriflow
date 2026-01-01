@@ -1,5 +1,5 @@
 using System.Threading.Channels;
-using Metriflow.Application.interfaces;
+using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Workers;
 using Metriflow.Domain.Entities.Workers;
 using Microsoft.Extensions.Hosting;
@@ -24,37 +24,40 @@ public class MessageProducer : IHostedService
         IProducer producer,
         IHostApplicationLifetime appLifetime,
         ILogger<MessageProducer> logger,
-            IHostEnvironment environment
+        IHostEnvironment environment
     )
     {
         _logger = logger;
         _producer = producer;
         _appLifetime = appLifetime;
         _streamData = streamData;
-        _environment =    environment;
+        _environment = environment;
     }
 
-    private string JsonFilePath(string filename) =>  Path.Combine(_environment.ContentRootPath, "data",filename); 
+    private string JsonFilePath(string filename) => Path.Combine(_environment.ContentRootPath, "data", filename);
+
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         try
         {
-
             _logger.LogInformation("Start sending data......");
-            var gaMockJson =  this.JsonFilePath( "GA-mock.json") ;
-            var psiMockJson = this.JsonFilePath( "PSI-mock.json") ;
-            
+            var gaMockJson = this.JsonFilePath("GA-mock.json");
+            var psiMockJson = this.JsonFilePath("PSI-mock.json");
+
             var GA = _streamData.RunPipelineAsync<GARecord>(
-               gaMockJson,
+                gaMockJson,
                 2300,
-                (gaRecords) => _producer.PublishAnalyticRecords(gaRecords,"analytics.raw.GA","analytics.raw")
+                (gaRecords) =>
+                    _producer.PublishAnalyticRecords<GARecord>(gaRecords, "analytics.raw.GA", "analytics.raw")
             );
 
             var PSI = _streamData.RunPipelineAsync<PSIRecord>(
                 psiMockJson,
                 2300,
-                (psiRecords) => _producer.PublishAnalyticRecords(psiRecords, "analytics.raw.PSI","analytics.raw")
+                (psiRecords) =>
+                    _producer.PublishAnalyticRecords<PSIRecord>(psiRecords, "analytics.raw.PSI", "analytics.raw")
             );
+                
             await Task.WhenAll(GA, PSI);
 
             _logger.LogInformation("All files is processed.");
