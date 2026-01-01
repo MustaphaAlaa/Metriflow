@@ -1,9 +1,10 @@
 using Metriflow.Domain.CustomAttributes;
+using Metriflow.Domain.Entities.Enums;
 using Metriflow.Domain.Interfaces;
 
 namespace Metriflow.Domain.Entities.Workers;
 
-[AnalyticRecord("PSI")]
+[AnalyticRecord(enTypesKey.PSI)]
 public class PSIRecord : IAnalyticRecord
 {
     public long Date { get; set; }
