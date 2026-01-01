@@ -14,7 +14,7 @@ builder.Services.AddDbContext<MetriflowDbContext>(
     ServiceLifetime.Scoped
 );
 
-builder.Services.AddApplicationLayer();
+builder.Services.AddApplicationLayerDiServices();
 builder.Services.AddInfrastructureLayer();
 
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));

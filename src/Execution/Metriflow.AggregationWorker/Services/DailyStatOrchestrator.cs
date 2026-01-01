@@ -1,6 +1,6 @@
 using IRepository.Generic;
 using Metriflow.AggregationWorker.Interfaces;
-using Metriflow.Application.interfaces;
+using Metriflow.Application.Interfaces;
 using Metriflow.DTOs;
 
 namespace Metriflow.AggregationWorker.Services;

@@ -12,5 +12,6 @@
     <ProjectReference Include="..\..\Infrastructure\Metriflow.Infrastructure\Metriflow.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Core\Metriflow.Application\Metriflow.Application.csproj" />
     <ProjectReference Include="..\..\Core\Metriflow.Domain\Metriflow.Domain.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Metriflow.Messages\Metriflow.Messages.csproj" />
   </ItemGroup>
 </Project>

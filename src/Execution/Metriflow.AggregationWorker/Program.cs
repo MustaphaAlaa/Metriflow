@@ -7,10 +7,11 @@ using Metriflow.AggregationWorker.Services;
 using Metriflow.Application;
 using Metriflow.Application.Entities;
 using Metriflow.Application.Extensions;
-using Metriflow.Application.interfaces;
+using Metriflow.Application.Interfaces;
 using Metriflow.Application.Services;
 using Metriflow.Infrastructure;
 using Metriflow.Infrastructure.EntitiesConfigurations;
+using Metriflow.Messages.Connections;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Generic;
 
@@ -18,12 +19,14 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<Worker>();
 
 builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMQ"));
-builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
+builder.Services.AddSingleton<IMessageBrokerConnection, RabbitMqConnection>();
 
-builder.Services.AddSingleton<IRabbitMQConsumer, RabbitMQConsumer>();
-builder.Services.AddSingleton<IRabbitMQProducer, RabbitMQProducer>();
+// builder.Services.AddSingleton<IMessageBrokerConsumer, MessageBrokerConsumer>();
+// builder.Services.AddSingleton<IMessageBrokerProducer, MessageBrokerProducer>();
+    
 
-builder.Services.AddApplicationLayer();
+
+builder.Services.AddApplicationLayerDiServices();
 builder.Services.AddInfrastructureLayer();
 
 builder.Services.AddScoped<IAggregationWorkerConsumer, AggregationWorkerConsumer>();

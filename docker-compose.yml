@@ -54,63 +54,63 @@ services:
   # ----------------------------------------
   # APPLICATION SERVICES
   # ----------------------------------------
-
-  metriflow-api:
-    container_name: metriflow-api
-    build:
-      context: .
-      dockerfile: src/Execution/Metriflow.API/Dockerfile
-    restart: always
-    depends_on:
-      - db
-      - redis
-    environment:
-      ConnectionStrings__Sqlserver: Server=db,1433;Database=metriflow_db;User Id=sa;Password=${DB_PASSWORD:-localpassword123!};TrustServerCertificate=True;
-      ConnectionStrings__Redis: redis:6379
-    ports:
-      - "8080:8080"
-    networks:
-      - metriflow-net
-
-  metriflow-correlation-worker:
-    container_name: metriflow-correlation-worker
-    build:
-      context: .
-      dockerfile: src/Execution/Metriflow.Correlation.Worker/Dockerfile
-    restart: always
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    environment:
-      - RabbitMQ__HostName=rabbitmq
-      - RabbitMQ__Port=5672
-      - RabbitMQ__UserName=user
-      - RabbitMQ__Password=mypassword
-      - ConnectionStrings__Redis=redis:6379
-    networks:
-      - metriflow-net
-
-  metriflow-aggregation-worker:
-    container_name: metriflow-AggregationWorker
-    build:
-      context: .
-      dockerfile: src/Execution/Metriflow.AggregationWorker/Dockerfile
-    restart: always
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      db:
-        condition: service_started
-    environment:
-      - RabbitMQ__HostName=rabbitmq
-      - RabbitMQ__Port=5672
-      - RabbitMQ__UserName=user
-      - RabbitMQ__Password=mypassword
-      - ConnectionStrings__Sqlserver=Server=db,1433;Database=metriflow_db;User Id=sa;Password=${DB_PASSWORD:-localpassword123!};TrustServerCertificate=True;
-    networks:
-      - metriflow-net
+#
+#  metriflow-api:
+#    container_name: metriflow-api
+#    build:
+#      context: .
+#      dockerfile: src/Execution/Metriflow.API/Dockerfile
+#    restart: always
+#    depends_on:
+#      - db
+#      - redis
+#    environment:
+#      ConnectionStrings__Sqlserver: Server=db,1433;Database=metriflow_db;User Id=sa;Password=${DB_PASSWORD:-localpassword123!};TrustServerCertificate=True;
+#      ConnectionStrings__Redis: redis:6379
+#    ports:
+#      - "8080:8080"
+#    networks:
+#      - metriflow-net
+#
+#  metriflow-correlation-worker:
+#    container_name: metriflow-correlation-worker
+#    build:
+#      context: .
+#      dockerfile: src/Execution/Metriflow.Correlation.Worker/Dockerfile
+#    restart: always
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
+#      redis:
+#        condition: service_healthy
+#    environment:
+#      - RabbitMQ__HostName=rabbitmq
+#      - RabbitMQ__Port=5672
+#      - RabbitMQ__UserName=user
+#      - RabbitMQ__Password=mypassword
+#      - ConnectionStrings__Redis=redis:6379
+#    networks:
+#      - metriflow-net
+#
+#  metriflow-aggregation-worker:
+#    container_name: metriflow-AggregationWorker
+#    build:
+#      context: .
+#      dockerfile: src/Execution/Metriflow.AggregationWorker/Dockerfile
+#    restart: always
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
+#      db:
+#        condition: service_started
+#    environment:
+#      - RabbitMQ__HostName=rabbitmq
+#      - RabbitMQ__Port=5672
+#      - RabbitMQ__UserName=user
+#      - RabbitMQ__Password=mypassword
+#      - ConnectionStrings__Sqlserver=Server=db,1433;Database=metriflow_db;User Id=sa;Password=${DB_PASSWORD:-localpassword123!};TrustServerCertificate=True;
+#    networks:
+#      - metriflow-net
 
   metriflow-producers:
     container_name: metriflow-producers

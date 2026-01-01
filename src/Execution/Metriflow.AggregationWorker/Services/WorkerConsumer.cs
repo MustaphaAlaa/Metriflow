@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using IRepository.Generic;
 using Metriflow.AggregationWorker.Interfaces;
-using Metriflow.Application.interfaces;
+using Metriflow.Application.Interfaces;
 using Metriflow.Domain;
 using Metriflow.Domain.Entities;
 using Metriflow.DTOs;
@@ -19,7 +19,7 @@ public interface IAggregationWorkerConsumer
 public class AggregationWorkerConsumer : IAggregationWorkerConsumer
 {
     private readonly ILogger<AggregationWorkerConsumer> _logger;
-    private readonly IRabbitMQConsumer _consumer;
+    private readonly IMessageBrokerConsumer _consumer;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IBaseRepository<DailyStat> _dailyStateRepository;
     private readonly IBaseRepository<Page> _pageRepository;
@@ -30,7 +30,7 @@ public class AggregationWorkerConsumer : IAggregationWorkerConsumer
         IBaseRepository<Page> pageRepository,
         IBaseRepository<RawData> rawDataRepo,
         ILogger<AggregationWorkerConsumer> logger,
-        IRabbitMQConsumer consumer,
+        IMessageBrokerConsumer consumer,
         IAggregationConsumer aggregationConsumer,
         IUnitOfWork unitOfWork
     )
