@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Metriflow.Application.Services.Workers;
 
 [ServiceRegistration(ServiceLifetime.Scoped, typeof(IListsKeysServices))]
-
 public class ListsKeysServices : IListsKeysServices
 {
     public HashSet<string> GetCompletedListsSharedKeys(
