@@ -46,14 +46,14 @@ public class MessageProducer : IHostedService
 
             var GA = _streamData.RunPipelineAsync<GARecord>(
                 gaMockJson,
-                2300,
+                4000,
                 (gaRecords) =>
                     _producer.PublishAnalyticRecords<GARecord>(gaRecords, "analytics.raw.GA", "analytics.raw")
             );
 
             var PSI = _streamData.RunPipelineAsync<PSIRecord>(
                 psiMockJson,
-                2300,
+                4000,
                 (psiRecords) =>
                     _producer.PublishAnalyticRecords<PSIRecord>(psiRecords, "analytics.raw.PSI", "analytics.raw")
             );

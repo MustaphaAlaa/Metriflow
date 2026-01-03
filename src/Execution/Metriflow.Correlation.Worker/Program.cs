@@ -1,4 +1,5 @@
 using Metriflow.Application.Entities;
+using Metriflow.Application.Extensions;
 using Metriflow.Application.Interfaces;
 using Metriflow.Correlation.Worker;
 using Metriflow.Correlation.Worker.Interfaces;
@@ -16,7 +17,9 @@ builder.Services.AddScoped<ICorrelationConsumer, CorrelationConsumer>();
 builder.Services.AddSingleton<IMessageBrokerConnection, RabbitMqConnection>();
 builder.Services.AddRedisDI(builder.Configuration);
 builder.Services.AddRabbitMqDi();
- 
+
+builder.Services.AddRegisterReflection();
+
 var host = builder.Build();
 
 host.Run();

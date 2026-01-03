@@ -33,8 +33,8 @@ internal class Program
                      services.AddSingleton<IMessageBrokerConnection, RabbitMqConnection>();
                     services.AddRabbitMqDi( );
                     
-                    services.AddApplicationLayerDiJsonReader();
-                    services.AddApplicationLayerDiMessagesServices();
+                    services.AddRegisterReflection();
+                    ;
                 }
             )
             .Build();

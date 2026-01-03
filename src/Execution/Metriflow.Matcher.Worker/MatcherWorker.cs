@@ -3,21 +3,16 @@ using Metriflow.Application.Interfaces.Caches;
 
 namespace Metriflow.Matcher.Worker;
 
-public class MatcherWorker : BackgroundService
+public class MatcherWorker(
+    IServiceScopeFactory serviceScopeFactory,
+    ILogger<MatcherWorker> logger)
+    : BackgroundService
 {
-    private readonly ILogger<MatcherWorker> _logger;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-
-    public MatcherWorker(IServiceScopeFactory serviceScopeFactory,
-        ILogger<MatcherWorker> logger)
-    {
-        _logger = logger;
-        _serviceScopeFactory = serviceScopeFactory;
-    }
+    private readonly ILogger<MatcherWorker> _logger = logger;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var scope = _serviceScopeFactory.CreateScope();
+        using var scope = serviceScopeFactory.CreateScope();
         var scopedProvider = scope.ServiceProvider;
         var redis = scopedProvider.GetRequiredService<IAnalyticsCacheServices>();
         
@@ -32,6 +27,8 @@ public class MatcherWorker : BackgroundService
 
           
             Console.WriteLine("Iterate Again");
+
+            await Task.Delay(5000, stoppingToken);
         }
     }
 }

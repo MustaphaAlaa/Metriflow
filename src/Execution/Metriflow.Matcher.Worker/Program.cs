@@ -18,10 +18,9 @@ builder.Services.Configure<AnalyticsOptions>(builder.Configuration.GetSection("A
 
 builder.Services.AddSingleton<IMessageBrokerConnection, RabbitMqConnection>(); 
 builder.Services.AddRedisDI(builder.Configuration);
-builder.Services.AddApplicationLayerDiMessagesServices();
 builder.Services.AddRabbitMqDi();
 
-
+builder.Services.AddRegisterReflection();
  
 var host = builder.Build();
 
