@@ -4,7 +4,9 @@ using Metriflow.Application.Interfaces.Caches;
 using Metriflow.Application.Interfaces.Workers;
 using Metriflow.Application.Models.Enums;
 using Metriflow.Application.Worker;
+using Metriflow.Domain.CustomAttributes;
 using Metriflow.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -15,6 +17,7 @@ public sealed class AnalyticsOptions
     public string ExchangeName { get; init; } = default!;
     public int HoursPerDay { get; init; }
 }
+[ServiceRegistration(ServiceLifetime.Scoped, typeof(IRecordsMatcher))]
 
 public class RecordsMatcher : IRecordsMatcher
 {
@@ -69,7 +72,7 @@ public class RecordsMatcher : IRecordsMatcher
                     await _messageBrokerProducer.PublishAsync(
                         combinedRecords,
                         _analyticsOptions.ExchangeName,
-                        "analytics.raw.combined",
+                        "analytics.combined",
                         true
                     );
                     Console.WriteLine("Before Removing........");

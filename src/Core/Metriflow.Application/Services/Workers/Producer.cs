@@ -1,5 +1,8 @@
+using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Workers;
+using Metriflow.Domain.CustomAttributes;
 using Metriflow.Domain.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Metriflow.Application.Services.Workers;
@@ -11,6 +14,9 @@ namespace Metriflow.Application.Services.Workers;
 /// Acts as an adapter between the streaming pipeline and the message broker,
 /// providing logging and isolating broker-specific concerns from application logic.
 /// </remarks>
+
+[ServiceRegistration(ServiceLifetime.Scoped, typeof(IProducer))]
+
 public class Producer : IProducer
 {
     private readonly IMessageBrokerProducer _messageBrokerProducer;

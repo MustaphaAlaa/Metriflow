@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Threading.Channels;
 using Metriflow.Application.Interfaces.Workers;
+using Metriflow.Domain.CustomAttributes;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Metriflow.Application.Services.Workers;
 
@@ -37,6 +39,7 @@ namespace Metriflow.Application.Services.Workers;
 /// </list>
 /// </para>
 /// </remarks>
+[ServiceRegistration(ServiceLifetime.Scoped, typeof(IStreamData))]
 public class StreamData : IStreamData
 {
     /// <inheritdoc/>
@@ -182,7 +185,7 @@ public class StreamData : IStreamData
 
     private List<Task> WorkersTask<T>(Channel<List<T>> channel, Func<List<T>, Task> onBatch)
     {
-        const int publishBatcSize = 1200;
+        const int publishBatchSize = 2400;
         var workers = Enumerable
             .Range(0, 4)
             .Select(_ =>
@@ -195,7 +198,7 @@ public class StreamData : IStreamData
                         foreach (var obj in batch)
                         {
                             lst.Add(obj);
-                            if (lst.Count >= publishBatcSize)
+                            if (lst.Count >= publishBatchSize)
                             {
                                 await onBatch(lst);
                                 lst = new();

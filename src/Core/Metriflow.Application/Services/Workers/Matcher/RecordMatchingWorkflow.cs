@@ -1,10 +1,13 @@
 using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Caches;
+using Metriflow.Domain.CustomAttributes;
 using Metriflow.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Metriflow.Application.Services.Workers;
 
+[ServiceRegistration(ServiceLifetime.Scoped, typeof(IRecordMatchingWorkflow))]
 public class RecordMatchingWorkflow : IRecordMatchingWorkflow
 {
     private readonly IAnalyticsCacheServices _cache;

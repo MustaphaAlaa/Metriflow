@@ -1,12 +1,13 @@
 using System.Collections;
 using Metriflow.Application.Interfaces;
+using Metriflow.Domain.CustomAttributes;
 using Metriflow.Domain.Entities;
-using Metriflow.Domain.Entities.Workers; 
+using Metriflow.Domain.Entities.Workers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Metriflow.Application.Worker;
 
-
-
+[ServiceRegistration(ServiceLifetime.Scoped, typeof(IAnalyticRecordsCombiner))]
 public class AnalyticRecordsCombiner : IAnalyticRecordsCombiner
 {
     public bool CanCombine(Dictionary<Type, IList> records)

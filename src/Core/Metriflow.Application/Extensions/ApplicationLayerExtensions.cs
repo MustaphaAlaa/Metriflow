@@ -18,24 +18,4 @@ public static class ApplicationLayerExtensions
 
         return service;
     }
-
-    public static IServiceCollection AddApplicationLayerDiMessagesServices(
-        this IServiceCollection service
-    )
-    {
-        service.AddScoped<IProducer, Producer>();
-        service.AddScoped<IRecordsMatcher, RecordsMatcher>();
-        service.AddScoped<IRecordMatchingWorkflow, RecordMatchingWorkflow>();
-        service.AddScoped<IListsKeysServices, ListsKeysServices>();
-        service.AddScoped<IAnalyticRecordsCombiner, AnalyticRecordsCombiner>();
-        return service;
-    }
-
-    public static IServiceCollection AddApplicationLayerDiJsonReader(
-        this IServiceCollection service
-    )
-    {
-        service.AddScoped<IStreamData, StreamData>();
-        return service;
-    }
 }

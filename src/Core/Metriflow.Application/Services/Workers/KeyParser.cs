@@ -1,6 +1,9 @@
 using Metriflow.Application.Interfaces;
+using Metriflow.Domain.CustomAttributes;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Metriflow.Application.Services.Workers;
+[ServiceRegistration(ServiceLifetime.Scoped, typeof(IKeyParser))]
 
 public class KeyParser : IKeyParser
 {
