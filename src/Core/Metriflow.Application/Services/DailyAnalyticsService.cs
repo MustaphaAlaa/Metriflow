@@ -4,21 +4,21 @@ using Microsoft.Extensions.Logging;
 
 namespace Metriflow.Application.Services;
 
-public class DailyStateCalculator : IDailyStatCalculator
+public class DailyAnalyticsService : IDailyAnalyticsService
 {
-    private readonly ILogger<DailyStateCalculator> _logger;
+    private readonly ILogger<DailyAnalyticsService> _logger;
 
-    public DailyStateCalculator(ILogger<DailyStateCalculator> logger)
+    public DailyAnalyticsService(ILogger<DailyAnalyticsService> logger)
     {
         _logger = logger;
     }
 
-    public async Task<DailyStat> CalculateDailyStat(
+    public async Task<DailyAnalytics> CalculateDailyStat(
         List<CombinedAnalyticsMessage> combinedAnalyticsMessages
     )
     {
         
-        return new DailyStat
+        return new DailyAnalytics
         {
             TotalUsers = combinedAnalyticsMessages.Sum(r => r.Users),
             TotalViews = combinedAnalyticsMessages.Sum(r => r.Views),

@@ -1,32 +1,25 @@
 using IRepository.Generic;
 using Metriflow.Application.Interfaces;
+using Metriflow.Domain.CustomAttributes;
 using Metriflow.Domain.Entities;
 using Metriflow.Domain.Entities.Reports;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Metriflow.Application.Services;
 
-public class PageServices : IPageServices
+[ServiceRegistration(lifetime: ServiceLifetime.Scoped, serviceType: typeof(IPageServices))]
+public class PageServices(
+    IPageRepository pageRepository,
+    ILogger<PageServices> logger,
+    IUnitOfWork unitOfWork
+) : IPageServices
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IPageRepository _pageRepository;
-    private readonly ILogger<PageServices> _logger;
-    private readonly Object _lock = new();
-
-    public PageServices(
-        IPageRepository pageRepository,
-        ILogger<PageServices> logger,
-        IUnitOfWork unitOfWork
-    )
-    {
-        _logger = logger;
-        _unitOfWork = unitOfWork;
-        _pageRepository = pageRepository;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<Page> GetAsync(string path)
     {
-        var page = await _pageRepository.RetrieveAsync(page => page.Path == path);
+        var page = await pageRepository.RetrieveAsync(page => page.Path == path);
         return page;
     }
 
@@ -37,7 +30,7 @@ public class PageServices : IPageServices
         if (combinedAnalyticsMessage is null)
             return null;
 
-        _logger.LogInformation(
+        logger.LogInformation(
             $"Processing: {combinedAnalyticsMessage.Date} on Page {combinedAnalyticsMessage.Page}"
         );
         combinedAnalyticsMessage.Page = combinedAnalyticsMessage.Page;
@@ -46,7 +39,7 @@ public class PageServices : IPageServices
 
     public async Task<List<PageReport>> PageReport()
     {
-        var report = await _pageRepository.PageReportAsync();
+        var report = await pageRepository.PageReportAsync();
         return report;
     }
 }
