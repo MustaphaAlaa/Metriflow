@@ -9,7 +9,7 @@ public static class ServiceRegistrationReflectionExtensions
     public static IServiceCollection AddRegisterReflection(this IServiceCollection service)
     {
         var typesWithAttribute = AppDomain.CurrentDomain.GetAssemblies()
-            //.Where(assembly => !assembly.IsDynamic && assembly.FullName!.StartsWith("Metriflow"))
+            .Where(assembly => !assembly.IsDynamic && assembly.FullName!.StartsWith("Metriflow"))
             .SelectMany(assembly =>
                 assembly.GetTypes().Where(t => t.IsDefined(typeof(ServiceRegistrationAttribute))));
 
