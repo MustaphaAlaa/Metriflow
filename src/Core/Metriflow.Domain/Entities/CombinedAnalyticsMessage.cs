@@ -1,5 +1,6 @@
 namespace Metriflow.Domain.Entities;
 
+
 public class CombinedAnalyticsMessage
 {
     // The raw, combined data from GA and PSI

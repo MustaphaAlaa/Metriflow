@@ -3,7 +3,7 @@ using Metriflow.Domain.Entities.Reports;
 
 namespace IRepository.Generic;
 
-public interface IDailyStatRepository : IBaseRepository<DailyStat>
+public interface IDailyAnalyticsRepository : IBaseRepository<DailyAnalytics>
 {
     Task<OverviewReport> StatsOverviewAsync();
 }
