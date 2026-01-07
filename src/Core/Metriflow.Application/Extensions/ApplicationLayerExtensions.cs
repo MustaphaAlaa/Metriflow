@@ -13,9 +13,7 @@ public static class ApplicationLayerExtensions
     public static IServiceCollection AddApplicationLayerDiServices(this IServiceCollection service)
     {
         service.AddScoped<IPageServices, PageServices>();
-        service.AddScoped<IRawDataServices, RawDataServices>();
-        service.AddScoped<IDailyStatCalculator, DailyStateCalculator>();
-
+        service.AddScoped<IDailyAnalyticsService, DailyAnalyticsService>();
         return service;
     }
 }
