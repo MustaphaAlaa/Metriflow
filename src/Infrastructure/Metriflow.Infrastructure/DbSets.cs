@@ -6,6 +6,6 @@ namespace Metriflow.Infrastructure;
 public partial class MetriflowDbContext
 {
     public DbSet<Page> Pages { get; set; }
-    public DbSet<DailyStat> DailyStats { get; set; }
-    public DbSet<RawData> RawDatas { get; set; }
+    public DbSet<DailyAnalytics> DailyStats { get; set; }
+    public DbSet<PageAnalytics> RawDatas { get; set; }
 }

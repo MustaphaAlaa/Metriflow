@@ -12,6 +12,6 @@ public partial class MetriflowDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(MetriflowDbContext).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(MetriflowDbContext).Assembly); 
     }
 }

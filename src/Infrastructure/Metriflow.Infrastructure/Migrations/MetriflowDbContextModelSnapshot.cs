@@ -22,7 +22,7 @@ namespace Metriflow.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Metriflow.Domain.Entities.DailyStat", b =>
+            modelBuilder.Entity("Metriflow.Domain.Entities.DailyAnalytics", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -53,7 +53,7 @@ namespace Metriflow.Infrastructure.Migrations
                     b.ToTable("DailyStats");
                 });
 
-            modelBuilder.Entity("Metriflow.Domain.Entities.MonthlyStat", b =>
+            modelBuilder.Entity("Metriflow.Domain.Entities.MonthlyAnalytic", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -85,7 +85,7 @@ namespace Metriflow.Infrastructure.Migrations
 
                     b.HasIndex("YearMonth");
 
-                    b.ToTable("MonthlyStat");
+                    b.ToTable("MonthlyAnalytic");
                 });
 
             modelBuilder.Entity("Metriflow.Domain.Entities.Page", b =>
@@ -108,7 +108,7 @@ namespace Metriflow.Infrastructure.Migrations
                     b.ToTable("Pages");
                 });
 
-            modelBuilder.Entity("Metriflow.Domain.Entities.RawData", b =>
+            modelBuilder.Entity("Metriflow.Domain.Entities.PageAnalytics", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -169,7 +169,7 @@ namespace Metriflow.Infrastructure.Migrations
                     b.ToTable("User");
                 });
 
-            modelBuilder.Entity("Metriflow.Domain.Entities.YearlyStat", b =>
+            modelBuilder.Entity("Metriflow.Domain.Entities.YearlyAnalytics", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -200,10 +200,10 @@ namespace Metriflow.Infrastructure.Migrations
 
                     b.HasIndex("Year");
 
-                    b.ToTable("YearlyStat");
+                    b.ToTable("YearlyAnalytics");
                 });
 
-            modelBuilder.Entity("Metriflow.Domain.Entities.MonthlyStat", b =>
+            modelBuilder.Entity("Metriflow.Domain.Entities.MonthlyAnalytic", b =>
                 {
                     b.HasOne("Metriflow.Domain.Entities.Page", "Page")
                         .WithMany()
@@ -214,7 +214,7 @@ namespace Metriflow.Infrastructure.Migrations
                     b.Navigation("Page");
                 });
 
-            modelBuilder.Entity("Metriflow.Domain.Entities.RawData", b =>
+            modelBuilder.Entity("Metriflow.Domain.Entities.PageAnalytics", b =>
                 {
                     b.HasOne("Metriflow.Domain.Entities.Page", "Page")
                         .WithMany()
@@ -225,7 +225,7 @@ namespace Metriflow.Infrastructure.Migrations
                     b.Navigation("Page");
                 });
 
-            modelBuilder.Entity("Metriflow.Domain.Entities.YearlyStat", b =>
+            modelBuilder.Entity("Metriflow.Domain.Entities.YearlyAnalytics", b =>
                 {
                     b.HasOne("Metriflow.Domain.Entities.Page", "Page")
                         .WithMany()

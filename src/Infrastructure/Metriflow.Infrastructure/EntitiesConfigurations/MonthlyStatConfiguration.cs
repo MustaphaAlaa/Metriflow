@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Metriflow.Infrastructure.EntitiesConfigurations;
 
-public class MonthlyStatConfiguration : IEntityTypeConfiguration<MonthlyStat>
+public class MonthlyStatConfiguration : IEntityTypeConfiguration<MonthlyAnalytic>
 {
     public void Configure(
-        Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<MonthlyStat> builder
+        Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<MonthlyAnalytic> builder
     )
     {
         builder

@@ -1,7 +1,7 @@
 using IRepository.Generic;
 using Metriflow.Domain.Entities;
-using Metriflow.Domain.enums;
-using Metriflow.DTOs;
+using Metriflow.Domain.Entities.Reports;
+using Metriflow.Domain.enums; 
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

@@ -9,7 +9,7 @@ public static class InfrastructureLayerExtensions
     public static void AddInfrastructureLayer(this IServiceCollection service)
     {
         service.AddScoped<IPageRepository, PageRepository>();
-        service.AddScoped<IDailyStatRepository, DailyStatRepository>();
+        service.AddScoped<IDailyAnalyticsRepository, DailyStatRepository>();
         service.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
         service.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
     }

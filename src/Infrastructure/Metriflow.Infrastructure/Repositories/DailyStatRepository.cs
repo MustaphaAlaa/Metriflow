@@ -1,12 +1,12 @@
 using IRepository.Generic;
 using Metriflow.Domain.Entities;
-using Metriflow.DTOs;
+using Metriflow.Domain.Entities.Reports;
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace Repositories.Generic;
 
-public class DailyStatRepository : BaseRepository<DailyStat>, IDailyStatRepository
+public class DailyStatRepository : BaseRepository<DailyAnalytics>, IDailyAnalyticsRepository
 {
     protected readonly MetriflowDbContext _db;
 

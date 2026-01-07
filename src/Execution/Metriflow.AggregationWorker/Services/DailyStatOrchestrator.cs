@@ -7,14 +7,14 @@ namespace Metriflow.AggregationWorker.Services;
 
 public class DailyStatOrchestrator : IDailyStatOrchestrator
 {
-    private readonly IDailyStatCalculator _dailyStatCalculator;
-    private readonly IDailyStatRepository _dailyStatRepository;
+    private readonly IDailyAnalyticsService _dailyStatCalculator;
+    private readonly IDailyAnalyticsRepository _dailyStatRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DailyStatOrchestrator> _logger;
 
     public DailyStatOrchestrator(
-        IDailyStatCalculator dailyStatCalculator,
-        IDailyStatRepository dailyStatRepository,
+        IDailyAnalyticsService dailyStatCalculator,
+        IDailyAnalyticsRepository dailyStatRepository,
         IUnitOfWork unitOfWork,
         ILogger<DailyStatOrchestrator> logger
     )

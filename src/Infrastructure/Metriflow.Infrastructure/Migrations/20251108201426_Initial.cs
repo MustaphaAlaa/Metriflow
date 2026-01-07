@@ -57,7 +57,7 @@ namespace Metriflow.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "MonthlyStat",
+                name: "MonthlyAnalytic",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -105,7 +105,7 @@ namespace Metriflow.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "YearlyStat",
+                name: "YearlyAnalytics",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -135,7 +135,7 @@ namespace Metriflow.Infrastructure.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_MonthlyStat_YearMonth",
-                table: "MonthlyStat",
+                table: "MonthlyAnalytic",
                 column: "YearMonth");
 
             migrationBuilder.CreateIndex(
@@ -157,7 +157,7 @@ namespace Metriflow.Infrastructure.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_YearlyStat_Year",
-                table: "YearlyStat",
+                table: "YearlyAnalytics",
                 column: "Year");
         }
 
@@ -168,7 +168,7 @@ namespace Metriflow.Infrastructure.Migrations
                 name: "DailyStats");
 
             migrationBuilder.DropTable(
-                name: "MonthlyStat");
+                name: "MonthlyAnalytic");
 
             migrationBuilder.DropTable(
                 name: "RawDatas");
@@ -177,7 +177,7 @@ namespace Metriflow.Infrastructure.Migrations
                 name: "User");
 
             migrationBuilder.DropTable(
-                name: "YearlyStat");
+                name: "YearlyAnalytics");
 
             migrationBuilder.DropTable(
                 name: "Pages");

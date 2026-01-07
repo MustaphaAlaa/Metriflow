@@ -21,14 +21,14 @@ public class AggregationWorkerConsumer : IAggregationWorkerConsumer
     private readonly ILogger<AggregationWorkerConsumer> _logger;
     private readonly IMessageBrokerConsumer _consumer;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IBaseRepository<DailyStat> _dailyStateRepository;
+    private readonly IBaseRepository<DailyAnalytics> _dailyStateRepository;
     private readonly IBaseRepository<Page> _pageRepository;
-    private readonly IBaseRepository<RawData> _rawDataRepository;
+    private readonly IBaseRepository<PageAnalytics> _rawDataRepository;
     private readonly IAggregationConsumer _aggregationConsumer;
 
     public AggregationWorkerConsumer(
         IBaseRepository<Page> pageRepository,
-        IBaseRepository<RawData> rawDataRepo,
+        IBaseRepository<PageAnalytics> rawDataRepo,
         ILogger<AggregationWorkerConsumer> logger,
         IMessageBrokerConsumer consumer,
         IAggregationConsumer aggregationConsumer,
@@ -40,7 +40,7 @@ public class AggregationWorkerConsumer : IAggregationWorkerConsumer
         _logger = logger;
         _unitOfWork = unitOfWork;
         _consumer = consumer;
-        _dailyStateRepository = _unitOfWork.GetRepository<DailyStat>();
+        _dailyStateRepository = _unitOfWork.GetRepository<DailyAnalytics>();
         _aggregationConsumer = aggregationConsumer;
     }
 

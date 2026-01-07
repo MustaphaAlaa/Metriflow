@@ -13,7 +13,7 @@ public class RawDataIngestionOrchestrator : IRawDataIngestionOrchestrator
     private readonly IRawDataServices _rawDataServices;
     private readonly ILogger<RawDataIngestionOrchestrator> _logger;
     private readonly IPageRepository _pageRepository;
-    private readonly IBaseRepository<RawData> _rawDataRepository;
+    private readonly IBaseRepository<PageAnalytics> _rawDataRepository;
 
     public RawDataIngestionOrchestrator(
         IUnitOfWork unitOfWork,
@@ -21,7 +21,7 @@ public class RawDataIngestionOrchestrator : IRawDataIngestionOrchestrator
         IRawDataServices rawDataServices,
         ILogger<RawDataIngestionOrchestrator> logger,
         IPageRepository pageRepository,
-        IBaseRepository<RawData> rawDataRepository
+        IBaseRepository<PageAnalytics> rawDataRepository
     )
     {
         _unitOfWork = unitOfWork;
@@ -45,7 +45,7 @@ public class RawDataIngestionOrchestrator : IRawDataIngestionOrchestrator
                 var normalizedRawData = await _rawDataServices.NormalizeRawData(msg, page);
                 var rawData = await _rawDataRepository.CreateAsync(normalizedRawData);
                 _logger.LogInformation(
-                    $"Creating RawData Id => {normalizedRawData.Id} =>> {normalizedRawData.Date}"
+                    $"Creating PageAnalytics Id => {normalizedRawData.Id} =>> {normalizedRawData.Date}"
                 );
             }
             await _unitOfWork.SaveChangesAsync();
