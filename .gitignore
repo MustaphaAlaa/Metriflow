@@ -10,3 +10,8 @@ git-diff.txt
 ._.DS_Store
 *.DS_Store
 **/.DS_Store
+
+Metriflow.sln.DotSettings.user 
+ARCHITECTURE_CLARIFICATION.md
+arc.md 
+architecture.md
