@@ -8,4 +8,6 @@ public interface IPageAnalyticsServices
         CombinedAnalyticsMessage combinedAnalyticsMessage,
         Page page
     );
+
+    IEnumerable<PageAnalytics> RecordsToPageAnalytics(IEnumerable<AggregateRecordsJoins> noneAggregateRecords);
 }
