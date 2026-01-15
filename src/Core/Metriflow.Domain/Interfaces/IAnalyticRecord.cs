@@ -5,6 +5,6 @@ namespace Metriflow.Domain.Interfaces;
 /// </summary>
 public interface IAnalyticRecord
 {
-    long Date { get; }
-    byte Page { get; }
+    long Ticks { get; }
+    int Page { get; }
 }

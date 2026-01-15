@@ -1,12 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Common;
-using System.Linq;
-using System.Threading.Tasks;
-using Metriflow.Domain.interfaces;
-
 namespace Metriflow.Domain.Entities;
 
 public class DailyAnalytics : AggregateAnalytics
