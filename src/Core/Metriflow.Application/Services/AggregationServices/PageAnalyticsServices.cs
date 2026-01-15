@@ -17,33 +17,35 @@ public class PageAnalyticsServices(ILogger<PageAnalyticsServices> logger) : IPag
         Page page
     )
     {
+        var date = new DateTime(combinedAnalyticsMessage.Ticks);
         var rawData = new PageAnalytics
         {
-            PageId = page.Id,
-            LCP_ms = combinedAnalyticsMessage.LCP_ms,
+            PageId = combinedAnalyticsMessage.Page,
+            LcpMs = combinedAnalyticsMessage.LcpMs,
             PerformanceScore = combinedAnalyticsMessage.PerformanceScore,
             Users = combinedAnalyticsMessage.Users,
             Sessions = combinedAnalyticsMessage.Sessions,
             Views = combinedAnalyticsMessage.Views,
-            Date = new DateTime(combinedAnalyticsMessage.Date),
-            Intervals = GetTimeInterval(combinedAnalyticsMessage),
+            Date = date,
+            Intervals = TimeIntervalUtilities.GetTimeInterval(date.Hour),
         };
 
         return rawData;
     }
 
-    private enTimeIntervals GetTimeInterval(CombinedAnalyticsMessage combinedAnalyticsMessage)
+    public IEnumerable<PageAnalytics> RecordsToPageAnalytics(IEnumerable<AggregateRecordsJoins> noneAggregateRecords)
     {
-        var hour = new DateTime(combinedAnalyticsMessage.Date).Hour;
-        var interval = hour switch
-        {
-            < 4 => enTimeIntervals.First,
-            < 8 => enTimeIntervals.Second,
-            < 12 => enTimeIntervals.Third,
-            < 16 => enTimeIntervals.Fourth,
-            < 20 => enTimeIntervals.Fifth,
-            _ => enTimeIntervals.Sixth,
-        };
-        return interval;
+      var records =   noneAggregateRecords.Select(record => new PageAnalytics()
+        {  
+                PageId = record.PageId,
+                LcpMs = record.PSIRecord.LCP_MS,
+                PerformanceScore = record.PSIRecord.PerformanceScore,
+                Users = record.GARecord.Users,
+                Sessions = record.GARecord.Sessions,
+                Views = record.GARecord.Views,
+                Date = record.Date,
+                Intervals = TimeIntervalUtilities.GetTimeInterval(record.Date.Hour),   
+        });
+        return records;
     }
 }

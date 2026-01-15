@@ -23,18 +23,18 @@ public class AnalyticRecordsCombiner : IAnalyticRecordsCombiner
         var result = gaRecords
             .Join(
                 psiRecords,
-                ga => (ga.Date, ga.Page),
-                psi => (psi.Date, psi.Page),
+                ga => (Date: ga.Ticks, ga.Page),
+                psi => (Date: psi.Ticks, psi.Page),
                 (ga, psi) =>
                     new CombinedAnalyticsMessage
                     {
-                        Date = ga.Date,
+                        Ticks = ga.Ticks,
                         Page = ga.Page,
                         Sessions = ga.Sessions,
                         Users = ga.Users,
                         Views = ga.Views,
                         PerformanceScore = psi.PerformanceScore,
-                        LCP_ms = psi.LCP_MS,
+                        LcpMs = psi.LCP_MS,
                     }
             )
             .ToList();

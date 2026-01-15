@@ -31,7 +31,7 @@ public class PageServices(
             return null;
 
         logger.LogInformation(
-            $"Processing: {combinedAnalyticsMessage.Date} on Page {combinedAnalyticsMessage.Page}"
+            $"Processing: {combinedAnalyticsMessage.Ticks} on Page {combinedAnalyticsMessage.Page}"
         );
         combinedAnalyticsMessage.Page = combinedAnalyticsMessage.Page;
         return combinedAnalyticsMessage;

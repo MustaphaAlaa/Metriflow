@@ -17,15 +17,15 @@ public class DailyAnalyticsService : IDailyAnalyticsService
         List<CombinedAnalyticsMessage> combinedAnalyticsMessages
     )
     {
-        
-        return new DailyAnalytics
+        //@@ Refactor
+        //It should be from TimeIntervalAnalytics 
+        var dailyAnalytics = new DailyAnalytics
         {
-            TotalUsers = combinedAnalyticsMessages.Sum(r => r.Users),
-            TotalViews = combinedAnalyticsMessages.Sum(r => r.Views),
-            TotalSessions = combinedAnalyticsMessages.Sum(r => r.Sessions),
-            AvgPerformance = combinedAnalyticsMessages.Average(rc => rc.PerformanceScore),
-            ReceivedAt = DateTime.UtcNow,
-            //!!!! Date = combinedAnalyticsMessages[0].Date ,
+                     // ReceivedAt = DateTime.UtcNow,
+             //!!!! Ticks = combinedAnalyticsMessages[0].Ticks ,
         };
+
+        // AggregateUtilities.Aggregate(dailyAnalytics, combinedAnalyticsMessages);
+        return dailyAnalytics;
     }
 }

@@ -38,7 +38,7 @@ public class Producer : IProducer
     /// Publishes a batch of analytic records to the message broker and logs the operation.
     /// </summary>
     /// <typeparam name="T">The type of analytic record, must implement IAnalyticRecord.</typeparam>
-    /// <param name="data">The list of analytic records to publish. Assumed to be non-empty and contain records with Date properties.</param>
+    /// <param name="data">The list of analytic records to publish. Assumed to be non-empty and contain records with Ticks properties.</param>
     /// <param name="routingKey">The routing key for message routing (e.g., "analytics.raw.GA").</param>
     /// <param name="exchangeName">The exchange name to publish to (e.g., "analytics.raw.GA").</param>
     /// <exception cref="IndexOutOfRangeException">Thrown if data is empty when accessing data[0] for logging.</exception>
@@ -54,8 +54,8 @@ public class Producer : IProducer
         _logger.LogInformation("Running on Thread: {thread}", Thread.CurrentThread.ManagedThreadId);
 
         var recordCount = data.Count;
-        var fromDate = data.Count > 0 ? data[0].Date : 0;
-        var toDate = data.Count > 0 ? data[data.Count - 1].Date : 0;
+        var fromDate = data.Count > 0 ? data[0].Ticks : 0;
+        var toDate = data.Count > 0 ? data[data.Count - 1].Ticks : 0;
 
         _logger.LogInformation(
             "On routing key: {routingKey}, {type} → numbers of records has been published {record}, From: {from}, To: {to}",
