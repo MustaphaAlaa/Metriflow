@@ -51,10 +51,10 @@ public class ConsumerMessageHandler : IConsumerMessageHandler
     private long GetTheDayOfTicks<T>(T record)
         where T : IAnalyticRecord
     {
-        var ticks = record.Date % TimeSpan.TicksPerDay;
+        var ticks = record.Ticks % TimeSpan.TicksPerDay;
         if (ticks == 0)
-            return record.Date;
-        return record.Date - ticks;
+            return record.Ticks;
+        return record.Ticks - ticks;
     }
 
     private async Task<DateTime> SaveNewRecordAsync<T>(enTypesKey type, IList<T> record)

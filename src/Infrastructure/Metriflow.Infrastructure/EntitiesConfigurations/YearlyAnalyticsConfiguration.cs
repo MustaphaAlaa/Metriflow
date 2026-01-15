@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Metriflow.Infrastructure.EntitiesConfigurations;
 
-public class YearlyStatConfiguration : IEntityTypeConfiguration<YearlyAnalytics>
+public class YearlyAnalyticsConfiguration : IEntityTypeConfiguration<YearlyAnalytics>
 {
     public void Configure(
         Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<YearlyAnalytics> builder

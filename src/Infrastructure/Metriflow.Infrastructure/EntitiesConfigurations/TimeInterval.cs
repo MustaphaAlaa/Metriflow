@@ -17,7 +17,7 @@ public class TimeIntervalConfiguration : IEntityTypeConfiguration<TimeInterval>
 
     private List<TimeInterval> TimeIntervalList()
     {
-        return TimeIntervalService.Dictionary.Select(keyValuePair => new TimeInterval()
+        return TimeIntervalUtilities.Dictionary.Select(keyValuePair => new TimeInterval()
             {
                 Interval = keyValuePair.Key,
                 IntervalDescription = keyValuePair.Value

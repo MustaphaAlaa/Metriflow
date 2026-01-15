@@ -1,10 +1,13 @@
 ﻿using System.Linq.Expressions;
 using IRepository.Generic;
+using Metriflow.Domain.CustomAttributes;
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Repositories.Generic;
 
+[ServiceRegistration(ServiceLifetime.Scoped,typeof(IBaseRepository<>))]
 public class BaseRepository<TEntity> : IBaseRepository<TEntity>
     where TEntity : class
 {
@@ -24,6 +27,12 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity>
     {
         await _db.Set<TEntity>().AddAsync(entity);
         return entity;
+    }
+
+    public async Task CreateRange(IEnumerable<TEntity> entities)
+    {
+         await _db.Set<TEntity>().AddRangeAsync(entities);
+        
     }
 
     /// <summary>
@@ -71,8 +80,12 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity>
 
     public TEntity Update(TEntity entity)
     {
-        _db.Set<TEntity>().Update(entity);
-        return entity;
+       return _db.Set<TEntity>().Update(entity).Entity;    
+    }
+
+    public void UpdateRange(IEnumerable<TEntity> entities)
+    {
+         _db.Set<TEntity>().UpdateRange(entities);
     }
 
     // Example of a retrieval method FOR UPDATE scenarios
@@ -83,6 +96,11 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity>
 
     public async Task<List<TEntity>> RetrieveAllTrackedAsync()
     {
-        return await _db.Set<TEntity>().ToListAsync();
+        return await _db.Set<TEntity>().Select(x=>x).ToListAsync();
+    }
+
+    public async Task<List<TEntity>> RetrieveAllTrackedAsync(Expression<Func<TEntity, bool>> predicate)
+    {
+        return await _db.Set<TEntity>().Where(predicate).Select(x=>x).ToListAsync();
     }
 }

@@ -31,7 +31,7 @@ namespace Metriflow.Infrastructure.Migrations
                     b.Property<double>("AvgPerformance")
                         .HasColumnType("float");
 
-                    b.Property<DateTime>("Date")
+                    b.Property<DateTime>("Ticks")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("ReceivedAt")
@@ -48,9 +48,9 @@ namespace Metriflow.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Date");
+                    b.HasIndex("Ticks");
 
-                    b.ToTable("DailyStats");
+                    b.ToTable("DailyAnalytics");
                 });
 
             modelBuilder.Entity("Metriflow.Domain.Entities.MonthlyAnalytic", b =>
@@ -114,10 +114,10 @@ namespace Metriflow.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("Date")
+                    b.Property<DateTime>("Ticks")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("LCP_ms")
+                    b.Property<long>("LcpMs")
                         .HasColumnType("bigint");
 
                     b.Property<int>("PageId")
@@ -139,7 +139,7 @@ namespace Metriflow.Infrastructure.Migrations
 
                     b.HasIndex("PageId");
 
-                    b.ToTable("RawDatas");
+                    b.ToTable("PageAnalytics");
                 });
 
             modelBuilder.Entity("Metriflow.Domain.Entities.User", b =>

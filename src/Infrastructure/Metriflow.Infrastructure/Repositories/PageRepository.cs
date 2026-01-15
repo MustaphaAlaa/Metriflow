@@ -1,7 +1,7 @@
 using IRepository.Generic;
 using Metriflow.Domain.Entities;
 using Metriflow.Domain.Entities.Reports;
-using Metriflow.Domain.enums; 
+using Metriflow.Domain.enums;
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -23,7 +23,7 @@ public class PageRepository : BaseRepository<Page>, IPageRepository
     public async Task<List<PageReport>> PageReportAsync()
     {
         var pageReports = await _db
-            .RawDatas.Include(r => r.Page)
+            .PageAnalytics.Include(r => r.Page)
             .GroupBy(r => new { r.PageId, r.Page.Path })
             .Select(g => new PageReport
             {
@@ -46,12 +46,13 @@ public class PageRepository : BaseRepository<Page>, IPageRepository
         if (page is null)
         {
             _logger.LogInformation(
-                $"Creating Page: {combinedAnalyticsMessage.Page} --- Date: {combinedAnalyticsMessage.Date}"
+                $"Creating Page: {combinedAnalyticsMessage.Page} --- Ticks: {combinedAnalyticsMessage.Ticks}"
             );
             page = await CreateAsync(
                 new Page { Path = ((enPages)combinedAnalyticsMessage.Page).ToString() }
             );
         }
+
         return page;
     }
 }

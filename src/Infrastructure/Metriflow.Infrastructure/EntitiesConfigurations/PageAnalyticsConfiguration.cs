@@ -3,12 +3,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Metriflow.Infrastructure.EntitiesConfigurations;
 
-public class RawDataConfiguration : IEntityTypeConfiguration<PageAnalytics>
+public class PageAnalyticsConfiguration : IEntityTypeConfiguration<PageAnalytics>
 {
     public void Configure(
         Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<PageAnalytics> builder
     )
     {
-        builder.HasIndex(rd => rd.PageId);
+        builder.HasIndex(pa => pa.PageId);
+        builder.HasIndex(pa => new { pa.PageId, pa.Date }).IsUnique();
     }
 }

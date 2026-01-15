@@ -4,26 +4,19 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Repositories.Generic;
 
-public class UnitOfWork : IUnitOfWork
+public class UnitOfWork(MetriflowDbContext context) : IUnitOfWork
 {
-    private readonly MetriflowDbContext _db;
-    private Dictionary<Type, object> _repositories;
+    private Dictionary<Type, object> _repositories = new();
     private IDbContextTransaction _transaction;
-
-    public UnitOfWork(MetriflowDbContext context)
-    {
-        _db = context;
-        _repositories = new();
-    }
 
     public async Task<int> SaveChangesAsync()
     {
-        return await _db.SaveChangesAsync();
+        return await context.SaveChangesAsync();
     }
 
     public void Dispose()
     {
-        _db.Dispose();
+        context.Dispose();
     }
 
     public IBaseRepository<T> GetRepository<T>()
@@ -32,7 +25,7 @@ public class UnitOfWork : IUnitOfWork
         var type = typeof(T);
         if (!_repositories.ContainsKey(type))
         {
-            var repo = new BaseRepository<T>(_db);
+            var repo = new BaseRepository<T>(context);
             _repositories.Add(type, repo);
         }
 
@@ -41,7 +34,7 @@ public class UnitOfWork : IUnitOfWork
 
     public async Task BeginTransactionAsync()
     {
-        _transaction = await _db.Database.BeginTransactionAsync();
+        _transaction = await context.Database.BeginTransactionAsync();
     }
 
     public async Task CommitAsync()

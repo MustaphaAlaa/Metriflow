@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Metriflow.Infrastructure.EntitiesConfigurations;
 
-public class DailyStatConfiguration : IEntityTypeConfiguration<DailyAnalytics>
+public class DailyAnalyticsConfiguration : IEntityTypeConfiguration<DailyAnalytics>
 {
     public void Configure(
         Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<DailyAnalytics> builder

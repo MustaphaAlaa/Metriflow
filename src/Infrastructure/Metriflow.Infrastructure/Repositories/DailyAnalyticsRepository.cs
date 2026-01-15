@@ -1,16 +1,20 @@
 using IRepository.Generic;
+using Metriflow.Domain.CustomAttributes;
 using Metriflow.Domain.Entities;
 using Metriflow.Domain.Entities.Reports;
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Repositories.Generic;
 
-public class DailyStatRepository : BaseRepository<DailyAnalytics>, IDailyAnalyticsRepository
+
+[ServiceRegistration(ServiceLifetime.Scoped, typeof(IDailyAnalyticsRepository))]
+public class DailyAnalyticsRepository : BaseRepository<DailyAnalytics>, IDailyAnalyticsRepository
 {
     protected readonly MetriflowDbContext _db;
 
-    public DailyStatRepository(MetriflowDbContext context)
+    public DailyAnalyticsRepository(MetriflowDbContext context)
         : base(context)
     {
         _db = context;
@@ -19,7 +23,7 @@ public class DailyStatRepository : BaseRepository<DailyAnalytics>, IDailyAnalyti
     public async Task<List<PageReport>> PageReportAsync()
     {
         var pageReports = await _db
-            .RawDatas.Include(r => r.Page)
+            .PageAnalytics.Include(r => r.Page)
             .GroupBy(r => new { r.PageId, r.Page.Path })
             .Select(g => new PageReport
             {
@@ -37,7 +41,7 @@ public class DailyStatRepository : BaseRepository<DailyAnalytics>, IDailyAnalyti
     public Task<OverviewReport> StatsOverviewAsync()
     {
         var overview = _db
-            .RawDatas.GroupBy(r => 1)
+            .PageAnalytics.GroupBy(r => 1)
             .Select(g => new OverviewReport
             {
                 TotalUsers = g.Sum(x => x.Users),
@@ -50,3 +54,5 @@ public class DailyStatRepository : BaseRepository<DailyAnalytics>, IDailyAnalyti
         return overview;
     }
 }
+
+

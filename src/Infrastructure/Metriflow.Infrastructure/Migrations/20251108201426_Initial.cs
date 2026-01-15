@@ -12,7 +12,7 @@ namespace Metriflow.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "DailyStats",
+                name: "DailyAnalytics",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -81,7 +81,7 @@ namespace Metriflow.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "RawDatas",
+                name: "PageAnalytics",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -130,8 +130,8 @@ namespace Metriflow.Infrastructure.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_DailyStats_Date",
-                table: "DailyStats",
-                column: "Date");
+                table: "DailyAnalytics",
+                column: "Ticks");
 
             migrationBuilder.CreateIndex(
                 name: "IX_MonthlyStat_YearMonth",
@@ -146,7 +146,7 @@ namespace Metriflow.Infrastructure.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_RawDatas_PageId",
-                table: "RawDatas",
+                table: "PageAnalytics",
                 column: "PageId");
 
             migrationBuilder.CreateIndex(
@@ -165,13 +165,13 @@ namespace Metriflow.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "DailyStats");
+                name: "DailyAnalytics");
 
             migrationBuilder.DropTable(
                 name: "MonthlyAnalytic");
 
             migrationBuilder.DropTable(
-                name: "RawDatas");
+                name: "PageAnalytics");
 
             migrationBuilder.DropTable(
                 name: "User");
