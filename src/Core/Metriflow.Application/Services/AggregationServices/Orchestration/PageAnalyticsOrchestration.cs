@@ -8,28 +8,29 @@ namespace Metriflow.Application.Services.Orchestration;
 
 [ServiceRegistration(ServiceLifetime.Scoped, typeof(IPageAnalyticsOrchestration))]
 public class PageAnalyticsOrchestration(
-    IUnitOfWork _unitOfWork,
-    IAggregationProgressRepository _aggregationProgressRepository,
-    IPageAnalyticsServices _pageAnalyticService
+    IUnitOfWork unitOfWork,
+    IAggregationProgressRepository aggregationProgressRepository,
+    IPageAnalyticsServices pageAnalyticService
 ) : IPageAnalyticsOrchestration
 
 {
     private readonly IBaseRepository<PageAnalytics> _pageAnalyticsRepository =
-        _unitOfWork.GetRepository<PageAnalytics>();
+        unitOfWork.GetRepository<PageAnalytics>();
 
 
-    public async Task CreatePageAnalytics()
+    public async Task<int>  CreatePageAnalyticsAsync()
     {
-        var noneRecordsJoinsList = _aggregationProgressRepository.GetNoneIntervalsAggregateRecords();
+        var noneRecordsJoinsList = aggregationProgressRepository.GetNoneIntervalsAggregateRecords();
 
         if (!noneRecordsJoinsList.Any())
-            return;
+            return 0;
 
-        var pagesAnalytics = _pageAnalyticService.RecordsToPageAnalytics(noneRecordsJoinsList);
+        var pagesAnalytics = pageAnalyticService.RecordsToPageAnalytics(noneRecordsJoinsList);
 
-        await _pageAnalyticsRepository.CreateRange(pagesAnalytics);
+        await _pageAnalyticsRepository.CreateRangeAsync(pagesAnalytics);
 
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
+        return pagesAnalytics.Count;
     }
 }

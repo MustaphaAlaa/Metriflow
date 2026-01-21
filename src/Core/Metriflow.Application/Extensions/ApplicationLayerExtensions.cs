@@ -1,9 +1,5 @@
-using Metriflow.Application.Interfaces;
-using Metriflow.Application.Interfaces.Workers;
-using Metriflow.Application.Services;
-using Metriflow.Application.Services.Workers;
-using Metriflow.Application.Worker;
-using Metriflow.Domain.Interfaces;
+using Metriflow.Application.Interfaces; 
+using Metriflow.Application.Services;  
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Metriflow.Application.Extensions;

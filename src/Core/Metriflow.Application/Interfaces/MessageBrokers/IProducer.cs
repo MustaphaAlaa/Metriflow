@@ -1,7 +1,7 @@
+using Metriflow.Application.Entities;
 using Metriflow.Domain.Interfaces;
 
 namespace Metriflow.Application.Interfaces.Workers;
-
 
 public interface IProducer
 {
@@ -29,4 +29,7 @@ public interface IProducer
         string exchangeName = "analytics.raw"
     )
         where T : IAnalyticRecord;
+
+    Task NotifyCompletedMessage(AggregationCompletedMessage message, string routingKey,
+        string exchangeName);
 }

@@ -89,6 +89,6 @@ public class TimeIntervalsOrchestration(
         {
             logger.LogError(ex, "Failed to aggregate time intervals");
             throw;
-        }
+        }  
     }
 }
