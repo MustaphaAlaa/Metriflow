@@ -5,39 +5,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 	ProjectSection(SolutionItems) = preProject
-		src\Execution\Metriflow.Matcher.Worker\obj\Matcher.Worker.csproj.nuget.g.targets = src\Execution\Metriflow.Matcher.Worker\obj\Matcher.Worker.csproj.nuget.g.targets
-		src\Execution\Metriflow.Matcher.Worker\obj\.DS_Store = src\Execution\Metriflow.Matcher.Worker\obj\.DS_Store
-		src\Execution\Metriflow.Matcher.Worker\obj\Matcher.Worker.csproj.nuget.dgspec.json = src\Execution\Metriflow.Matcher.Worker\obj\Matcher.Worker.csproj.nuget.dgspec.json
-		src\Execution\Metriflow.Matcher.Worker\obj\Metriflow.Matcher.Worker.csproj.nuget.dgspec.json = src\Execution\Metriflow.Matcher.Worker\obj\Metriflow.Matcher.Worker.csproj.nuget.dgspec.json
-		src\Execution\Metriflow.Matcher.Worker\obj\Metriflow.Matcher.Worker.csproj.nuget.g.props = src\Execution\Metriflow.Matcher.Worker\obj\Metriflow.Matcher.Worker.csproj.nuget.g.props
-		src\Execution\Metriflow.Matcher.Worker\obj\rider.project.restore.info = src\Execution\Metriflow.Matcher.Worker\obj\rider.project.restore.info
-		src\Execution\Metriflow.Matcher.Worker\obj\Matcher.Worker.csproj.nuget.g.props = src\Execution\Metriflow.Matcher.Worker\obj\Matcher.Worker.csproj.nuget.g.props
-		src\Execution\Metriflow.Matcher.Worker\obj\project.nuget.cache = src\Execution\Metriflow.Matcher.Worker\obj\project.nuget.cache
-		src\Execution\Metriflow.Matcher.Worker\obj\rider.project.model.nuget.info = src\Execution\Metriflow.Matcher.Worker\obj\rider.project.model.nuget.info
-		src\Execution\Metriflow.Matcher.Worker\obj\Metriflow.Matcher.Worker.csproj.nuget.g.targets = src\Execution\Metriflow.Matcher.Worker\obj\Metriflow.Matcher.Worker.csproj.nuget.g.targets
-		src\Execution\Metriflow.Matcher.Worker\obj\project.packagespec.json = src\Execution\Metriflow.Matcher.Worker\obj\project.packagespec.json
-		src\Execution\Metriflow.Matcher.Worker\obj\project.assets.json = src\Execution\Metriflow.Matcher.Worker\obj\project.assets.json
-		src\Execution\Metriflow.Matcher.Worker\obj\Debug\.DS_Store = src\Execution\Metriflow.Matcher.Worker\obj\Debug\.DS_Store
-		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs
-		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\.DS_Store = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\.DS_Store
-		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Metriflow.Matcher.Worker.csproj.FileListAbsolute.txt = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Metriflow.Matcher.Worker.csproj.FileListAbsolute.txt
-		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.AssemblyInfoInputs.cache = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.AssemblyInfoInputs.cache
-		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\apphost = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\apphost
-		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Metriflow.Matcher.Worker.GlobalUsings.g.cs = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Metriflow.Matcher.Worker.GlobalUsings.g.cs
-		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.AssemblyInfo.cs = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.AssemblyInfo.cs
-		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.assets.cache = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.assets.cache
-		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Metriflow.Matcher.Worker.assets.cache = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Metriflow.Matcher.Worker.assets.cache
-		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.GeneratedMSBuildEditorConfig.editorconfig = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.GeneratedMSBuildEditorConfig.editorconfig
-		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.csproj.AssemblyReference.cache = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.csproj.AssemblyReference.cache
-		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.GlobalUsings.g.cs = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.GlobalUsings.g.cs
-		src\Execution\Metriflow.Matcher.Worker\Dockerfile = src\Execution\Metriflow.Matcher.Worker\Dockerfile
-		src\Execution\Metriflow.Matcher.Worker\appsettings.json = src\Execution\Metriflow.Matcher.Worker\appsettings.json
-		src\Execution\Metriflow.Matcher.Worker\MatcherWorker.cs = src\Execution\Metriflow.Matcher.Worker\MatcherWorker.cs
-		src\Execution\Metriflow.Matcher.Worker\Dockerfile.dev = src\Execution\Metriflow.Matcher.Worker\Dockerfile.dev
-		src\Execution\Metriflow.Matcher.Worker\Properties\launchSettings.json = src\Execution\Metriflow.Matcher.Worker\Properties\launchSettings.json
-		src\Execution\Metriflow.Matcher.Worker\appsettings.Development.json = src\Execution\Metriflow.Matcher.Worker\appsettings.Development.json
-		src\Execution\Metriflow.Matcher.Worker\Metriflow.Matcher.Worker.csproj = src\Execution\Metriflow.Matcher.Worker\Metriflow.Matcher.Worker.csproj
-		src\Execution\Metriflow.Matcher.Worker\Program.cs = src\Execution\Metriflow.Matcher.Worker\Program.cs
+		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\.NETCoreApp,Version = v8.0.AssemblyAttributes.cs = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{8D626EA8-CB54-BC41-363A-217881BEBA6E}"
