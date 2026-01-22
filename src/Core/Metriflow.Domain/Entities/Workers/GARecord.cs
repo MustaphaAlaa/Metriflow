@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Metriflow.Domain.CustomAttributes;
 using Metriflow.Domain.Entities.Enums;
@@ -8,6 +9,8 @@ namespace Metriflow.Domain.Entities.Workers;
 [AnalyticRecord( enTypesKey.GA)]
 public class GARecord : IAnalyticRecord
 {
+    [Key]
+    public Guid Id { get; set; }
     public long Ticks { get; set; }
     public int Page { get; set; }
     public long Users { get; set; }

@@ -9,6 +9,7 @@ public class RabbitMqSettings
     /// The hostname of the RabbitMQ server.
     /// </summary>
     public string HostName { get; set; } = string.Empty;
+    public string Exchange { get; set; } = string.Empty;
 
     /// <summary>
     /// The port number on which RabbitMQ server is running.
@@ -24,4 +25,6 @@ public class RabbitMqSettings
     /// Password for authentication with RabbitMQ server.
     /// </summary>
     public string Password { get; set; } = string.Empty;
+    public QueueSettings Queues { get; set; } = new();
+
 }
