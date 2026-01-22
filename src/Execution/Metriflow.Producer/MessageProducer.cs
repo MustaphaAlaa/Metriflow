@@ -1,74 +1,65 @@
 using System.Threading.Channels;
+using Metriflow.Application.Entities;
 using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Workers;
+using Metriflow.Domain.Entities.Enums;
 using Metriflow.Domain.Entities.Workers;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Metriflow.Producers.Implementation;
 
 /// <summary>
 /// Implements a hosted service that manages the lifecycle of the analytics data production process.
 /// </summary>
-public class MessageProducer : IHostedService
+public class MessageProducer(
+    IStreamData streamData,
+    IProducer producer,
+    IHostApplicationLifetime appLifetime,
+    ILogger<MessageProducer> logger,
+    IOptions<RabbitMqSettings> options,
+    IHostEnvironment environment)
+    : IHostedService
 {
+    private readonly RabbitMqSettings _settings = options.Value;
     // private readonly IMessageBrokerConnection _messageBrokerConnection;
-    private readonly IStreamData _streamData;
-    private readonly IHostApplicationLifetime _appLifetime;
-    private readonly ILogger<MessageProducer> _logger;
-    private readonly IHostEnvironment _environment;
-    private readonly IProducer _producer;
 
-    public MessageProducer(
-        IStreamData streamData,
-        IProducer producer,
-        IHostApplicationLifetime appLifetime,
-        ILogger<MessageProducer> logger,
-        IHostEnvironment environment
-    )
-    {
-        _logger = logger;
-        _producer = producer;
-        _appLifetime = appLifetime;
-        _streamData = streamData;
-        _environment = environment;
-    }
-
-    private string JsonFilePath(string filename) => Path.Combine(_environment.ContentRootPath, "data", filename);
+    private string JsonFilePath(string filename) => Path.Combine(environment.ContentRootPath, "data", filename);
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         try
         {
-            _logger.LogInformation("Start sending data......");
+            logger.LogInformation("Start sending data......");
             var gaMockJson = this.JsonFilePath("GA-mock.json");
             var psiMockJson = this.JsonFilePath("PSI-mock.json");
 
-            var GA = _streamData.RunPipelineAsync<GARecord>(
+            var GA = streamData.RunPipelineAsync<GARecord>(
                 gaMockJson,
                 4000,
                 (gaRecords) =>
-                    _producer.PublishAnalyticRecords<GARecord>(gaRecords, "analytics.raw.GA", "analytics.raw")
+                    producer.PublishAnalyticRecords<GARecord>(gaRecords, _settings.Queues.GA, _settings.Exchange)
             );
 
-            var PSI = _streamData.RunPipelineAsync<PSIRecord>(
+            var PSI = streamData.RunPipelineAsync<PSIRecord>(
                 psiMockJson,
                 4000,
                 (psiRecords) =>
-                    _producer.PublishAnalyticRecords<PSIRecord>(psiRecords, "analytics.raw.PSI", "analytics.raw")
+                    producer.PublishAnalyticRecords<PSIRecord>(psiRecords, _settings.Queues.PSI, _settings.Exchange)
             );
-                
+
             await Task.WhenAll(GA, PSI);
 
-            _logger.LogInformation("All files is processed.");
+            logger.LogInformation("All files is processed.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"An exception thrown. {ex}", ex.Message, ex);
+            logger.LogError($"An exception thrown. {ex}", ex.Message, ex);
         }
         finally
         {
-            _appLifetime.StopApplication();
+            appLifetime.StopApplication();
         }
     }
 

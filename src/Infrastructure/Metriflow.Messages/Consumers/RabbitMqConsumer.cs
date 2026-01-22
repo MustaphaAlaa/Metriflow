@@ -169,7 +169,7 @@ public class RabbitMqConsumer : IAsyncDisposable, IMessageBrokerConsumer
 
                 await channel.BasicQosAsync(
                     prefetchSize: 0,
-                    prefetchCount: 200, // start small
+                    prefetchCount: 300,
                     global: false,
                     cancellationToken
                 );

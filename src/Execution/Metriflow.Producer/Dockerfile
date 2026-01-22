@@ -5,13 +5,15 @@ WORKDIR /src
 # CORE
 COPY  ["src/Core/Metriflow.Application/Metriflow.Application.csproj","src/Core/Metriflow.Application/"]
 COPY  ["src/Core/Metriflow.Domain/Metriflow.Domain.csproj","src/Core/Metriflow.Domain/"]
+# Infrastructure
+COPY ["src/Infrastructure/Metriflow.Messages/Metriflow.Messages.csproj","src/Infrastructure/Metriflow.Messages/"]
 # Execution
 COPY ["src/Execution/Metriflow.Producer/Metriflow.Producer.csproj","src/Execution/Metriflow.Producer/"]
-# COPY ["src/Infrastructure/Metriflow.Infrastructure/Metriflow.Infrastructure.csproj","src/Infrastructure/Metriflow.Infrastructure/"]
 
 WORKDIR /src
 COPY src/Execution/Metriflow.Producer src/Execution/Metriflow.Producer
 COPY src/Core   src/Core 
+COPY src/Infrastructure/Metriflow.Messages src/Infrastructure/Metriflow.Messages
 
 # Navigate to the specific project and publish
 WORKDIR /src/src/Execution/Metriflow.Producer

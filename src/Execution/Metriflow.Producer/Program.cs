@@ -1,11 +1,10 @@
-﻿using Metriflow.Application;
-using Metriflow.Application.Entities;
+﻿using Metriflow.Application.Entities;
 using Metriflow.Application.Extensions;
 using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Workers;
-using Metriflow.Application.Services;
 using Metriflow.Messages.Connections;
 using Metriflow.Messages.Extensions;
+using Metriflow.Messages.Producers;
 using Metriflow.Producers.Implementation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,9 +29,10 @@ internal class Program
                     var configuration = hostContext.Configuration;
                      services.Configure<RabbitMqSettings>(configuration.GetSection("RabbitMQ"));
                     services.AddHostedService<MessageProducer>();
-                     services.AddSingleton<IMessageBrokerConnection, RabbitMqConnection>();
-                    services.AddRabbitMqDi( );
-                    
+                    // services.AddRabbitMqDi( );
+                    services.AddSingleton<IMessageBrokerConnection, RabbitMqConnection>();
+                     services.AddScoped<IMessageBrokerProducer, RabbitMqProducer>();
+
                     services.AddRegisterReflection();
                     ;
                 }
