@@ -35,13 +35,14 @@ public class ConsumerMessageHandler<T>(
                 "Start Handling incoming Request, for type: {type}",
                 type
             );
-            if (records.Count >= 500)
+            if (records.Count >= 1000)
             {
-                foreach (var analyticRecords in records.Chunk(500))
+                foreach (var analyticRecords in records.Chunk(1000))
                 {
                     
                     await repository.CreateRangeAsync(analyticRecords);
                     await repository.SaveChangesAsync();
+                    repository.ClearTracking();
                 }
             }
             else
