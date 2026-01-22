@@ -9,24 +9,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<MetriflowDbContext>(
-    options => options.UseSqlServer(builder.Configuration.GetConnectionString("Sqlserver")),
-    ServiceLifetime.Scoped
-);
 
 builder.Services.AddApplicationLayerDiServices();
-builder.Services.AddInfrastructureLayer();
-
-builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddInfrastructureLayer(builder.Configuration);
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<MetriflowDbContext>();
-    dbContext.Database.Migrate();
-}
+// using (var scope = app.Services.CreateScope())
+// {
+//     var dbContext = scope.ServiceProvider.GetRequiredService<MetriflowDbContext>();
+//     dbContext.Database.Migrate();
+// }
 
  
 if (app.Environment.IsDevelopment())
