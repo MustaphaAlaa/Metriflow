@@ -10,16 +10,13 @@ namespace Metriflow.Application.Services.Orchestration;
 
 [ServiceRegistration(ServiceLifetime.Scoped, typeof(ITimeIntervalsOrchestration))]
 public class TimeIntervalsOrchestration(
-    IUnitOfWork unitOfWork,
+    IBaseRepository<TimeIntervalAnalytic> _timeIntervalAnalyticsRepository,
     IAggregationProgressRepository aggregationProgressRepository,
     IPageAnalyticsRepository pageAnalyticsRepository,
     ITimeIntervalAnalyticService _timeIntervalAnalyticService,
     ILogger<TimeIntervalsOrchestration> logger
 ) : ITimeIntervalsOrchestration
 {
-    private readonly IBaseRepository<TimeIntervalAnalytic> _timeIntervalAnalyticsRepository =
-        unitOfWork.GetRepository<TimeIntervalAnalytic>();
-
     public async Task AggregateTimeIntervalsAsync()
     {
         try
@@ -82,13 +79,13 @@ public class TimeIntervalsOrchestration(
                 }
             }
 
-            await unitOfWork.SaveChangesAsync();
+            await _timeIntervalAnalyticsRepository.SaveChangesAsync();
             logger.LogInformation("Successfully processed {Count} groups", filteredPages.Count());
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to aggregate time intervals");
             throw;
-        }  
+        }
     }
 }

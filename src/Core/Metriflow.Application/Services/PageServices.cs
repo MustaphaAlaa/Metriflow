@@ -12,11 +12,11 @@ namespace Metriflow.Application.Services;
 [ServiceRegistration(lifetime: ServiceLifetime.Scoped, serviceType: typeof(IPageServices))]
 public class PageServices(
     IPageRepository pageRepository,
-    ILogger<PageServices> logger,
-    IUnitOfWork unitOfWork
+    ILogger<PageServices> logger
+    // IUnitOfWork unitOfWork
 ) : IPageServices
 {
-    private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    // private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<Page> GetAsync(enPages path)
     {
