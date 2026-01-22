@@ -39,8 +39,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metriflow.Messages", "src\I
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis", "src\Infrastructure\Redis\Redis.csproj", "{6B3F53EF-DA56-4BD0-A70A-0823705EFC53}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metriflow.Matcher.Worker", "src\Execution\Metriflow.Matcher.Worker\Metriflow.Matcher.Worker.csproj", "{7B4C11CC-62B7-422C-8B1A-3F189F25BC91}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -207,18 +205,6 @@ Global
 		{6B3F53EF-DA56-4BD0-A70A-0823705EFC53}.Release|x64.Build.0 = Release|Any CPU
 		{6B3F53EF-DA56-4BD0-A70A-0823705EFC53}.Release|x86.ActiveCfg = Release|Any CPU
 		{6B3F53EF-DA56-4BD0-A70A-0823705EFC53}.Release|x86.Build.0 = Release|Any CPU
-		{7B4C11CC-62B7-422C-8B1A-3F189F25BC91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7B4C11CC-62B7-422C-8B1A-3F189F25BC91}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7B4C11CC-62B7-422C-8B1A-3F189F25BC91}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{7B4C11CC-62B7-422C-8B1A-3F189F25BC91}.Debug|x64.Build.0 = Debug|Any CPU
-		{7B4C11CC-62B7-422C-8B1A-3F189F25BC91}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{7B4C11CC-62B7-422C-8B1A-3F189F25BC91}.Debug|x86.Build.0 = Debug|Any CPU
-		{7B4C11CC-62B7-422C-8B1A-3F189F25BC91}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7B4C11CC-62B7-422C-8B1A-3F189F25BC91}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7B4C11CC-62B7-422C-8B1A-3F189F25BC91}.Release|x64.ActiveCfg = Release|Any CPU
-		{7B4C11CC-62B7-422C-8B1A-3F189F25BC91}.Release|x64.Build.0 = Release|Any CPU
-		{7B4C11CC-62B7-422C-8B1A-3F189F25BC91}.Release|x86.ActiveCfg = Release|Any CPU
-		{7B4C11CC-62B7-422C-8B1A-3F189F25BC91}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -240,6 +226,5 @@ Global
 		{C3FEC267-8CEF-422D-9677-1793FCFE83CB} = {9F4D37C0-26C1-4904-A964-B64CA4285C05}
 		{CA8A8BE0-11AA-42CB-8DA1-F2C9AA9741E0} = {9048EB7F-3875-A59E-E36B-5BD4C6F2A282}
 		{6B3F53EF-DA56-4BD0-A70A-0823705EFC53} = {9048EB7F-3875-A59E-E36B-5BD4C6F2A282}
-		{7B4C11CC-62B7-422C-8B1A-3F189F25BC91} = {EC0AE37B-42FE-3786-533F-760669F80219}
 	EndGlobalSection
 EndGlobal
