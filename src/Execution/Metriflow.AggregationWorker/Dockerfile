@@ -10,11 +10,13 @@ COPY ["src/Execution/Metriflow.AggregationWorker/Metriflow.AggregationWorker.csp
 
 # Infrastructure
 COPY [ "src/Infrastructure/Metriflow.Infrastructure/Metriflow.Infrastructure.csproj","src/Infrastructure/Metriflow.Infrastructure/"]
+COPY ["src/Infrastructure/Metriflow.Messages/Metriflow.Messages.csproj","src/Infrastructure/Metriflow.Messages/"]
 
 
 WORKDIR /src  
 COPY src/Core/ src/Core/ 
 COPY src/Infrastructure/Metriflow.Infrastructure src/Infrastructure/Metriflow.Infrastructure
+COPY src/Infrastructure/Metriflow.Messages src/Infrastructure/Metriflow.Messages
 COPY src/Execution/Metriflow.AggregationWorker src/Execution/Metriflow.AggregationWorker
 
 WORKDIR /src/src/Execution/Metriflow.AggregationWorker

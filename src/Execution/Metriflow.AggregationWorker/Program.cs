@@ -1,42 +1,45 @@
-using Azure;
 using Infrastructure.Extensions;
-using IRepository.Generic;
-using Metriflow.AggregationWorker;
 using Metriflow.AggregationWorker.Interfaces;
+using Metriflow.AggregationWorker.Interfaces.Correlation;
 using Metriflow.AggregationWorker.Services;
-using Metriflow.Application;
+using Metriflow.AggregationWorker.Workers; 
 using Metriflow.Application.Entities;
 using Metriflow.Application.Extensions;
 using Metriflow.Application.Interfaces;
-using Metriflow.Application.Services;
+using Metriflow.Application.Interfaces.Workers;
 using Metriflow.Infrastructure;
-using Metriflow.Infrastructure.EntitiesConfigurations;
 using Metriflow.Messages.Connections;
+using Metriflow.Messages.Extensions;
 using Microsoft.EntityFrameworkCore;
-using Repositories.Generic;
 
 var builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddHostedService<Worker>();
+builder.Services.AddHostedService<RawDataWorker>();
+
+// builder.Services.AddHostedService<PagesAnalyticWorker>();
+// builder.Services.AddHostedService<IntervalAnalyticsWorker>();
+// builder.Services.AddHostedService<DailyAnalyticsWorker>();
+// builder.Services.AddHostedService<MonthlyAnalyticsWorker>();
+// builder.Services.AddHostedService<YearlyAnalyticsWorker>();
 
 builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMQ"));
-builder.Services.AddSingleton<IMessageBrokerConnection, RabbitMqConnection>();
-
-// builder.Services.AddSingleton<IMessageBrokerConsumer, MessageBrokerConsumer>();
-// builder.Services.AddSingleton<IMessageBrokerProducer, MessageBrokerProducer>();
-    
 
 
+builder.Services.AddSingleton<IRawDataConsumer, RawDataConsumer>();
+
+// Register the generic message handler as scoped (open generic registration)
+builder.Services.AddScoped(typeof(IConsumerMessageHandler<>), typeof(ConsumerMessageHandler<>));
+
+
+builder.Services.AddInfrastructureLayer(builder.Configuration);
 builder.Services.AddApplicationLayerDiServices();
-builder.Services.AddInfrastructureLayer();
+builder.Services.AddRegisterReflection();
+builder.Services.AddRabbitMqDi();
 
-builder.Services.AddScoped<IAggregationWorkerConsumer, AggregationWorkerConsumer>();
-builder.Services.AddScoped<IAggregationConsumer, AggregationConsumer>();
-builder.Services.AddScoped<IRawDataIngestionOrchestrator, RawDataIngestionOrchestrator>();
-builder.Services.AddScoped<IDailyStatOrchestrator, DailyStatOrchestrator>();
-
-builder.Services.AddDbContext<MetriflowDbContext>(
-    options => options.UseSqlServer(builder.Configuration.GetConnectionString("Sqlserver")),
-    ServiceLifetime.Scoped
-);
 var host = builder.Build();
+
+using (var scope = host.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<MetriflowDbContext>();
+     dbContext.Database.Migrate();
+}
 host.Run();
