@@ -61,7 +61,7 @@ public class AggregationProgressRepository : BaseRepository<AggregationProgress>
     public IQueryable<AggregateRecordsJoins> GetNoneMonthlyAggregateRecords()  
     {
         return GetJoins(Db.AggregationProgresses.Where(e =>
-            !e.Interval && !e.Monthly
+            e.Interval&& e.Daily && !e.Monthly
         ));
     }
 
@@ -73,19 +73,19 @@ public class AggregationProgressRepository : BaseRepository<AggregationProgress>
     public IQueryable<AggregateRecordsJoins> GetNoneDailyAggregateRecords()  
     {
         return GetJoins(Db.AggregationProgresses.Where(e =>
-            !e.Interval && !e.Daily
+            e.Interval && !e.Daily
         ));
     }
     public IQueryable<AggregateRecordsJoins> GetNoneYearlyAggregateRecords()  
     {
         return GetJoins(Db.AggregationProgresses.Where(e =>
-            !e.Interval && !e.Yearly
+            e.Interval  && e.Monthly && !e.Yearly
         ));
     }
     public IQueryable<AggregateRecordsJoins> GetNoneQueryableAggregateRecords()  
     {
         return GetJoins(Db.AggregationProgresses.Where(e =>
-            !e.Interval && !e.Quarterly
+            e.Interval && e.Monthly && !e.Quarterly
         ));
     }
 

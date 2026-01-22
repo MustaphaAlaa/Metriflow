@@ -9,10 +9,18 @@ public class YearlyAnalyticsConfiguration : IEntityTypeConfiguration<YearlyAnaly
         Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<YearlyAnalytics> builder
     )
     {
-        builder
-            .HasAlternateKey(ds => (new { ds.PageId, ds.Year }))
-            .HasName("AK_YearlyStats_PageYear");
-
-        builder.HasIndex(ds => ds.Year);
+        try
+        {
+            builder.HasKey(x => x.Id);
+            builder.HasIndex(ds => new { ds.PageId, ds.Year })
+                .IsUnique();
+            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception In YearlyAnalyticsConfiguration");
+            Console.WriteLine(ex.Message);
+            Console.WriteLine();
+        }
     }
 }

@@ -8,17 +8,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Repositories.Generic;
 
-public class PageRepository : BaseRepository<Page>, IPageRepository
+public class PageRepository(MetriflowDbContext context, ILogger<PageRepository> logger)
+    : BaseRepository<Page>(context), IPageRepository
 {
-    protected readonly MetriflowDbContext _db;
-    private readonly ILogger<PageRepository> _logger;
-
-    public PageRepository(MetriflowDbContext context, ILogger<PageRepository> logger)
-        : base(context)
-    {
-        _db = context;
-        _logger = logger;
-    }
+    protected readonly MetriflowDbContext _db = context;
 
     public async Task<List<PageReport>> PageReportAsync()
     {
@@ -27,7 +20,7 @@ public class PageRepository : BaseRepository<Page>, IPageRepository
             .GroupBy(r => new { r.PageId, r.Page.Path })
             .Select(g => new PageReport
             {
-                Path = g.Key.Path,
+                Path = g.Key.Path.ToString(),
                 TotalUsers = g.Sum(x => x.Users),
                 TotalSessions = g.Sum(x => x.Sessions),
                 TotalViews = g.Sum(x => x.Views),
@@ -41,15 +34,15 @@ public class PageRepository : BaseRepository<Page>, IPageRepository
     public async Task<Page> GetOrCreatePageAsync(CombinedAnalyticsMessage combinedAnalyticsMessage)
     {
         var page = await RetrieveAsync(page =>
-            page.Path == ((enPages)combinedAnalyticsMessage.Page).ToString()
+            page.Path == (enPages)combinedAnalyticsMessage.Page
         );
         if (page is null)
         {
-            _logger.LogInformation(
+            logger.LogInformation(
                 $"Creating Page: {combinedAnalyticsMessage.Page} --- Ticks: {combinedAnalyticsMessage.Ticks}"
             );
             page = await CreateAsync(
-                new Page { Path = ((enPages)combinedAnalyticsMessage.Page).ToString() }
+                new Page { Path = (enPages)combinedAnalyticsMessage.Page  }
             );
         }
 

@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Repositories.Generic;
 
-[ServiceRegistration(ServiceLifetime.Scoped,typeof(IBaseRepository<>))]
+[ServiceRegistration(ServiceLifetime.Scoped, typeof(IBaseRepository<>))]
 public class BaseRepository<TEntity> : IBaseRepository<TEntity>
     where TEntity : class
 {
@@ -29,10 +29,24 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity>
         return entity;
     }
 
-    public async Task CreateRange(IEnumerable<TEntity> entities)
+    public async Task CreateRangeAsync(IEnumerable<TEntity> entities)
     {
-         await _db.Set<TEntity>().AddRangeAsync(entities);
-        
+        await _db.Set<TEntity>().AddRangeAsync(entities);
+    }
+
+    public async Task BeginTransaction()
+    {
+        await _db.Database.BeginTransactionAsync();
+    }
+
+    public async Task CommitTransaction()
+    {
+        await _db.Database.CommitTransactionAsync();
+    }
+
+    public async Task RollbackTransaction()
+    {
+        await _db.Database.RollbackTransactionAsync();
     }
 
     /// <summary>
@@ -80,12 +94,12 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity>
 
     public TEntity Update(TEntity entity)
     {
-       return _db.Set<TEntity>().Update(entity).Entity;    
+        return _db.Set<TEntity>().Update(entity).Entity;
     }
 
     public void UpdateRange(IEnumerable<TEntity> entities)
     {
-         _db.Set<TEntity>().UpdateRange(entities);
+        _db.Set<TEntity>().UpdateRange(entities);
     }
 
     // Example of a retrieval method FOR UPDATE scenarios
@@ -96,11 +110,16 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity>
 
     public async Task<List<TEntity>> RetrieveAllTrackedAsync()
     {
-        return await _db.Set<TEntity>().Select(x=>x).ToListAsync();
+        return await _db.Set<TEntity>().Select(x => x).ToListAsync();
     }
 
     public async Task<List<TEntity>> RetrieveAllTrackedAsync(Expression<Func<TEntity, bool>> predicate)
     {
-        return await _db.Set<TEntity>().Where(predicate).Select(x=>x).ToListAsync();
+        return await _db.Set<TEntity>().Where(predicate).Select(x => x).ToListAsync();
+    }
+
+    public async Task<int> SaveChangesAsync()
+    {
+        return await _db.SaveChangesAsync();
     }
 }

@@ -1,11 +1,15 @@
 using IRepository.Generic;
+using Metriflow.Domain.CustomAttributes;
 using Metriflow.Domain.Entities;
 using Metriflow.Domain.Entities.Reports;
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Npgsql.Internal;
 
 namespace Repositories.Generic;
 
+[ServiceRegistration(ServiceLifetime.Scoped, typeof(IPageAnalyticsRepository))]
 public class PageAnalyticsRepository(MetriflowDbContext context) : BaseRepository<PageAnalytics>(context)
     , IPageAnalyticsRepository
 {

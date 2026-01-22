@@ -9,10 +9,10 @@ public class MonthlyAnalyticsConfiguration : IEntityTypeConfiguration<MonthlyAna
         Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<MonthlyAnalytic> builder
     )
     {
-        builder
-            .HasAlternateKey(ds => (new { ds.PageId, ds.YearMonth }))
-            .HasName("AK_MonthlyStat_PageMonth");
+        // builder
+        //     .HasAlternateKey(ds => (new { ds.PageId, ds.YearMonth }))
+        //     .HasName("AK_MonthlyStat_PageMonth");
 
-        builder.HasIndex(ds => ds.YearMonth);
+        builder.HasIndex(ds => new {ds.PageId, ds.YearMonth });
     }
 }

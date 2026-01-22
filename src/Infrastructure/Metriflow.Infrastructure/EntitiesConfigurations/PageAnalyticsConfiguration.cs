@@ -9,7 +9,7 @@ public class PageAnalyticsConfiguration : IEntityTypeConfiguration<PageAnalytics
         Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<PageAnalytics> builder
     )
     {
-        builder.HasIndex(pa => pa.PageId);
+        builder.HasKey(pa => pa.Id);
         builder.HasIndex(pa => new { pa.PageId, pa.Date }).IsUnique();
     }
 }

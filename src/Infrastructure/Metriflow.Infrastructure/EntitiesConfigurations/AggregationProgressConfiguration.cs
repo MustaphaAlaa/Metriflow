@@ -9,6 +9,8 @@ public class AggregationProgressConfiguration : IEntityTypeConfiguration<Aggrega
         Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<AggregationProgress> builder
     )
     {
-        builder.HasKey(e=> new { e.PageId, e.Date });
+         
+        builder.HasKey(e=> new { e.PageId, e.Date })
+        .HasName("PK_AggregationProgress");
     }
 }

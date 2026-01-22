@@ -13,6 +13,16 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<User> builder
     )
     {
-        builder.HasIndex(u => u.Email).IsUnique();
+        try
+        {
+            builder.HasKey(x => x.Id);
+            builder.HasIndex(u => u.Email).IsUnique();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception In UserConfiguration");
+            Console.WriteLine(ex.Message);
+            Console.WriteLine();
+        }
     }
 }

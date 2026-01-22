@@ -11,26 +11,29 @@ public class PageConfiguration : IEntityTypeConfiguration<Page>
         Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Page> builder
     )
     {
+        builder.HasKey(x => x.Id);
         builder.HasIndex(page => page.Path).IsUnique();
+
         builder
             .Property(page => page.Path)
-            .HasConversion(
-                new ValueConverter<enPages, string>(
-                    v => v.ToString(),
-                    v => (enPages)Enum.Parse(typeof(enPages), v)
-                )
-            );
+            .HasConversion<string>(); 
 
         builder.HasData(pages());
     }
 
-    private List<string> pages()
+    private List<Page> pages()
     {
         var pagesCount = (int)enPages.count;
-        var pages = new List<string>(pagesCount);
+        var pages = new List<Page>(pagesCount);
 
         for (int i = 1; i < pagesCount; i++)
-            pages.Add(((enPages)i).ToString());
+            pages.Add( new Page
+            {
+             Id= i,
+             Path   = (enPages)i,
+                
+            }  
+            );
         return pages;
     }
 }
