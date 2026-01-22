@@ -4,6 +4,41 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
+	ProjectSection(SolutionItems) = preProject
+		src\Execution\Metriflow.Matcher.Worker\obj\Matcher.Worker.csproj.nuget.g.targets = src\Execution\Metriflow.Matcher.Worker\obj\Matcher.Worker.csproj.nuget.g.targets
+		src\Execution\Metriflow.Matcher.Worker\obj\.DS_Store = src\Execution\Metriflow.Matcher.Worker\obj\.DS_Store
+		src\Execution\Metriflow.Matcher.Worker\obj\Matcher.Worker.csproj.nuget.dgspec.json = src\Execution\Metriflow.Matcher.Worker\obj\Matcher.Worker.csproj.nuget.dgspec.json
+		src\Execution\Metriflow.Matcher.Worker\obj\Metriflow.Matcher.Worker.csproj.nuget.dgspec.json = src\Execution\Metriflow.Matcher.Worker\obj\Metriflow.Matcher.Worker.csproj.nuget.dgspec.json
+		src\Execution\Metriflow.Matcher.Worker\obj\Metriflow.Matcher.Worker.csproj.nuget.g.props = src\Execution\Metriflow.Matcher.Worker\obj\Metriflow.Matcher.Worker.csproj.nuget.g.props
+		src\Execution\Metriflow.Matcher.Worker\obj\rider.project.restore.info = src\Execution\Metriflow.Matcher.Worker\obj\rider.project.restore.info
+		src\Execution\Metriflow.Matcher.Worker\obj\Matcher.Worker.csproj.nuget.g.props = src\Execution\Metriflow.Matcher.Worker\obj\Matcher.Worker.csproj.nuget.g.props
+		src\Execution\Metriflow.Matcher.Worker\obj\project.nuget.cache = src\Execution\Metriflow.Matcher.Worker\obj\project.nuget.cache
+		src\Execution\Metriflow.Matcher.Worker\obj\rider.project.model.nuget.info = src\Execution\Metriflow.Matcher.Worker\obj\rider.project.model.nuget.info
+		src\Execution\Metriflow.Matcher.Worker\obj\Metriflow.Matcher.Worker.csproj.nuget.g.targets = src\Execution\Metriflow.Matcher.Worker\obj\Metriflow.Matcher.Worker.csproj.nuget.g.targets
+		src\Execution\Metriflow.Matcher.Worker\obj\project.packagespec.json = src\Execution\Metriflow.Matcher.Worker\obj\project.packagespec.json
+		src\Execution\Metriflow.Matcher.Worker\obj\project.assets.json = src\Execution\Metriflow.Matcher.Worker\obj\project.assets.json
+		src\Execution\Metriflow.Matcher.Worker\obj\Debug\.DS_Store = src\Execution\Metriflow.Matcher.Worker\obj\Debug\.DS_Store
+		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\.DS_Store = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\.DS_Store
+		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Metriflow.Matcher.Worker.csproj.FileListAbsolute.txt = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Metriflow.Matcher.Worker.csproj.FileListAbsolute.txt
+		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.AssemblyInfoInputs.cache = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.AssemblyInfoInputs.cache
+		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\apphost = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\apphost
+		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Metriflow.Matcher.Worker.GlobalUsings.g.cs = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Metriflow.Matcher.Worker.GlobalUsings.g.cs
+		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.AssemblyInfo.cs = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.AssemblyInfo.cs
+		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.assets.cache = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.assets.cache
+		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Metriflow.Matcher.Worker.assets.cache = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Metriflow.Matcher.Worker.assets.cache
+		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.GeneratedMSBuildEditorConfig.editorconfig = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.GeneratedMSBuildEditorConfig.editorconfig
+		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.csproj.AssemblyReference.cache = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.csproj.AssemblyReference.cache
+		src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.GlobalUsings.g.cs = src\Execution\Metriflow.Matcher.Worker\obj\Debug\net8.0\Matcher.Worker.GlobalUsings.g.cs
+		src\Execution\Metriflow.Matcher.Worker\Dockerfile = src\Execution\Metriflow.Matcher.Worker\Dockerfile
+		src\Execution\Metriflow.Matcher.Worker\appsettings.json = src\Execution\Metriflow.Matcher.Worker\appsettings.json
+		src\Execution\Metriflow.Matcher.Worker\MatcherWorker.cs = src\Execution\Metriflow.Matcher.Worker\MatcherWorker.cs
+		src\Execution\Metriflow.Matcher.Worker\Dockerfile.dev = src\Execution\Metriflow.Matcher.Worker\Dockerfile.dev
+		src\Execution\Metriflow.Matcher.Worker\Properties\launchSettings.json = src\Execution\Metriflow.Matcher.Worker\Properties\launchSettings.json
+		src\Execution\Metriflow.Matcher.Worker\appsettings.Development.json = src\Execution\Metriflow.Matcher.Worker\appsettings.Development.json
+		src\Execution\Metriflow.Matcher.Worker\Metriflow.Matcher.Worker.csproj = src\Execution\Metriflow.Matcher.Worker\Metriflow.Matcher.Worker.csproj
+		src\Execution\Metriflow.Matcher.Worker\Program.cs = src\Execution\Metriflow.Matcher.Worker\Program.cs
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{8D626EA8-CB54-BC41-363A-217881BEBA6E}"
 EndProject
@@ -20,8 +55,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metriflow.API", "src\Execution\Metriflow.API\Metriflow.API.csproj", "{EDCFE396-5092-4342-9FBA-AEB8CB716690}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metriflow.AggregationWorker", "src\Execution\Metriflow.AggregationWorker\Metriflow.AggregationWorker.csproj", "{70607176-E4AA-4D64-974F-5BA343682A6D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metriflow.Correlation.Worker", "src\Execution\Metriflow.Correlation.Worker\Metriflow.Correlation.Worker.csproj", "{1E251152-F86B-42C8-B330-A0633E178FE8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metriflow.Producer", "src\Execution\Metriflow.Producer\Metriflow.Producer.csproj", "{571C3752-8753-445E-A994-0FCDB8292F4C}"
 EndProject
@@ -109,18 +142,6 @@ Global
 		{70607176-E4AA-4D64-974F-5BA343682A6D}.Release|x64.Build.0 = Release|Any CPU
 		{70607176-E4AA-4D64-974F-5BA343682A6D}.Release|x86.ActiveCfg = Release|Any CPU
 		{70607176-E4AA-4D64-974F-5BA343682A6D}.Release|x86.Build.0 = Release|Any CPU
-		{1E251152-F86B-42C8-B330-A0633E178FE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1E251152-F86B-42C8-B330-A0633E178FE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1E251152-F86B-42C8-B330-A0633E178FE8}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{1E251152-F86B-42C8-B330-A0633E178FE8}.Debug|x64.Build.0 = Debug|Any CPU
-		{1E251152-F86B-42C8-B330-A0633E178FE8}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{1E251152-F86B-42C8-B330-A0633E178FE8}.Debug|x86.Build.0 = Debug|Any CPU
-		{1E251152-F86B-42C8-B330-A0633E178FE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1E251152-F86B-42C8-B330-A0633E178FE8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1E251152-F86B-42C8-B330-A0633E178FE8}.Release|x64.ActiveCfg = Release|Any CPU
-		{1E251152-F86B-42C8-B330-A0633E178FE8}.Release|x64.Build.0 = Release|Any CPU
-		{1E251152-F86B-42C8-B330-A0633E178FE8}.Release|x86.ActiveCfg = Release|Any CPU
-		{1E251152-F86B-42C8-B330-A0633E178FE8}.Release|x86.Build.0 = Release|Any CPU
 		{571C3752-8753-445E-A994-0FCDB8292F4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{571C3752-8753-445E-A994-0FCDB8292F4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{571C3752-8753-445E-A994-0FCDB8292F4C}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -218,7 +239,6 @@ Global
 		{EC0AE37B-42FE-3786-533F-760669F80219} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{EDCFE396-5092-4342-9FBA-AEB8CB716690} = {EC0AE37B-42FE-3786-533F-760669F80219}
 		{70607176-E4AA-4D64-974F-5BA343682A6D} = {EC0AE37B-42FE-3786-533F-760669F80219}
-		{1E251152-F86B-42C8-B330-A0633E178FE8} = {EC0AE37B-42FE-3786-533F-760669F80219}
 		{571C3752-8753-445E-A994-0FCDB8292F4C} = {EC0AE37B-42FE-3786-533F-760669F80219}
 		{57F81E52-754C-46A4-8307-A68F7513533D} = {9F4D37C0-26C1-4904-A964-B64CA4285C05}
 		{58D18ED6-BA03-4F03-8DEB-0FB01F0E374A} = {9F4D37C0-26C1-4904-A964-B64CA4285C05}
