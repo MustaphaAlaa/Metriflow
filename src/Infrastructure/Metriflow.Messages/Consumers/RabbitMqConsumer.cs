@@ -120,24 +120,32 @@ public class RabbitMqConsumer : IAsyncDisposable, IMessageBrokerConsumer
             exchange: exchangeName,
             type: ExchangeType.Direct,
             durable: true,
-            autoDelete: false
+            autoDelete: false,
+            cancellationToken: cancellationToken
         );
+        _logger.LogDebug($"Exchange is declared: {exchangeName}");
 
         // Declare queue if it doesn’t exist
         await channel.QueueDeclareAsync(
             queue: queueName,
             durable: true,
             exclusive: false,
-            autoDelete: false
+            autoDelete: false,
+            cancellationToken: cancellationToken
         );
+
+        _logger.LogDebug($"Queue is declared: {queueName}");
 
         // Bind queue to exchange using routing key
         await channel.QueueBindAsync(
             queue: queueName,
             exchange: exchangeName,
-            routingKey: routingKey
+            routingKey: routingKey,
+            cancellationToken: cancellationToken
         );
-
+        _logger.LogDebug($"Queue is bind: {queueName}, Exchange: {exchangeName}, routingKey: {routingKey}");
+        Console.WriteLine
+            ($"Queue is bind: {queueName}, Exchange: {exchangeName}, routingKey: {routingKey}");
         var consumer = new AsyncEventingBasicConsumer(channel);
 
         consumer.ReceivedAsync += async (sender, args) =>
@@ -153,10 +161,18 @@ public class RabbitMqConsumer : IAsyncDisposable, IMessageBrokerConsumer
                         "Invalid or null message received from queue {QueueName}. **NACK with Requeue=false.**",
                         queueName
                     );
-                    // Nack and DO NOT requeue on deserialization failure (dead letter is better)
-                    await channel.BasicNackAsync(args.DeliveryTag, multiple: false, requeue: false);
+                    if (channel.IsOpen)
+                        await channel.BasicNackAsync(args.DeliveryTag, multiple: false, requeue: false);
+                    else throw new Exception("Invalid or null message received from queue");
                     return;
                 }
+
+                await channel.BasicQosAsync(
+                    prefetchSize: 0,
+                    prefetchCount: 200, // start small
+                    global: false,
+                    cancellationToken
+                );
 
                 var success = await this.HandleMessageWithRetryAsync(
                     message,
@@ -167,7 +183,10 @@ public class RabbitMqConsumer : IAsyncDisposable, IMessageBrokerConsumer
 
                 if (success)
                 {
-                    await channel.BasicAckAsync(args.DeliveryTag, multiple: false);
+                    if (channel.IsOpen)
+                        await channel.BasicAckAsync(args.DeliveryTag, multiple: false);
+                    else
+                        _logger.LogWarning("Channel is closed, cannot ack message from queue {QueueName}", queueName);
                 }
                 else
                 {
@@ -176,18 +195,59 @@ public class RabbitMqConsumer : IAsyncDisposable, IMessageBrokerConsumer
                         MaxRetryAttempts,
                         queueName
                     );
-                    await channel.BasicNackAsync(args.DeliveryTag, multiple: false, requeue: true);
+                    if (channel.IsOpen)
+                    {
+                        try
+                        {
+                            await channel.BasicNackAsync(args.DeliveryTag, multiple: false, requeue: true);
+                        }
+                        catch (Exception nackEx)
+                        {
+                            _logger.LogError(nackEx, "Failed to nack message from queue {QueueName}", queueName);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Channel is closed, cannot nack message from queue {QueueName}", queueName);
+                    }
                 }
+            }
+            catch (OperationCanceledException ocEx)
+            {
+                _logger.LogWarning(ocEx,
+                    "Message processing was canceled for queue {QueueName}. Channel state: {IsOpen}", queueName,
+                    channel.IsOpen);
+                // Don't attempt to nack during cancellation as the connection may be closing
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing message from queue {QueueName}", queueName);
 
-                await channel.BasicNackAsync(args.DeliveryTag, multiple: false, requeue: true);
+                if (channel.IsOpen)
+                {
+                    try
+                    {
+                        await channel.BasicNackAsync(args.DeliveryTag, multiple: false, requeue: true);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        _logger.LogWarning("Cancellation during nack for queue {QueueName}. Channel state: {IsOpen}",
+                            queueName, channel.IsOpen);
+                    }
+                    catch (Exception nackEx)
+                    {
+                        _logger.LogError(nackEx, "Failed to nack message from queue {QueueName}", queueName);
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Channel is already closed. Cannot nack message from queue {QueueName}",
+                        queueName);
+                }
             }
         };
 
-        await channel.BasicConsumeAsync(queue: queueName, autoAck: false, consumer);
+        await channel.BasicConsumeAsync(queue: queueName, autoAck: false, consumer, cancellationToken);
         _logger.LogInformation("Started consuming from queue: {QueueName}", queueName);
 
         try
@@ -234,6 +294,25 @@ public class RabbitMqConsumer : IAsyncDisposable, IMessageBrokerConsumer
                 );
                 return true;
             }
+            catch (OperationCanceledException)
+            {
+                // Cancellation requested - stop retrying
+                _logger.LogInformation(
+                    "Message processing canceled for queue {QueueName}.",
+                    queueName
+                );
+                return false;
+            }
+            catch (ObjectDisposedException ex)
+            {
+                // Service provider is disposed, likely during shutdown - stop retrying
+                _logger.LogWarning(
+                    ex,
+                    "Service provider was disposed while processing message from queue {QueueName}. Application may be shutting down. Stopping retries.",
+                    queueName
+                );
+                return false;
+            }
             catch (Exception ex) when (attempt < MaxRetryAttempts)
             {
                 // Log the failure, but only if we have more retries left
@@ -272,6 +351,7 @@ public class RabbitMqConsumer : IAsyncDisposable, IMessageBrokerConsumer
                 return false;
             }
         }
+
         return false; // Should not be reached, but included for completeness
     }
 

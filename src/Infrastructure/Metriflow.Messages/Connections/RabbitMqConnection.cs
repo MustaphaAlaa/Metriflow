@@ -1,5 +1,7 @@
 using Metriflow.Application.Entities;
 using Metriflow.Application.Interfaces;
+using Metriflow.Domain.CustomAttributes;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
@@ -9,6 +11,7 @@ namespace Metriflow.Messages.Connections;
 /// <summary>
 /// Implements the RabbitMQ connection management functionality.
 /// </summary>
+// [ServiceRegistration(ServiceLifetime.Scoped, typeof(IMessageBrokerConnection))]
 public class RabbitMqConnection : IMessageBrokerConnection, IDisposable
 {
     private readonly IConnection _connection;
@@ -35,6 +38,10 @@ public class RabbitMqConnection : IMessageBrokerConnection, IDisposable
             UserName = _settings.UserName,
             Password = _settings.Password,
             VirtualHost = "/",
+            RequestedHeartbeat = TimeSpan.FromSeconds(30),
+            RequestedConnectionTimeout = TimeSpan.FromSeconds(30),
+            NetworkRecoveryInterval = TimeSpan.FromSeconds(10),
+            AutomaticRecoveryEnabled = true 
         };
         try
         {
