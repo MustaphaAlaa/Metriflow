@@ -3,19 +3,7 @@ services:
   # INFRASTRUCTURE SERVICES
   # ----------------------------------------
 
-  db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: metriflow-sqlserver
-    restart: always
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: ${DB_PASSWORD:-localpassword123!}
-    ports:
-      - "1433:1433"
-    volumes:
-      - sqlserver_data:/var/opt/mssql
-    networks:
-      - metriflow-net
+   
 
   rabbitmq:
     image: rabbitmq:3.12-management
@@ -92,25 +80,47 @@ services:
 #    networks:
 #      - metriflow-net
 #
-#  metriflow-aggregation-worker:
-#    container_name: metriflow-AggregationWorker
-#    build:
-#      context: .
-#      dockerfile: src/Execution/Metriflow.AggregationWorker/Dockerfile
-#    restart: always
-#    depends_on:
-#      rabbitmq:
-#        condition: service_healthy
-#      db:
-#        condition: service_started
-#    environment:
-#      - RabbitMQ__HostName=rabbitmq
-#      - RabbitMQ__Port=5672
-#      - RabbitMQ__UserName=user
-#      - RabbitMQ__Password=mypassword
+  metriflow-aggregation-worker:
+    container_name: metriflow-AggregationWorker
+    build:
+      context: .
+      dockerfile: src/Execution/Metriflow.AggregationWorker/Dockerfile
+    restart: always
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      database:
+        condition: service_healthy  # Changed from service_started to service_healthy
+    environment:
+      ConnectionStrings__Postgres: Host=database;Port=5432;Database=metriflowdb;Username=postgres;Password=0000
+      RabbitMQ__HostName: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__UserName: user
+      RabbitMQ__Password: mypassword
+      RabbitMQ__Exchange: analytics.raw
+      RabbitMQ__Queues__IntervalAggregation: metriflow.interval.aggregation
+      RabbitMQ__Queues__DailyAggregation: metriflow.daily.aggregation
+      RabbitMQ__Queues__MonthlyAggregation: metriflow.monthly.aggregation
+      RabbitMQ__Queues__YearlyAggregation: metriflow.yearly.aggregation
+      RabbitMQ__Queues__AggregationCompleted: metriflow.aggregation.completed
+      RabbitMQ__Queues__AggregationFailed: metriflow.aggregation.failed
+      RabbitMQ__Queues__GA: metriflow.analytics.GA
+      RabbitMQ__Queues__PSI: metriflow.analytics.PSI
+      
+#      RabbitMQ__HostName: rabbitmq
+#      RabbitMQ__Port: 5672
+#      RabbitMQ__UserName: user
+#      RabbitMQ__Password: mypassword
+#      RabbitMQ__Exchange: analytics.aggregation
+#      RabbitMQ__Queues__IntervalAggregation: metriflow.interval.aggregation
+#      RabbitMQ__Queues__DailyAggregation: metriflow.daily.aggregation
+#      RabbitMQ__Queues__MonthlyAggregation: metriflow.monthly.aggregation
+#      RabbitMQ__Queues__YearlyAggregation: metriflow.yearly.aggregation
+#      RabbitMQ__Queues__AggregationCompleted: metriflow.aggregation.completed
+#      RabbitMQ__Queues__AggregationFailed: metriflow.aggregation.failed
 #      - ConnectionStrings__Sqlserver=Server=db,1433;Database=metriflow_db;User Id=sa;Password=${DB_PASSWORD:-localpassword123!};TrustServerCertificate=True;
-#    networks:
-#      - metriflow-net
+    networks:
+      - metriflow-net
 
   metriflow-producers:
     container_name: metriflow-producers
@@ -125,14 +135,37 @@ services:
       - RabbitMQ__Port=5672
       - RabbitMQ__UserName=user
       - RabbitMQ__Password=mypassword
+      - RabbitMQ__Exchange=analytics.raw
+      - RabbitMQ__Queues__GA=metriflow.analytics.GA
+      - RabbitMQ__Queues__PSI=metriflow.analytics.PSI
     networks:
       - metriflow-net
 
+
+  database:
+    image: postgres:17
+    container_name: Metriflow_postgreSQL_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 0000
+      POSTGRES_DB: metriflowdb
+    ports:
+      - "6800:5432"
+    volumes:
+      - metriflow_postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d metriflowdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - metriflow-net
 # ----------------------------------------
 # VOLUMES & NETWORKS
 # ----------------------------------------
 volumes:
-  sqlserver_data:
+  metriflow_postgres_data:
 
 networks:
   metriflow-net:
