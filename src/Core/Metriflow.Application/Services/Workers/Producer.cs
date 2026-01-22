@@ -1,3 +1,4 @@
+using Metriflow.Application.Entities;
 using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Workers;
 using Metriflow.Domain.CustomAttributes;
@@ -14,9 +15,7 @@ namespace Metriflow.Application.Services.Workers;
 /// Acts as an adapter between the streaming pipeline and the message broker,
 /// providing logging and isolating broker-specific concerns from application logic.
 /// </remarks>
-
 [ServiceRegistration(ServiceLifetime.Scoped, typeof(IProducer))]
-
 public class Producer : IProducer
 {
     private readonly IMessageBrokerProducer _messageBrokerProducer;
@@ -67,5 +66,16 @@ public class Producer : IProducer
         );
     }
 
-    
+    public async Task NotifyCompletedMessage(AggregationCompletedMessage message, string routingKey,
+        string exchangeName)
+    {
+        await _messageBrokerProducer.PublishAsync(message, exchangeName, routingKey, true);
+        _logger.LogInformation("Running on Thread: {thread}", Thread.CurrentThread.ManagedThreadId);
+
+        _logger.LogInformation(
+            "An event is published at {routingKey}, {count} aggregation records are happen for.",
+            routingKey,
+            message.ProcessedCount
+        );
+    }
 }

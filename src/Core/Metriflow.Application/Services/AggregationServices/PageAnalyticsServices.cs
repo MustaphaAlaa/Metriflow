@@ -33,7 +33,7 @@ public class PageAnalyticsServices(ILogger<PageAnalyticsServices> logger) : IPag
         return rawData;
     }
 
-    public IEnumerable<PageAnalytics> RecordsToPageAnalytics(IEnumerable<AggregateRecordsJoins> noneAggregateRecords)
+    public List<PageAnalytics> RecordsToPageAnalytics(IEnumerable<AggregateRecordsJoins> noneAggregateRecords)
     {
       var records =   noneAggregateRecords.Select(record => new PageAnalytics()
         {  
@@ -45,7 +45,7 @@ public class PageAnalyticsServices(ILogger<PageAnalyticsServices> logger) : IPag
                 Views = record.GARecord.Views,
                 Date = record.Date,
                 Intervals = TimeIntervalUtilities.GetTimeInterval(record.Date.Hour),   
-        });
+        }).ToList();
         return records;
     }
 }

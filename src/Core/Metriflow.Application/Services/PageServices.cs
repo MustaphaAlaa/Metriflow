@@ -3,6 +3,7 @@ using Metriflow.Application.Interfaces;
 using Metriflow.Domain.CustomAttributes;
 using Metriflow.Domain.Entities;
 using Metriflow.Domain.Entities.Reports;
+using Metriflow.Domain.enums;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -17,7 +18,7 @@ public class PageServices(
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
-    public async Task<Page> GetAsync(string path)
+    public async Task<Page> GetAsync(enPages path)
     {
         var page = await pageRepository.RetrieveAsync(page => page.Path == path);
         return page;

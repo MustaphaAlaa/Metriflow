@@ -9,5 +9,5 @@ public interface IPageAnalyticsServices
         Page page
     );
 
-    IEnumerable<PageAnalytics> RecordsToPageAnalytics(IEnumerable<AggregateRecordsJoins> noneAggregateRecords);
+    List<PageAnalytics> RecordsToPageAnalytics(IEnumerable<AggregateRecordsJoins> noneAggregateRecords);
 }
