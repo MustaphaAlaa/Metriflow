@@ -122,4 +122,9 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity>
     {
         return await _db.SaveChangesAsync();
     }
+
+    public void ClearTracking()
+    {
+        _db.ChangeTracker.Clear();
+    }
 }

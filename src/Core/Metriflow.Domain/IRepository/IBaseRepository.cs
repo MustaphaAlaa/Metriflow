@@ -33,4 +33,5 @@ public interface IBaseRepository<TEntity>
     Task RollbackTransaction();
 
     Task<int> SaveChangesAsync();
+    void ClearTracking();
 }
