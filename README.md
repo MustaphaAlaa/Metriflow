@@ -13,8 +13,8 @@ The system is designed to ingest raw data from mocked external web analytics sou
 - **Data Correlation & Caching (Redis)**  
   A **.NET Worker Service (Consumer 1)** consumes records from RabbitMQ and temporarily stores them in **Redis** to wait for matching data (by _page_ and _date_). Once a day’s data is complete, it merges the pairs into a single consolidated record and republishes it for aggregation.
 
-- **Aggregation & Persistence (EF Core + SQL Server)**  
-  A second **.NET Worker Service (Consumer 2)** processes these consolidated records, computes per-page and per-day totals and averages, and persists the results in **SQL Server** using **Entity Framework Core**.
+- **Aggregation & Persistence (EF Core + Postgres)**  
+  A second **.NET Worker Service (Consumer 2)** processes these consolidated records, computes per-page and per-day totals and averages, and persists the results in **Postgres** using **Entity Framework Core**.
 
 - **Secure Reporting API (ASP.NET Core)**  
   Provides authenticated endpoints for authorized users to query aggregated analytics (daily, per page, and overview reports) using **JWT-based authentication**.
@@ -23,7 +23,7 @@ The system is designed to ingest raw data from mocked external web analytics sou
   Ensures message delivery integrity with **acknowledgment on success**, **retry logic (3 attempts with exponential backoff)**.
 
 - **Containerized Infrastructure**  
-  Fully orchestrated with **Docker Compose**, including the **API**, **Worker Services**, **SQL Server**, **RabbitMQ**, and **Redis** — ensuring easy local development and consistent deployment.
+  Fully orchestrated with **Docker Compose**, including the **API**, **Worker Services**, **Postgres**, **RabbitMQ**, and **Redis** — ensuring easy local development and consistent deployment.
 
 ## **🛠️ Tech Stack**
 
@@ -31,7 +31,7 @@ The system is designed to ingest raw data from mocked external web analytics sou
 | :-------------------- | :------------------------------ | :---------------------------------------------------------------- |
 | **Backend API**       | ASP.NET Core (.NET 8\)          | RESTful Reporting API                                             |
 | **Producer/Consumer** | .NET Worker Service             | Handles Ingestion, Queuing, and Aggregation                       |
-| **Database**          | SQL Server (via Docker)         | Persistent storage for Raw Data and Daily Statistics              |
+| **Database**          | Postgres (via Docker)         | Persistent storage for Raw Data and Daily Statistics              |
 | **ORM**               | Entity Framework Core (EF Core) | Database interaction and migrations                               |
 | **Message Broker**    | RabbitMQ                        | Reliable, asynchronous messaging                                  |
 | **Authentication**    | JWT (Bearer Token)              | Securing API endpoints                                            |
@@ -45,19 +45,15 @@ The system follows a clear, event-driven flow designed for decoupled, reliable, 
 1. **Data Producer (Console App)**  
    Reads mock **Google Analytics (GA)** and **PageSpeed Insights (PSI)** JSON files and publishes each raw record (as-is) to the **analytics.raw** exchange on **RabbitMQ** to simulate real-time data streaming.
 
-2. **Correlation Worker (Consumer 1)**  
-   Subscribed to the **analytics.raw.q** queue.  
-   Receives individual GA and PSI records, temporarily caches them in **Redis** until matching records (by _page_ and _date_) are available.  
-   At the end of each day, it combines the matching GA + PSI data into a single correlated record and republishes it to the **analytics.daily** exchange.
 
-3. **Aggregation Worker (Consumer 2)**  
-   Listens to the **analytics.daily.q** queue, consumes correlated records, calculates per-page and per-day aggregates (totals and averages), and persists the results to **SQL Server** via **EF Core**.
+2. **Aggregation Worker (Consumer 2)**  
+   Listens to the **analytics.daily.q** queue, consumes correlated records, calculates per-page and per-day aggregates (totals and averages), and persists the results to **Postgres** via **EF Core**.
 
-4. **Reporting API (ASP.NET Core)**  
+3. **Reporting API (ASP.NET Core)**  
    Exposes the aggregated analytics through **JWT-protected endpoints**, providing reports by day, by page, and overall summaries.
 
-5. **Containerized Environment (Docker Compose)**  
-   All components — **API**, **Workers**, **RabbitMQ**, **Redis**, and **SQL Server** — run as isolated containers, ensuring reliable orchestration and consistent local development.
+4. **Containerized Environment (Docker Compose)**  
+   All components — **API**, **Workers**, **RabbitMQ**, **Redis**, and **Postgres** — run as isolated containers, ensuring reliable orchestration and consistent local development.
 
 ## **⚙️ Setup and Running the Application**
 
@@ -78,11 +74,11 @@ Navigate to the root directory of the repository where the docker-compose.yml fi
 This command will:
 
 1. Build the ASP.NET Core API and Worker Service images.
-2. Start the RabbitMQ broker, SQL Server database, and Redis cache containers.
+2. Start the RabbitMQ broker, Postgres database, and Redis cache containers.
 3. Run the **Producer Worker Service**, which will automatically read the bundled mock JSON files and start publishing data to RabbitMQ.
-4. Run the **Consumer Worker Service**, which will start listening to the queue, aggregating data, and persisting it to the SQL Server DB.
+4. Run the **Consumer Worker Service**, which will start listening to the queue, aggregating data, and persisting it to the Postgres DB.
 
-Wait a few moments for the SQL Server to initialize and the workers to process the initial data queue.
+Wait a few moments for the Postgres to initialize and the workers to process the initial data queue.
 
 ### **Step 2: Access Swagger and Seed/Login**
 
@@ -119,11 +115,11 @@ The primary reporting endpoints pull from the DailyStats table, which holds the 
 
 ## **✨ Bonus Features Implemented**
 
-- **Docker Healthchecks:** Healthchecks are configured in docker-compose.yml for the RabbitMQ and SQL Server containers.
+- **Docker Healthchecks:** Healthchecks are configured in docker-compose.yml for the RabbitMQ and Postgres containers.
 - **Clear Logging:** Detailed console output is provided across the Producer and Consumer services, clearly indicating:
   - Messages published to RabbitMQ.
   - Messages consumed.
-  - Successful data save to SQL Server.
+  - Successful data save to Postgres.
   - Detailed retry attempts on transient database failures.
 
 **Happy coding\!**
