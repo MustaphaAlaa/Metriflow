@@ -8,13 +8,10 @@ The system is designed to ingest raw data from mocked external web analytics sou
   Reads mock data from **Google Analytics (GA)** and **PageSpeed Insights (PSI)** JSON files. Each record represents a page’s metrics for a specific date. The system standardizes and merges both datasets into unified analytical records.
 
 - **Message Production (RabbitMQ)**  
-  A **.NET console producer** simulates real-time API data by publishing GA , and PSI records, one by one, to a RabbitMQ **exchange**, ensuring asynchronous and decoupled processing.
-
-- **Data Correlation & Caching (Redis)**  
-  A **.NET Worker Service (Consumer 1)** consumes records from RabbitMQ and temporarily stores them in **Redis** to wait for matching data (by _page_ and _date_). Once a day’s data is complete, it merges the pairs into a single consolidated record and republishes it for aggregation.
+  A **.NET console producer** simulates real-time API data by publishing GA, and PSI records, one by one, to a RabbitMQ **exchange**, ensuring asynchronous and decoupled processing.
 
 - **Aggregation & Persistence (EF Core + Postgres)**  
-  A second **.NET Worker Service (Consumer 2)** processes these consolidated records, computes per-page and per-day totals and averages, and persists the results in **Postgres** using **Entity Framework Core**.
+  A second **.NET Worker Service (Consumer)** processes these consolidated records, computes per-page and per-day totals and averages, and persists the results in **Postgres** using **Entity Framework Core**.
 
 - **Secure Reporting API (ASP.NET Core)**  
   Provides authenticated endpoints for authorized users to query aggregated analytics (daily, per page, and overview reports) using **JWT-based authentication**.
@@ -46,10 +43,10 @@ The system follows a clear, event-driven flow designed for decoupled, reliable, 
    Reads mock **Google Analytics (GA)** and **PageSpeed Insights (PSI)** JSON files and publishes each raw record (as-is) to the **analytics.raw** exchange on **RabbitMQ** to simulate real-time data streaming.
 
 
-2. **Aggregation Worker (Consumer 2)**  
+2. **Aggregation Worker (Consumer)**  
    Listens to the **analytics.daily.q** queue, consumes correlated records, calculates per-page and per-day aggregates (totals and averages), and persists the results to **Postgres** via **EF Core**.
 
-3. **Reporting API (ASP.NET Core)**  
+3. **Reporting API (ASP.NET Core)**  ****
    Exposes the aggregated analytics through **JWT-protected endpoints**, providing reports by day, by page, and overall summaries.
 
 4. **Containerized Environment (Docker Compose)**  
