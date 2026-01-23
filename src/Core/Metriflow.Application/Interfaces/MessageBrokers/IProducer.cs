@@ -30,6 +30,6 @@ public interface IProducer
     )
         where T : IAnalyticRecord;
 
-    Task NotifyCompletedMessage(AggregationCompletedMessage message, string routingKey,
+    Task NotifyCompletedMessageAsync(AggregationCompletedMessage message, string routingKey,
         string exchangeName);
 }

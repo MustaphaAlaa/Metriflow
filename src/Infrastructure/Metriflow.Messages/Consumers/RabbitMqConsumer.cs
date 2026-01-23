@@ -199,7 +199,8 @@ public class RabbitMqConsumer : IAsyncDisposable, IMessageBrokerConsumer
                     {
                         try
                         {
-                            await channel.BasicNackAsync(args.DeliveryTag, multiple: false, requeue: true);
+                            await channel.BasicNackAsync(args.DeliveryTag, multiple: false, requeue: false);
+                            _logger.LogWarning("There's no DLQ is set for now, so I set requeue to false to avoid infinite redelivery");
                         }
                         catch (Exception nackEx)
                         {
@@ -217,7 +218,6 @@ public class RabbitMqConsumer : IAsyncDisposable, IMessageBrokerConsumer
                 _logger.LogWarning(ocEx,
                     "Message processing was canceled for queue {QueueName}. Channel state: {IsOpen}", queueName,
                     channel.IsOpen);
-                // Don't attempt to nack during cancellation as the connection may be closing
             }
             catch (Exception ex)
             {
@@ -250,14 +250,14 @@ public class RabbitMqConsumer : IAsyncDisposable, IMessageBrokerConsumer
         await channel.BasicConsumeAsync(queue: queueName, autoAck: false, consumer, cancellationToken);
         _logger.LogInformation("Started consuming from queue: {QueueName}", queueName);
 
-        try
-        {
-            await Task.Delay(Timeout.Infinite, cancellationToken);
-        }
-        catch (TaskCanceledException)
-        {
-            _logger.LogInformation("Consumer stopped for queue {QueueName}", queueName);
-        }
+        // try
+        // {
+        //     await Task.Delay(Timeout.Infinite, cancellationToken);
+        // }
+        // catch (TaskCanceledException)
+        // {
+        //     _logger.LogInformation("Consumer stopped for queue {QueueName}", queueName);
+        // }
     }
 
     /// <summary>
