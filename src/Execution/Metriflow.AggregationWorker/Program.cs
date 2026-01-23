@@ -7,12 +7,23 @@ using Metriflow.Application.Entities;
 using Metriflow.Application.Extensions;
 using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Workers;
+using Metriflow.Application.Services.Workers;
 using Metriflow.Infrastructure;
 using Metriflow.Messages.Connections;
 using Metriflow.Messages.Extensions;
 using Microsoft.EntityFrameworkCore;
-
+using Serilog;
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 var builder = Host.CreateApplicationBuilder(args);
+
+builder.Services.AddSerilog((services, lc) => lc
+    .ReadFrom.Configuration(builder.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext());
+
+
 builder.Services.AddHostedService<RawDataWorker>();
 
 // builder.Services.AddHostedService<PagesAnalyticWorker>();
@@ -25,16 +36,17 @@ builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("R
 
 
 builder.Services.AddSingleton<IRawDataConsumer, RawDataConsumer>();
+builder.Services.AddSingleton<IProducer, Producer>();
 
 // Register the generic message handler as scoped (open generic registration)
-builder.Services.AddScoped(typeof(IConsumerMessageHandler<>), typeof(ConsumerMessageHandler<>));
+builder.Services.AddScoped(typeof(IRawDataConsumerMessageHandler<>), typeof(RawDataConsumerMessageHandler<>));
 
 
 builder.Services.AddInfrastructureLayer(builder.Configuration);
 builder.Services.AddApplicationLayerDiServices();
 builder.Services.AddRegisterReflection();
 builder.Services.AddRabbitMqDi();
-
+ 
 var host = builder.Build();
 
 using (var scope = host.Services.CreateScope())

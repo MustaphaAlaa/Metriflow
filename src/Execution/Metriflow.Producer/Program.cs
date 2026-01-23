@@ -2,6 +2,7 @@
 using Metriflow.Application.Extensions;
 using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Workers;
+using Metriflow.Application.Services.Workers;
 using Metriflow.Messages.Connections;
 using Metriflow.Messages.Extensions;
 using Metriflow.Messages.Producers;
@@ -20,18 +21,18 @@ internal class Program
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .Build(); 
+            .Build();
 
         var host = Host.CreateDefaultBuilder(args)
-            .ConfigureServices(
-                (hostContext, services) =>
+            .ConfigureServices((hostContext, services) =>
                 {
                     var configuration = hostContext.Configuration;
-                     services.Configure<RabbitMqSettings>(configuration.GetSection("RabbitMQ"));
+                    services.Configure<RabbitMqSettings>(configuration.GetSection("RabbitMQ"));
                     services.AddHostedService<MessageProducer>();
                     // services.AddRabbitMqDi( );
                     services.AddSingleton<IMessageBrokerConnection, RabbitMqConnection>();
-                     services.AddScoped<IMessageBrokerProducer, RabbitMqProducer>();
+                    services.AddScoped<IMessageBrokerProducer, RabbitMqProducer>();
+                    services.AddScoped<IProducer, Producer>();
 
                     services.AddRegisterReflection();
                     ;
@@ -40,7 +41,7 @@ internal class Program
             .Build();
 
         await host.RunAsync();
-        
+
         System.Console.WriteLine("I'm done");
         System.Console.WriteLine("I'm done");
         System.Console.WriteLine("I'm done");
@@ -76,6 +77,3 @@ internal class Program
         System.Console.WriteLine("I'm done");
     }
 }
-
-
-

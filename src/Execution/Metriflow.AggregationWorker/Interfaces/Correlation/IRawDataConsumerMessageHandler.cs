@@ -9,7 +9,7 @@ namespace Metriflow.AggregationWorker.Interfaces.Correlation;
 /// Handles incoming analytic records received by the consumer.
 /// Implementations are responsible for storing, correlating and triggering downstream processing.
 /// </summary>
-public interface IConsumerMessageHandler<T> where T: class, IAnalyticRecord
+public interface IRawDataConsumerMessageHandler<T> where T: class, IAnalyticRecord
 {
     /// <summary>
     /// Handle an incoming analytic record of type <typeparamref name="T"/>.

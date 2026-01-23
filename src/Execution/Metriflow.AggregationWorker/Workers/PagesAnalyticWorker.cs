@@ -18,7 +18,7 @@ public class PagesAnalyticWorker(
         {
             var pagesCount = await pageAnalyticsOrchestration.CreatePageAnalyticsAsync();
 
-            await producer.NotifyCompletedMessage(new AggregationCompletedMessage()
+            await producer.NotifyCompletedMessageAsync(new AggregationCompletedMessage()
                 {
                     CorrelationId = Guid.NewGuid(),
                     CompletedAt = DateTime.Now,

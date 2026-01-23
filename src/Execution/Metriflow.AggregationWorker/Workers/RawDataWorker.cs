@@ -15,7 +15,8 @@ public class RawDataWorker(
 
         try
         {
-            await rawDataConsumer.Consume(stoppingToken);
+            rawDataConsumer.Consume(stoppingToken);
+            await Task.Delay(Timeout.Infinite, stoppingToken);
         }
         catch (Exception ex)
         {
