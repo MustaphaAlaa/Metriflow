@@ -44,45 +44,101 @@ public class AggregationProgressRepository : BaseRepository<AggregationProgress>
         aggregationProgress.Quarterly = true;
     }
 
-    
+    public async Task CreateRangeWithKeysAsync(IEnumerable<AggregationKey> keys)
+    {
+        var keysList = keys.ToList();
 
-    public async Task<List<AggregationKey>> GetUnprocessedKeysAsync() 
+         var existingKeys = await Db.AggregationProgresses
+            .Select(ap => new AggregationKey 
+            { 
+                Date = ap.Date, 
+                PageId = ap.PageId 
+            })
+            .ToListAsync();  
+        
+        if (existingKeys.Any())
+        {
+            var newKeys = keys
+                .Where(k => !existingKeys.Any(ek => 
+                    ek.Date == k.Date && ek.PageId == k.PageId))
+                .ToList();
+
+             var newProgresses = newKeys
+                .Select(e => new AggregationProgress
+                {
+                    Date = e.Date,
+                    PageId = e.PageId,
+                    Daily = false,
+                    Monthly = false,
+                    Quarterly = false,
+                    Yearly = false,
+                    Interval = false,
+                    Weekly = false,
+                })
+                .ToList();
+ 
+
+            if (newProgresses.Any())
+            {
+                await Db.AggregationProgresses.AddRangeAsync(newProgresses);
+            }
+        }
+        else
+        {
+            var progresses = keysList.Select(k => new AggregationProgress
+            {
+                Date = k.Date,
+                PageId = k.PageId,
+                Daily = false,
+                Monthly = false,
+                Quarterly = false,
+                Yearly = false,
+                Interval = false,
+                Weekly = false,
+            });
+            await Db.AggregationProgresses.AddRangeAsync(progresses);
+        }
+    }
+
+    public async Task<List<AggregationKey>> GetUnprocessedKeysAsync()
     {
         return await Db.AggregationProgresses.Where(e =>
             !e.Daily && !e.Interval
                      && !e.Monthly && !e.Quarterly && !e.Yearly
-        ).Select(k=> new AggregationKey()
+        ).Select(k => new AggregationKey()
         {
             Date = k.Date,
             PageId = k.PageId
         }).ToListAsync();
     }
 
-    public IQueryable<AggregateRecordsJoins> GetNoneMonthlyAggregateRecords()  
+    public IQueryable<AggregateRecordsJoins> GetNoneMonthlyAggregateRecords()
     {
         return GetJoins(Db.AggregationProgresses.Where(e =>
-            e.Interval&& e.Daily && !e.Monthly
+            e.Interval && e.Daily && !e.Monthly
         ));
     }
 
     public IQueryable<AggregateRecordsJoins> GetNoneIntervalsAggregateRecords()
     {
-        return GetJoins(Db.AggregationProgresses.Where(e=> !e.Interval));
+        return GetJoins(Db.AggregationProgresses.Where(e => !e.Interval));
     }
 
-    public IQueryable<AggregateRecordsJoins> GetNoneDailyAggregateRecords()  
+    public IQueryable<AggregateRecordsJoins> GetNoneDailyAggregateRecords()
     {
         return GetJoins(Db.AggregationProgresses.Where(e =>
             e.Interval && !e.Daily
         ));
     }
-    public IQueryable<AggregateRecordsJoins> GetNoneYearlyAggregateRecords()  
+
+    public IQueryable<AggregateRecordsJoins> GetNoneYearlyAggregateRecords()
     {
         return GetJoins(Db.AggregationProgresses.Where(e =>
-            e.Interval  && e.Monthly && !e.Yearly
+            e.Interval && e.Monthly && !e.Yearly
         ));
     }
-    public IQueryable<AggregateRecordsJoins> GetNoneQueryableAggregateRecords()  
+
+    public IQueryable<AggregateRecordsJoins> GetNoneQueryableAggregateRecords()
     {
         return GetJoins(Db.AggregationProgresses.Where(e =>
             e.Interval && e.Monthly && !e.Quarterly

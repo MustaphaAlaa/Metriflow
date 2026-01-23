@@ -3,13 +3,13 @@ using Metriflow.Domain.Interfaces;
 
 namespace IRepository.Generic;
 
-public interface IAggregationProgressRepository: IBaseRepository<AggregationProgress>
+public interface IAggregationProgressRepository : IBaseRepository<AggregationProgress>
 {
     void DailyAggregated(AggregationProgress aggregationProgress);
     void IntervalAggregated(AggregationProgress aggregationProgress);
     void MonthlyAggregated(AggregationProgress aggregationProgress);
     void QuarterlyAggregated(AggregationProgress aggregationProgress);
- 
+
     void YearlyAggregated(AggregationProgress aggregationProgress);
 
     Task<List<AggregationKey>> GetUnprocessedKeysAsync();
@@ -18,4 +18,5 @@ public interface IAggregationProgressRepository: IBaseRepository<AggregationProg
     IQueryable<AggregateRecordsJoins> GetNoneDailyAggregateRecords();
     IQueryable<AggregateRecordsJoins> GetNoneYearlyAggregateRecords();
     IQueryable<AggregateRecordsJoins> GetNoneQueryableAggregateRecords();
+    public Task CreateRangeWithKeysAsync(IEnumerable<AggregationKey> keys);
 }

@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Repositories.Generic;
 
-[ServiceRegistration(ServiceLifetime.Scoped, typeof(IBaseRepository<>))]
+// [ServiceRegistration(ServiceLifetime.Scoped, typeof(IBaseRepository<>))]
 public class BaseRepository<TEntity> : IBaseRepository<TEntity>
     where TEntity : class
 {
