@@ -105,7 +105,9 @@ services:
       RabbitMQ__Queues__AggregationCompleted: metriflow.aggregation.completed
       RabbitMQ__Queues__AggregationFailed: metriflow.aggregation.failed
       RabbitMQ__Queues__GA: metriflow.analytics.GA
-      RabbitMQ__Queues__PSI: metriflow.analytics.PSI    
+      RabbitMQ__Queues__PSI: metriflow.analytics.PSI
+      RabbitMQ__Queues__Correlation: metriflow.analytics.Correlation
+
     networks:
       - metriflow-net
 
@@ -127,6 +129,7 @@ services:
       - RabbitMQ__Exchange=analytics.raw
       - RabbitMQ__Queues__GA=metriflow.analytics.GA
       - RabbitMQ__Queues__PSI=metriflow.analytics.PSI
+      - RabbitMQ__Queues__Correlation=metriflow.analytics.Correlation
     networks:
       - metriflow-net 
 

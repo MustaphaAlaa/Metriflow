@@ -10,6 +10,7 @@ public class QueueSettings
     public string AggregationFailed { get; set; } = string.Empty;
     public string GA { get; set; } = string.Empty;
     public string PSI { get; set; } = string.Empty;
+    public string Correlation { get; set; } = string.Empty;
 }
 
 public class StartAggregationMessage
@@ -44,7 +45,8 @@ public class ProcessedKey
 
 public enum AggregationType
 {
-    Page, //  It's not an aggregation, but I'll leave it as it for now.
+    Records, //  It's not an aggregation, but I'll leave it as it for now.
+    Page,   //  It's not an aggregation, but I'll leave it as it for now.
     Interval,
     Daily,
     Monthly,
