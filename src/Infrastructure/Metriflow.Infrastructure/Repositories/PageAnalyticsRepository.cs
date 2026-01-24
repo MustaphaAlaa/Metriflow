@@ -15,20 +15,23 @@ public class PageAnalyticsRepository(MetriflowDbContext context) : BaseRepositor
 {
     protected readonly MetriflowDbContext _db = context;
 
-    public IQueryable<PageAnalytics> GetUnaggregatedPageAnalytics(List<AggregationKey> aggregateKeys)
+    public IQueryable<PageAnalytics> GetUnaggregatedPageAnalytics( )
     {
         
-        
-        // var dates = aggregateKeys.Select(ak => ak.Date).Distinct().ToList();
-        //
-        // var pageIds = aggregateKeys.Select(k => k.PageId).Distinct().ToList();
-        //
-        //
-        // return _db.PageAnalytics
-        //     .Where(pa => dates.Contains(pa.Date) && pageIds.Contains(pa.PageId));
-
-        
-        
-        return null;
+        var query = from ap in _db.AggregationProgresses
+            join pa in _db.PageAnalytics on new { ap.Date, ap.PageId } equals new { pa.Date, pa.PageId }
+            select new PageAnalytics()
+            {
+                Id = pa.Id,
+                Date = pa.Date,
+                PageId = pa.PageId,
+                Users = pa.Users,
+                Views = pa.Views,
+                PerformanceScore = pa.PerformanceScore,
+                Sessions = pa.Sessions,
+                LcpMs = pa.LcpMs,
+                Intervals = pa.Intervals,
+            };
+        return query;
     }
 }

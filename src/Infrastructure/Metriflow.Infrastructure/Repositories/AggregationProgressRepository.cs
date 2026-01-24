@@ -24,6 +24,8 @@ public class AggregationProgressRepository : BaseRepository<AggregationProgress>
         aggregationProgress.Interval = true;
     }
 
+ 
+
     public void CorrelationAggregated(AggregationProgress aggregationProgress)
     {
         aggregationProgress.Correlation = true;
@@ -125,9 +127,15 @@ public class AggregationProgressRepository : BaseRepository<AggregationProgress>
         ));
     }
 
-    public IQueryable<AggregateRecordsJoins> GetNoneIntervalsAggregateRecords()
+    public IQueryable<AggregationProgress> GetNoneIntervalsAggregateRecords()
     {
-        return GetJoins(Db.AggregationProgresses.Where(e => !e.Interval));
+          var query = Db.AggregationProgresses.Where(e => !e.Interval);
+          return query;
+
+
+
+
+
     }
 
     public IQueryable<AggregateRecordsJoins> GetNoneCorrelationAggregateRecords()
