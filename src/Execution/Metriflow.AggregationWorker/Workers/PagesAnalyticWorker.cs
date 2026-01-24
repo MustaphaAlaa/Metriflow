@@ -16,10 +16,10 @@ public class PagesAnalyticWorker(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation("PageId analytics worker is started.");
+        logger.LogInformation("PageAnalytics worker is started.");
 
 
-        logger.LogInformation("@@@@PageId Analytics Worker is Started.");
+        logger.LogInformation("@@@@PageAnalytics Worker is Started.");
         var analyticChannel = await consumer.CreateNewChannelAsync();
 
         await consumer.ConsumeFromChannelAsync<AggregationCompletedMessage>(
@@ -37,16 +37,29 @@ public class PagesAnalyticWorker(
                 {
                     using var scope = serviceScopeFactory.CreateScope();
                     var orc = scope.ServiceProvider.GetRequiredService<IPageAnalyticsOrchestration>();
-                    await orc.CreatePageAnalyticsAsync();
-                    logger.LogInformation("@@@@Oh there are data coming.");
-                    
+                    var pagesNumber = await orc.CreatePageAnalyticsAsync();
+
+                    await Notify(pagesNumber);
                 }
                 else
                     logger.LogInformation("@@@@Records are less than zero.");
-             },
+            },
             stoppingToken
         );
 
+
         await Task.Delay(Timeout.Infinite, stoppingToken);
+    }
+
+    private async Task Notify(int recordsCount)
+    {
+        await producer.NotifyCompletedMessageAsync(new AggregationCompletedMessage
+            {
+                CorrelationId = Guid.NewGuid(),
+                CompletedType = AggregationType.Page,
+                ProcessedCount = recordsCount,
+                CompletedAt = DateTime.UtcNow,
+            },
+            _rabbitMqSettings.Queues.IntervalAggregation, _rabbitMqSettings.Exchange);
     }
 }
