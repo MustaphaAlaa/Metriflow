@@ -19,7 +19,4 @@
     <ProjectReference Include="..\..\Core\Metriflow.Domain\Metriflow.Domain.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Metriflow.Messages\Metriflow.Messages.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="logs\" />
-  </ItemGroup>
 </Project>

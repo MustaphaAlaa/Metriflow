@@ -1,35 +1,52 @@
 using Metriflow.Application.Entities;
 using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Workers;
+using Microsoft.Extensions.Options;
 
 namespace Metriflow.AggregationWorker.Workers;
 
 public class PagesAnalyticWorker(
-    ILogger<DailyAnalyticsWorker> logger,
+    ILogger<PagesAnalyticWorker> logger,
     IProducer producer,
-    IPageAnalyticsOrchestration pageAnalyticsOrchestration,
-    IConfigurationManager confg) : BackgroundService
+    IMessageBrokerConsumer consumer,
+    IOptions<RabbitMqSettings> options,
+    IServiceScopeFactory serviceScopeFactory) : BackgroundService
 {
+    private readonly RabbitMqSettings _rabbitMqSettings = options.Value;
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation("Page analytics worker is started.");
+        logger.LogInformation("PageId analytics worker is started.");
 
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            var pagesCount = await pageAnalyticsOrchestration.CreatePageAnalyticsAsync();
 
-            await producer.NotifyCompletedMessageAsync(new AggregationCompletedMessage()
+        logger.LogInformation("@@@@PageId Analytics Worker is Started.");
+        var analyticChannel = await consumer.CreateNewChannelAsync();
+
+        await consumer.ConsumeFromChannelAsync<AggregationCompletedMessage>(
+            analyticChannel,
+            _rabbitMqSettings.Queues.Correlation,
+            exchangeName: _rabbitMqSettings.Exchange,
+            _rabbitMqSettings.Queues.Correlation,
+            async message =>
+            {
+                logger.LogWarning(
+                    "$$$$$$$$AggregationCompletedMessage received. CorrelationCount={Count}",
+                    message.ProcessedCount
+                );
+                if (message.ProcessedCount > 0)
                 {
-                    CorrelationId = Guid.NewGuid(),
-                    CompletedAt = DateTime.Now,
-                    CompletedType = AggregationType.Page,
-                    ProcessedCount = pagesCount
-                }, confg.GetSection("Queues:IntervalAggregation").Value,
-                "a"
-            );
+                    using var scope = serviceScopeFactory.CreateScope();
+                    var orc = scope.ServiceProvider.GetRequiredService<IPageAnalyticsOrchestration>();
+                    await orc.CreatePageAnalyticsAsync();
+                    logger.LogInformation("@@@@Oh there are data coming.");
+                    
+                }
+                else
+                    logger.LogInformation("@@@@Records are less than zero.");
+             },
+            stoppingToken
+        );
 
-
-            await Task.Delay(2000, stoppingToken);
-        }
+        await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 }

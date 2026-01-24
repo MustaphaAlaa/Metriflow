@@ -39,7 +39,7 @@ public class PageRepository(MetriflowDbContext context, ILogger<PageRepository> 
         if (page is null)
         {
             logger.LogInformation(
-                $"Creating Page: {combinedAnalyticsMessage.Page} --- Ticks: {combinedAnalyticsMessage.Ticks}"
+                $"Creating PageId: {combinedAnalyticsMessage.Page} --- Ticks: {combinedAnalyticsMessage.Ticks}"
             );
             page = await CreateAsync(
                 new Page { Path = (enPages)combinedAnalyticsMessage.Page  }

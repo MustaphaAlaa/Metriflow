@@ -14,9 +14,10 @@ public class PSIRecordConfiguration : IEntityTypeConfiguration<PSIRecord>
 
         builder.Property(x => x.Ticks)
             .HasConversion(ticks => new DateTime(ticks, DateTimeKind.Utc), 
-                date => date.Ticks).HasJsonPropertyName("Date");
+                date => date.Ticks)
+            .HasJsonPropertyName("Date");
         builder
-            .HasIndex(x => new {x.Ticks, x.Page, })
+            .HasIndex(x => new {x.Ticks, Page = x.PageId, })
             .IsUnique(true); 
     }
 }

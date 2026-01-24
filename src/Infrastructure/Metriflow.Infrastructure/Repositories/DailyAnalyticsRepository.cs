@@ -23,8 +23,8 @@
 //     public async Task<List<PageReport>> PageReportAsync()
 //     {
 //         var pageReports = await _db
-//             .PageAnalytics.Include(r => r.Page)
-//             .GroupBy(r => new { r.PageId, r.Page.Path })
+//             .PageAnalytics.Include(r => r.PageId)
+//             .GroupBy(r => new { r.PageId, r.PageId.Path })
 //             .Select(g => new PageReport
 //             {
 //                 Path = g.Key.Path,

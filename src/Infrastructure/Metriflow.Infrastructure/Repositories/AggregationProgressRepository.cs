@@ -24,6 +24,11 @@ public class AggregationProgressRepository : BaseRepository<AggregationProgress>
         aggregationProgress.Interval = true;
     }
 
+    public void CorrelationAggregated(AggregationProgress aggregationProgress)
+    {
+        aggregationProgress.Correlation = true;
+    }
+
     public void DailyAggregated(AggregationProgress aggregationProgress)
     {
         aggregationProgress.Daily = true;
@@ -48,22 +53,22 @@ public class AggregationProgressRepository : BaseRepository<AggregationProgress>
     {
         var keysList = keys.ToList();
 
-         var existingKeys = await Db.AggregationProgresses
-            .Select(ap => new AggregationKey 
-            { 
-                Date = ap.Date, 
-                PageId = ap.PageId 
+        var existingKeys = await Db.AggregationProgresses
+            .Select(ap => new AggregationKey
+            {
+                Date = ap.Date,
+                PageId = ap.PageId
             })
-            .ToListAsync();  
-        
+            .ToListAsync();
+
         if (existingKeys.Any())
         {
             var newKeys = keys
-                .Where(k => !existingKeys.Any(ek => 
+                .Where(k => !existingKeys.Any(ek =>
                     ek.Date == k.Date && ek.PageId == k.PageId))
                 .ToList();
 
-             var newProgresses = newKeys
+            var newProgresses = newKeys
                 .Select(e => new AggregationProgress
                 {
                     Date = e.Date,
@@ -76,7 +81,7 @@ public class AggregationProgressRepository : BaseRepository<AggregationProgress>
                     Weekly = false,
                 })
                 .ToList();
- 
+
 
             if (newProgresses.Any())
             {
@@ -105,6 +110,7 @@ public class AggregationProgressRepository : BaseRepository<AggregationProgress>
         return await Db.AggregationProgresses.Where(e =>
             !e.Daily && !e.Interval
                      && !e.Monthly && !e.Quarterly && !e.Yearly
+                     && !e.Correlation
         ).Select(k => new AggregationKey()
         {
             Date = k.Date,
@@ -122,6 +128,11 @@ public class AggregationProgressRepository : BaseRepository<AggregationProgress>
     public IQueryable<AggregateRecordsJoins> GetNoneIntervalsAggregateRecords()
     {
         return GetJoins(Db.AggregationProgresses.Where(e => !e.Interval));
+    }
+
+    public IQueryable<AggregateRecordsJoins> GetNoneCorrelationAggregateRecords()
+    {
+        return GetJoins(Db.AggregationProgresses.AsNoTracking().Where(e => !e.Correlation));
     }
 
     public IQueryable<AggregateRecordsJoins> GetNoneDailyAggregateRecords()
@@ -147,16 +158,22 @@ public class AggregationProgressRepository : BaseRepository<AggregationProgress>
 
     private IQueryable<AggregateRecordsJoins> GetJoins(IQueryable<AggregationProgress> queryable)
     {
-        return queryable
-            .Join(Db.GARecords,
-                ap => new { ap.Date, PageId = ap.PageId },
-                ga => new { Date = new DateTime(ga.Ticks), PageId = ga.Page },
-                (ap, ga) => new AggregateRecordsJoins() { Date = ap.Date, PageId = ga.Page, GARecord = ga })
-            .Join(Db.PSIRecords,
-                ap => new { Date = ap.Date, PageId = ap.PageId }
-                ,
-                psi => new { Date = new DateTime(psi.Ticks), PageId = psi.Page },
-                (ap, psi) => new AggregateRecordsJoins()
-                    { Date = ap.Date, PageId = ap.PageId, GARecord = ap.GARecord, PSIRecord = psi });
+        var qs = from ap in queryable 
+            join ga in Db.GARecords
+                on new { ap.PageId, Date = ap.Date }
+                equals new { ga.PageId, Date = (DateTime)(object)ga.Ticks } 
+            join psi in Db.PSIRecords
+                on new { ap.PageId, Date = ap.Date }
+                equals new { psi.PageId, Date = (DateTime)(object)psi.Ticks }
+            select new AggregateRecordsJoins
+            {
+                AggregationProgress = ap,
+                Date = ap.Date,
+                PageId = ap.PageId,
+                GARecord = ga,
+                PSIRecord = psi
+            };
+
+        return qs;
     }
 }

@@ -16,12 +16,12 @@
 //     private readonly IMessageBrokerConsumer _consumer;
 //     private readonly IUnitOfWork _unitOfWork;
 //     private readonly IBaseRepository<DailyAnalytics> _dailyStateRepository;
-//     private readonly IBaseRepository<Page> _pageRepository;
+//     private readonly IBaseRepository<PageId> _pageRepository;
 //     private readonly IBaseRepository<PageAnalytics> _rawDataRepository;
 //     private readonly IAggregationConsumer _aggregationConsumer;
 //
 //     public AggregationWorkerConsumer(
-//         IBaseRepository<Page> pageRepository,
+//         IBaseRepository<PageId> pageRepository,
 //         IBaseRepository<PageAnalytics> rawDataRepo,
 //         ILogger<AggregationWorkerConsumer> logger,
 //         IMessageBrokerConsumer consumer,

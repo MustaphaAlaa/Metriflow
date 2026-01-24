@@ -48,7 +48,7 @@ public class RawDataConsumerMessageHandler<T>(
                     //     new AggregationKey()
                     //     {
                     //         Date = new DateTime(r.Ticks, DateTimeKind.Utc),
-                    //         PageId = r.Page
+                    //         PageId = r.PageId
                     //     });
                    
                     await repository.CreateRangeAsync(analyticRecords);
@@ -81,7 +81,7 @@ public class RawDataConsumerMessageHandler<T>(
             new AggregationKey()
             {
                 Date = new DateTime(r.Ticks, DateTimeKind.Utc),
-                PageId = r.Page
+                PageId = r.PageId
             });
         logger.LogDebug("#@@@Keyssssssssss");
         logger.LogDebug("#@@@Keyssssssssss");

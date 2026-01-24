@@ -18,7 +18,7 @@ public class GARecordConfiguration : IEntityTypeConfiguration<GARecord>
             .HasJsonPropertyName("Date");
 
 
-        builder.HasIndex(x => new { x.Ticks, x.Page, })
+        builder.HasIndex(x => new { x.Ticks, Page = x.PageId, })
             .IsUnique(true);
     }
 }
