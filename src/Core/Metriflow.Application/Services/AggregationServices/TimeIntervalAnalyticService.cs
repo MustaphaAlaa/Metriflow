@@ -15,13 +15,14 @@ public class TimeIntervalAnalyticService(ILogger<TimeIntervalAnalyticService> lo
         List<PageAnalytics> data
     )
     {
-        if (data is null || data.Count < 12)
+        if (data is null || data.Contains(null))
             return null;
 
         TimeIntervalAnalytic timeIntervalAnalytic = new()
         {
             PageId = data[0].PageId,
             TimeIntervalId = (byte)TimeIntervalUtilities.GetTimeInterval(data[0].Date.Hour),
+            Date = data[0].Date
         };
         
         AggregateUtilities.Aggregate(timeIntervalAnalytic, data);

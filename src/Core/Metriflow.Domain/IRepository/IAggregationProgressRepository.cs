@@ -15,7 +15,7 @@ public interface IAggregationProgressRepository : IBaseRepository<AggregationPro
 
     Task<List<AggregationKey>> GetUnprocessedKeysAsync();
     IQueryable<AggregateRecordsJoins> GetNoneMonthlyAggregateRecords();
-    IQueryable<AggregateRecordsJoins> GetNoneIntervalsAggregateRecords();
+    IQueryable<AggregationProgress> GetNoneIntervalsAggregateRecords();
     IQueryable<AggregateRecordsJoins> GetNoneDailyAggregateRecords();
     IQueryable<AggregateRecordsJoins> GetNoneYearlyAggregateRecords();
     IQueryable<AggregateRecordsJoins> GetNoneQueryableAggregateRecords();

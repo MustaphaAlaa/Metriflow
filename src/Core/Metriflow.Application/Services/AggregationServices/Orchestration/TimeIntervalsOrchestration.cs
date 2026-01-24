@@ -1,4 +1,3 @@
-using System.Globalization;
 using IRepository.Generic;
 using Metriflow.Application.Interfaces;
 using Metriflow.Domain.CustomAttributes;
@@ -11,76 +10,70 @@ namespace Metriflow.Application.Services.Orchestration;
 [ServiceRegistration(ServiceLifetime.Scoped, typeof(ITimeIntervalsOrchestration))]
 public class TimeIntervalsOrchestration(
     IBaseRepository<TimeIntervalAnalytic> _timeIntervalAnalyticsRepository,
-    IAggregationProgressRepository aggregationProgressRepository,
+   IAggregationProgressRepository aggregationProgressRepository,
     IPageAnalyticsRepository pageAnalyticsRepository,
     ITimeIntervalAnalyticService _timeIntervalAnalyticService,
     ILogger<TimeIntervalsOrchestration> logger
 ) : ITimeIntervalsOrchestration
 {
-    public async Task AggregateTimeIntervalsAsync()
+    public async Task<int> AggregateTimeIntervalsAsync()
     {
         try
         {
-            var unprocessedKeys = await aggregationProgressRepository.GetUnprocessedKeysAsync();
+            var unprocessedRecords = pageAnalyticsRepository.GetUnaggregatedPageAnalytics().GroupBy(pa => new { pa.Date.Day, pa.PageId, pa.Intervals }).ToDictionary(pa => pa.Key, pa => pa.Select(p => p));
 
-            if (!unprocessedKeys.Any())
+            if (!unprocessedRecords.Any())
             {
-                logger.LogInformation("No unprocessed keys found");
-                return;
+                logger.LogInformation("@@@@@@@No unprocessed keys found");
+                return 0;
             }
 
-            logger.LogInformation("Processing {Count} unprocessed keys", unprocessedKeys.Count);
-
-            var dates = unprocessedKeys.Select(k => k.Date).Distinct().ToList();
-            var pageIds = unprocessedKeys.Select(k => k.PageId).Distinct().ToList();
-
-            var pages = await pageAnalyticsRepository.RetrieveAllAsync(pa =>
-                dates.Contains(pa.Date) && pageIds.Contains(pa.PageId)
-            );
-
-            var filteredPages = pages.GroupBy(p => new { p.Date, p.PageId, p.Intervals });
-
-            var timeIntervalAnalytics = await _timeIntervalAnalyticsRepository.RetrieveAllAsync(ti =>
-                dates.Contains(ti.Date) && pageIds.Contains(ti.PageId));
-
-            var progressRecords = await aggregationProgressRepository.RetrieveAllAsync(ag =>
-                dates.Contains(ag.Date) && pageIds.Contains(ag.PageId));
-
-            var intervalAnalyticsDictionary =
-                timeIntervalAnalytics.ToDictionary(t => (t.Date, t.PageId, t.TimeIntervalId));
-
-            var aggregationProgressesDictionary = progressRecords.ToDictionary(p => (p.Date, p.PageId));
+            logger.LogInformation("$$$$$$Found {Count} unprocessed records for time interval aggregation", unprocessedRecords.Count);
 
 
-            foreach (var group in filteredPages)
+            var chunkCount = 500;
+            var recordsCount = 0;
+
+            foreach (var chunk in unprocessedRecords.Chunk(chunkCount))
             {
-                var newTimeInterval = _timeIntervalAnalyticService.NormalizeTimeIntervalAnalytic(group.ToList());
-
-                var key = (group.Key.Date, group.Key.PageId, (byte)group.Key.Intervals);
-                if (!intervalAnalyticsDictionary.TryGetValue(key, out var existingTimeInterval))
+                foreach (var group in chunk)
                 {
-                    await
-                        _timeIntervalAnalyticsRepository.CreateAsync(newTimeInterval);
-                }
-                else
-                {
-                    existingTimeInterval.AvgPerformance += newTimeInterval.AvgPerformance;
-                    existingTimeInterval.TotalSessions += newTimeInterval.TotalSessions;
-                    existingTimeInterval.TotalUsers += newTimeInterval.TotalUsers;
-                    existingTimeInterval.TotalViews += newTimeInterval.TotalViews;
+                    var pages = group.Value.ToList();
+                    if (pages == null)
+                        throw new NullReferenceException("pages for TimeIntervalAnalytic is null");
+                    var newTimeInterval = _timeIntervalAnalyticService.NormalizeTimeIntervalAnalytic(pages);
 
-                    _timeIntervalAnalyticsRepository.Update(existingTimeInterval);
+                    if (newTimeInterval == null)
+                        throw new NullReferenceException("Normalized TimeIntervalAnalytic is null");
+
+                    await _timeIntervalAnalyticsRepository.CreateAsync(newTimeInterval);
+
+
+                    foreach (var page in pages)
+                    {
+                        if (page == null)
+                            throw new NullReferenceException("PageAnalytics record is null");
+
+                        var ap = await aggregationProgressRepository.RetrieveTrackedAsync(ap =>
+                            ap.Date == page.Date && ap.PageId == page.PageId);
+                        if (ap is null)
+                            throw new NullReferenceException($"AggregationProgress record is null for Date: {page.Date}, PageId: {page.PageId}");
+
+                        aggregationProgressRepository.IntervalAggregated(ap);
+                        aggregationProgressRepository.Update(ap);
+                    }
+                        recordsCount++;
+
                 }
 
-                if (aggregationProgressesDictionary.TryGetValue((group.Key.Date, group.Key.PageId), out var agp))
-                {
-                    aggregationProgressRepository.IntervalAggregated(
-                        agp);
-                }
+                await _timeIntervalAnalyticsRepository.SaveChangesAsync();
+                logger.LogInformation("$$$$$$$$$$Successfully aggregated records to TimeIntervalAnalytics {Count}", recordsCount);
+
             }
 
-            await _timeIntervalAnalyticsRepository.SaveChangesAsync();
-            logger.LogInformation("Successfully processed {Count} groups", filteredPages.Count());
+
+            logger.LogInformation("$$$$$$$$$Total Successfully aggregated records to TimeIntervalAnalytics {Count}", recordsCount);
+            return recordsCount;
         }
         catch (Exception ex)
         {
