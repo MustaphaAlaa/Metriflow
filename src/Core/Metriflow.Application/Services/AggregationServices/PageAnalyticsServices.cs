@@ -35,9 +35,11 @@ public class PageAnalyticsServices(ILogger<PageAnalyticsServices> logger) : IPag
 
     public List<PageAnalytics> RecordsToPageAnalytics(IEnumerable<AggregateRecordsJoins> noneAggregateRecords)
     {
+       logger.LogInformation("@@@@@@@RecordsToPageAnalytics method.");
       var records =   noneAggregateRecords.Select(record => new PageAnalytics()
         {  
                 PageId = record.PageId,
+                Page = null,
                 LcpMs = record.PSIRecord.LCP_MS,
                 PerformanceScore = record.PSIRecord.PerformanceScore,
                 Users = record.GARecord.Users,
@@ -46,6 +48,7 @@ public class PageAnalyticsServices(ILogger<PageAnalyticsServices> logger) : IPag
                 Date = record.Date,
                 Intervals = TimeIntervalUtilities.GetTimeInterval(record.Date.Hour),   
         }).ToList();
+        logger.LogInformation("@@@@@@@Records to PageAnalytics is done.");
         return records;
     }
 }

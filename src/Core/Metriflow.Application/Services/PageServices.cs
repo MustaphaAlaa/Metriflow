@@ -32,7 +32,7 @@ public class PageServices(
             return null;
 
         logger.LogInformation(
-            $"Processing: {combinedAnalyticsMessage.Ticks} on Page {combinedAnalyticsMessage.Page}"
+            $"Processing: {combinedAnalyticsMessage.Ticks} on PageId {combinedAnalyticsMessage.Page}"
         );
         combinedAnalyticsMessage.Page = combinedAnalyticsMessage.Page;
         return combinedAnalyticsMessage;

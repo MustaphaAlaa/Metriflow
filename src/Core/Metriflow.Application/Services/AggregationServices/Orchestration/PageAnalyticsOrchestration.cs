@@ -2,35 +2,46 @@ using IRepository.Generic;
 using Metriflow.Application.Interfaces;
 using Metriflow.Domain.CustomAttributes;
 using Metriflow.Domain.Entities;
+using Metriflow.Domain.Entities.Workers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Metriflow.Application.Services.Orchestration;
 
-[ServiceRegistration(ServiceLifetime.Scoped, typeof(IPageAnalyticsOrchestration))]
 public class PageAnalyticsOrchestration(
-    // IUnitOfWork unitOfWork,
     IAggregationProgressRepository aggregationProgressRepository,
-    IPageAnalyticsServices pageAnalyticService
+    IBaseRepository<PageAnalytics> pageAnalyticsRepository,
+    IPageAnalyticsServices pageAnalyticService,
+    ILogger<PageAnalyticsOrchestration> logger
 ) : IPageAnalyticsOrchestration
 
 {
-    // private readonly IBaseRepository<PageAnalytics> _pageAnalyticsRepository =
-    //     unitOfWork.GetRepository<PageAnalytics>();
-
-
-    public async Task<int>  CreatePageAnalyticsAsync()
+    public async Task<int> CreatePageAnalyticsAsync()
     {
-        var noneRecordsJoinsList = aggregationProgressRepository.GetNoneIntervalsAggregateRecords();
+        var unprocessedKeys = aggregationProgressRepository.GetNoneCorrelationAggregateRecords().ToList();
 
-        if (!noneRecordsJoinsList.Any())
+        if (!unprocessedKeys.Any())
             return 0;
 
-        var pagesAnalytics = pageAnalyticService.RecordsToPageAnalytics(noneRecordsJoinsList);
-
-        // await _pageAnalyticsRepository.CreateRangeAsync(pagesAnalytics);
+        logger.LogInformation("@@@@@@@@@PageAnalyticsOrchestration PageAnalytics Creating should be start");
 
 
-        // await unitOfWork.SaveChangesAsync();
+        var pagesAnalytics = pageAnalyticService.RecordsToPageAnalytics(unprocessedKeys);
+
+        await pageAnalyticsRepository.CreateRangeAsync(pagesAnalytics);
+        logger.LogInformation("@@@@@@@@@@@@PageAnalyticsOrchestration PageAnalytics Creating  should be finished");
+        logger.LogInformation($"@@@@@@@@@@@PageAnalytics count :{pagesAnalytics.Count}");
+
+        var aggregationProgresses = unprocessedKeys.Select(r => r.AggregationProgress);
+        foreach (var aggregationProgress in aggregationProgresses)
+            aggregationProgressRepository.CorrelationAggregated(aggregationProgress);
+
+        logger.LogInformation("@@@@@@@@@@@aggregation progress should be start updating");
+
+        aggregationProgressRepository.UpdateRange(aggregationProgresses);
+
+        logger.LogInformation("@@@@@@@@@@@aggregation progress should be start updated");
+        await pageAnalyticsRepository.SaveChangesAsync();
         return pagesAnalytics.Count;
     }
 }
