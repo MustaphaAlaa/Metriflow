@@ -11,6 +11,7 @@ public interface IAggregationProgressRepository : IBaseRepository<AggregationPro
     void QuarterlyAggregated(AggregationProgress aggregationProgress);
 
     void YearlyAggregated(AggregationProgress aggregationProgress);
+    void CorrelationAggregated(AggregationProgress aggregationProgress);
 
     Task<List<AggregationKey>> GetUnprocessedKeysAsync();
     IQueryable<AggregateRecordsJoins> GetNoneMonthlyAggregateRecords();
@@ -18,5 +19,6 @@ public interface IAggregationProgressRepository : IBaseRepository<AggregationPro
     IQueryable<AggregateRecordsJoins> GetNoneDailyAggregateRecords();
     IQueryable<AggregateRecordsJoins> GetNoneYearlyAggregateRecords();
     IQueryable<AggregateRecordsJoins> GetNoneQueryableAggregateRecords();
+    IQueryable<AggregateRecordsJoins> GetNoneCorrelationAggregateRecords();
     public Task CreateRangeWithKeysAsync(IEnumerable<AggregationKey> keys);
 }

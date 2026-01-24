@@ -20,7 +20,7 @@ namespace Metriflow.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Ticks = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Page = table.Column<int>(type: "integer", nullable: false),
+                    PageId = table.Column<int>(type: "integer", nullable: false),
                     Users = table.Column<long>(type: "bigint", nullable: false),
                     Views = table.Column<long>(type: "bigint", nullable: false),
                     Sessions = table.Column<long>(type: "bigint", nullable: false)
@@ -49,7 +49,7 @@ namespace Metriflow.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Ticks = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Page = table.Column<int>(type: "integer", nullable: false),
+                    PageId = table.Column<int>(type: "integer", nullable: false),
                     PerformanceScore = table.Column<int>(type: "integer", nullable: false),
                     LCP_MS = table.Column<long>(type: "bigint", nullable: false)
                 },
@@ -94,6 +94,7 @@ namespace Metriflow.Infrastructure.Migrations
                     PageId = table.Column<int>(type: "integer", nullable: false),
                     Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Interval = table.Column<bool>(type: "boolean", nullable: false),
+                    Correlation = table.Column<bool>(type: "boolean", nullable: false),
                     Daily = table.Column<bool>(type: "boolean", nullable: false),
                     Weekly = table.Column<bool>(type: "boolean", nullable: false),
                     Monthly = table.Column<bool>(type: "boolean", nullable: false),
@@ -297,9 +298,9 @@ namespace Metriflow.Infrastructure.Migrations
                 column: "PageId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_GARecords_Ticks_Page",
+                name: "IX_GARecords_Ticks_PageId",
                 table: "GARecords",
-                columns: new[] { "Ticks", "Page" },
+                columns: new[] { "Ticks", "PageId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -325,9 +326,9 @@ namespace Metriflow.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_PSIRecords_Ticks_Page",
+                name: "IX_PSIRecords_Ticks_PageId",
                 table: "PSIRecords",
-                columns: new[] { "Ticks", "Page" },
+                columns: new[] { "Ticks", "PageId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(

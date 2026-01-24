@@ -12,13 +12,16 @@ public class GARecord : IAnalyticRecord
     [Key]
     public Guid Id { get; set; }
     public long Ticks { get; set; }
-    public int Page { get; set; }
+    public int PageId { get; set; }
     public long Users { get; set; }
     public long Views { get; set; }
     public long Sessions { get; set; }
+    [NotMapped]
+    public DateTime Date => new DateTime(Ticks, DateTimeKind.Utc);
+
 
     public override string ToString()
     {
-        return $"Ticks: {this.Ticks}, Page: {this.Page}, Users: {this.Users},Views: {this.Views}, Sessions: {this.Sessions}";
+        return $"Ticks: {this.Ticks}, PageId: {this.PageId}, Users: {this.Users},Views: {this.Views}, Sessions: {this.Sessions}";
     }
 }

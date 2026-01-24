@@ -4,11 +4,12 @@ namespace Metriflow.Domain.Entities;
 
 public class AggregationProgress
 {
-    [ForeignKey("Page")]
+    [ForeignKey("PageId")]
     public int PageId { get; set; }
     public Page Page { get; set; }
     public DateTime Date { get; set; }
     public bool Interval { get; set; }
+    public bool Correlation { get; set; }
     public bool Daily { get; set; }
     public bool Weekly { get;set; }
     public bool Monthly { get; set; }

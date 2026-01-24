@@ -30,6 +30,9 @@ namespace Metriflow.Infrastructure.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("Correlation")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("Daily")
                         .HasColumnType("boolean");
 
@@ -433,7 +436,7 @@ namespace Metriflow.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Page")
+                    b.Property<int>("PageId")
                         .HasColumnType("integer");
 
                     b.Property<long>("Sessions")
@@ -451,7 +454,7 @@ namespace Metriflow.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Ticks", "Page")
+                    b.HasIndex("Ticks", "PageId")
                         .IsUnique();
 
                     b.ToTable("GARecords");
@@ -466,7 +469,7 @@ namespace Metriflow.Infrastructure.Migrations
                     b.Property<long>("LCP_MS")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("Page")
+                    b.Property<int>("PageId")
                         .HasColumnType("integer");
 
                     b.Property<int>("PerformanceScore")
@@ -478,7 +481,7 @@ namespace Metriflow.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Ticks", "Page")
+                    b.HasIndex("Ticks", "PageId")
                         .IsUnique();
 
                     b.ToTable("PSIRecords");

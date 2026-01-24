@@ -6,5 +6,5 @@ namespace Metriflow.Domain.Interfaces;
 public interface IAnalyticRecord
 {
     long Ticks { get; }
-    int Page { get; }
+    int PageId { get; }
 }

@@ -4,7 +4,7 @@ namespace Metriflow.Domain.Entities;
 
 public abstract class AggregateAnalytics
 {
-    [ForeignKey("Page")] public int PageId { get; set; }
+    [ForeignKey("PageId")] public int PageId { get; set; }
     public Page Page { get; set; }
 
     public long TotalUsers { get; set; }
