@@ -15,8 +15,8 @@ public class MonthlyAnalyticService(ILogger<MonthlyAnalyticService> logger)
 
     public MonthlyAnalytic NormalizeMonthlyAnalytic(List<PageAnalytics> data)
     {
-        if (data is null || data.Count < 24)
-            return null;
+        if (data is null || data.Contains(null))
+            throw new NullReferenceException("$$$$$Input data for NormalizeMonthlyAnalytic is null");
 
         MonthlyAnalytic monthlyAnalytic = new()
         {
@@ -30,5 +30,5 @@ public class MonthlyAnalyticService(ILogger<MonthlyAnalyticService> logger)
         return monthlyAnalytic;
     }
 
-    DateTime NormalizeRawAnalyticDate(DateTime date) => new DateTime(date.Year, date.Month, 1);
+    DateTime NormalizeRawAnalyticDate(DateTime date) => new DateTime(date.Year, date.Month, 1,0,0,0, DateTimeKind.Utc);
 }

@@ -15,8 +15,8 @@ public class YearAnalyticService(ILogger<YearAnalyticService> logger) : IYearAna
         List<MonthlyAnalytic> monthData
     )
     {
-        if (monthData is null || monthData.Count < 12)
-            return null;
+        if (monthData is null || monthData.Contains(null))
+            throw new NullReferenceException("$$$$$Input data for NormalizeYearlyAnalytic is null");
 
         YearlyAnalytics yearlyAnalytics = new()
         {

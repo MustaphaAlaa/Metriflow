@@ -33,8 +33,8 @@ builder.Services.AddHostedService<PagesAnalyticWorker>();
 builder.Services.AddHostedService<IntervalAnalyticsWorker>();
 
 builder.Services.AddHostedService<DailyAnalyticsWorker>();
-// builder.Services.AddHostedService<MonthlyAnalyticsWorker>();
-// builder.Services.AddHostedService<YearlyAnalyticsWorker>();
+builder.Services.AddHostedService<MonthlyAnalyticsWorker>();
+builder.Services.AddHostedService<YearlyAnalyticsWorker>();
 
 builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMQ"));
 
