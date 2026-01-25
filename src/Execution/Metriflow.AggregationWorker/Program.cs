@@ -32,7 +32,7 @@ builder.Services.AddHostedService<PagesAnalyticWorker>();
 
 builder.Services.AddHostedService<IntervalAnalyticsWorker>();
 
-// builder.Services.AddHostedService<DailyAnalyticsWorker>();
+builder.Services.AddHostedService<DailyAnalyticsWorker>();
 // builder.Services.AddHostedService<MonthlyAnalyticsWorker>();
 // builder.Services.AddHostedService<YearlyAnalyticsWorker>();
 
@@ -43,12 +43,10 @@ builder.Services.AddSingleton<IRawDataConsumer, RawDataConsumer>();
 builder.Services.AddSingleton<IProducer, Producer>();
 
 
-// Register the generic message handler as scoped (open generic registration)
 builder.Services.AddScoped(typeof(IRawDataConsumerMessageHandler<>), typeof(RawDataConsumerMessageHandler<>));
 builder.Services.AddScoped<IPageAnalyticsOrchestration,
     PageAnalyticsOrchestration>();
-// builder.Services.AddScoped<IPageAnalyticsOrchestration,
-//     PageAnalyticsOrchestration>();
+
 
 
 builder.Services.AddInfrastructureLayer(builder.Configuration);
