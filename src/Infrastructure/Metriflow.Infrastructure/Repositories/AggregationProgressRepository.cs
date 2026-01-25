@@ -132,10 +132,6 @@ public class AggregationProgressRepository : BaseRepository<AggregationProgress>
           var query = Db.AggregationProgresses.Where(e => !e.Interval);
           return query;
 
-
-
-
-
     }
 
     public IQueryable<AggregateRecordsJoins> GetNoneCorrelationAggregateRecords()
