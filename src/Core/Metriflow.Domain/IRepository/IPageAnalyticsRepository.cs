@@ -8,5 +8,5 @@ public interface IPageAnalyticsRepository : IBaseRepository<PageAnalytics>
     IQueryable<PageAnalytics> GetUnaggregatedDailyPageAnalytics();
     IQueryable<PageAnalytics> GetUnaggregatedMonthlyPageAnalytics();
     IQueryable<PageAnalytics> GetUnaggregatedYearlyPageAnalytics();
-    Task CorrlelationAsync();
+    Task<int> CorrlelationAsync();
 }
