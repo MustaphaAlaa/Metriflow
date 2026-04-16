@@ -20,5 +20,7 @@ public interface IAggregationProgressRepository : IBaseRepository<AggregationPro
     IQueryable<AggregateRecordsJoins> GetNoneYearlyAggregateRecords();
     IQueryable<AggregateRecordsJoins> GetNoneQueryableAggregateRecords();
     IQueryable<AggregateRecordsJoins> GetNoneCorrelationAggregateRecords();
-    public Task CreateRangeWithKeysAsync(IEnumerable<AggregationKey> keys);
+    Task CreateRangeWithKeysAsync(IEnumerable<AggregationKey> keys);
+    Task InsertMissingAggregationProgressesAsync();
 }
+

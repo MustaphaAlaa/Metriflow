@@ -9,8 +9,8 @@ namespace Metriflow.Domain.Entities.Workers;
 [AnalyticRecord( enTypesKey.GA)]
 public class GARecord : IAnalyticRecord
 {
-    [Key]
-    public Guid Id { get; set; }
+    // [Key]
+    // public Guid Id { get; set; }
     public long Ticks { get; set; }
     public int PageId { get; set; }
     public long Users { get; set; }

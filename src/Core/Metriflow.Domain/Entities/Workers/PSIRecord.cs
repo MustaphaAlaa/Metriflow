@@ -9,7 +9,7 @@ namespace Metriflow.Domain.Entities.Workers;
 [AnalyticRecord(enTypesKey.PSI)]
 public class PSIRecord : IAnalyticRecord
 {
-    [Key] public Guid Id { get; set; }
+    // [Key] public Guid Id { get; set; }
     public long Ticks { get; set; }
     public int PageId { get; set; }
     public int PerformanceScore { get; set; }
