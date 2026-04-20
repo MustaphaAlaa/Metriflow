@@ -38,7 +38,7 @@ services:
   #     retries: 5
 
   database:
-    image: postgres:17
+    image: timescale/timescaledb:latest-pg16
     container_name: metriflow-postgres-dev
     environment:
       POSTGRES_USER: postgres
@@ -61,32 +61,32 @@ services:
   # APPLICATION SERVICES
   # ----------------------------------------
 
-  # metriflow-api:
-  #   container_name: metriflow-api-dev
-  #   build:
-  #     context: .
-  #     dockerfile: src/Execution/Metriflow.API/Dockerfile.dev
-  #   restart: always
-  #   depends_on:
-  #     database:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #   environment:
-  #     ASPNETCORE_ENVIRONMENT: Development
-  #     ConnectionStrings__Postgres: Host=database;Port=5432;Database=metriflowdb;Username=postgres;Password=0000
-  #     ConnectionStrings__Redis: redis:6379
-  #     RabbitMQ__HostName: rabbitmq
-  #     RabbitMQ__Port: 5672
-  #     RabbitMQ__UserName: user
-  #     RabbitMQ__Password: mypassword
-  #   ports:
-  #     - "8080:8080"
-  #     - "8081:8081"
-  #   volumes:
-  #     - ./src:/app/src
-  #   networks:
-  #     - metriflow-net
+  metriflow-api:
+    container_name: metriflow-api-dev
+    build:
+      context: .
+      dockerfile: src/Execution/Metriflow.API/Dockerfile.dev
+    restart: always
+    depends_on:
+      database:
+        condition: service_healthy
+      # redis:
+      #   condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Postgres: Host=database;Port=5432;Database=metriflowdb;Username=postgres;Password=0000
+      ConnectionStrings__Redis: redis:6379
+      RabbitMQ__HostName: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__UserName: user
+      RabbitMQ__Password: mypassword
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    volumes:
+      - ./src:/app/src
+    networks:
+      - metriflow-net
 
   metriflow-aggregation-worker:
     container_name: metriflow-aggregation-worker-dev

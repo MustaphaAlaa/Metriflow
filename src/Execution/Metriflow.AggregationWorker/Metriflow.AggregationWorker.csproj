@@ -6,6 +6,7 @@
     <UserSecretsId>dotnet-Metriflow.Worker-aeeecb3e-3aaf-4d7d-afb2-a67fc09c5948</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.21" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />

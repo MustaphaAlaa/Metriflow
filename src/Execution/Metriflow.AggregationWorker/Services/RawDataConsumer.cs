@@ -53,6 +53,11 @@ public class RawDataConsumer : IRawDataConsumer
     {
         try
         {
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+
+            // 2. Set the initial timeout
+            timeoutCts.CancelAfter(TimeSpan.FromMinutes(2));
+            var now = DateTime.Now;
             await this.ConsumeGeneric(
                 queueName: _rabbitMqSettings.Queues.GA,
                 routingKey: _rabbitMqSettings.Queues.GA,
@@ -61,6 +66,17 @@ public class RawDataConsumer : IRawDataConsumer
                     _logger.LogInformation($"{ga.Count} of {enTypesKey.GA} records are received.");
 
                     // Check if cancellation has been requested before attempting to create scope
+
+                    // if (ga.Count < 1 && (DateTime.Now > now.AddMinutes(2)))
+                    // {
+                    //     _logger.LogWarning("GA Consumer timed out: No data received for 3 minutes.");
+                    //     throw new OperationCanceledException("GA Consumer timed out: No data received for 3 minutes.");
+                    // }
+                    // else
+                    // {
+                    //     now = DateTime.Now;
+                    // }
+
                     stoppingToken.ThrowIfCancellationRequested();
 
                     try
@@ -70,7 +86,7 @@ public class RawDataConsumer : IRawDataConsumer
                         var handler = scope.ServiceProvider
                             .GetRequiredService<IRawDataConsumerMessageHandler<GARecord>>();
                         await handler.HandleIncomingRecordAsync(enTypesKey.GA, ga);
-                        await Notify(enTypesKey.GA, ga.Count);
+                        // await Notify(enTypesKey.GA, ga.Count);
                     }
                     catch (ObjectDisposedException ex)
                     {
@@ -85,7 +101,7 @@ public class RawDataConsumer : IRawDataConsumer
                 },
                 stoppingToken
             );
-          
+
         }
         catch (Exception ex)
         {
@@ -100,13 +116,28 @@ public class RawDataConsumer : IRawDataConsumer
     {
         try
         {
+            var now = DateTime.Now;
             await ConsumeGeneric(
                 queueName: _rabbitMqSettings.Queues.PSI,
                 routingKey: _rabbitMqSettings.Queues.PSI,
                 async (List<PSIRecord> psi) =>
                 {
                     _logger.LogInformation($"{psi.Count} of {enTypesKey.PSI} records are received.");
+
+
+                    // if (psi.Count < 1 && (DateTime.Now > now.AddMinutes(2)))
+                    // {
+                    //     _logger.LogWarning("PSI Consumer timed out: No data received for 1 minutes.");
+                    //     throw new OperationCanceledException("GA Consumer timed out: No data received for 2 minutes.");
+                    // }
+                    // else
+                    //     now = DateTime.Now;
+
+
                     stoppingToken.ThrowIfCancellationRequested();
+
+
+
 
                     try
                     {
@@ -117,7 +148,7 @@ public class RawDataConsumer : IRawDataConsumer
                             .GetRequiredService<IRawDataConsumerMessageHandler<PSIRecord>>();
                         await handler.HandleIncomingRecordAsync(enTypesKey.PSI, psi);
 
-                        await Notify(enTypesKey.PSI, psi.Count);
+                        // await Notify(enTypesKey.PSI, psi.Count);
                     }
                     catch (ObjectDisposedException ex)
                     {
@@ -156,26 +187,26 @@ public class RawDataConsumer : IRawDataConsumer
         );
     }
 
-    public async Task Notify(enTypesKey type, int recordsCount)
-    {
-        try
-        {
-            await _producer.NotifyCompletedMessageAsync(new AggregationCompletedMessage
-                {
-                    CorrelationId = Guid.NewGuid(),
-                    CompletedType = AggregationType.Records,
-                    ProcessedCount = recordsCount,
-                    CompletedAt = DateTime.UtcNow,
-                },
-                _rabbitMqSettings.Queues.Correlation,
-                _rabbitMqSettings.Exchange);
+    // public async Task Notify(enTypesKey type, int recordsCount)
+    // {
+    //     try
+    //     {
+    //         await _producer.NotifyCompletedMessageAsync(new AggregationCompletedMessage
+    //         {
+    //             CorrelationId = Guid.NewGuid(),
+    //             CompletedType = AggregationType.Records,
+    //             ProcessedCount = recordsCount,
+    //             CompletedAt = DateTime.UtcNow,
+    //         },
+    //             _rabbitMqSettings.Queues.Correlation,
+    //             _rabbitMqSettings.Exchange);
 
-            _logger.LogInformation($"@@@@@@@Event is sent for the {type} added records.");
-            _logger.LogInformation($"@@@@@@@Finished Handling incoming {type}records.");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "!!!@@@Something Went Wrong while notifying");
-        }
-    }
+    //         _logger.LogInformation($"@@@@@@@Event is sent for the {type} added records.");
+    //         _logger.LogInformation($"@@@@@@@Finished Handling incoming {type}records.");
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         _logger.LogError(ex, "!!!@@@Something Went Wrong while notifying");
+    //     }
+    // }
 }

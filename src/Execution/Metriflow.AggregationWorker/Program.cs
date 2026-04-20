@@ -27,10 +27,12 @@ builder.Services.AddSerilog((services, lc) => lc
 
 
 builder.Services.AddHostedService<RawDataWorker>();
-builder.Services.AddHostedService<PagesAnalyticWorker>();
+
+// builder.Services.AddHostedService<AggregationProgressWorker>();
+// builder.Services.AddHostedService<PagesAnalyticWorker>();
 
 
-builder.Services.AddHostedService<IntervalAnalyticsWorker>();
+// builder.Services.AddHostedService<IntervalAnalyticsWorker>();
 
 // builder.Services.AddHostedService<DailyAnalyticsWorker>();
 // builder.Services.AddHostedService<MonthlyAnalyticsWorker>();

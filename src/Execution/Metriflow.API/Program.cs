@@ -21,7 +21,7 @@ var app = builder.Build();
 //     dbContext.Database.Migrate();
 // }
 
- 
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -29,5 +29,21 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var dbContext = services.GetRequiredService<MetriflowDbContext>();
+        dbContext.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+        throw;
+    }
+}
 
 app.Run();

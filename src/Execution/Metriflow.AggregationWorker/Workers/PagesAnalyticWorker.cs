@@ -39,7 +39,7 @@ public class PagesAnalyticWorker(
                     var orc = scope.ServiceProvider.GetRequiredService<IPageAnalyticsOrchestration>();
                     var pagesNumber = await orc.CreatePageAnalyticsAsync();
 
-                    await Notify(pagesNumber);
+                    // await Notify(pagesNumber);
                 }
                 else
                     logger.LogInformation("@@@@Records are less than zero.");
