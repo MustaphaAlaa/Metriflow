@@ -1,6 +1,7 @@
 using Metriflow.Domain.Entities;
 using Metriflow.Domain.Entities.Workers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Metriflow.Infrastructure;
 

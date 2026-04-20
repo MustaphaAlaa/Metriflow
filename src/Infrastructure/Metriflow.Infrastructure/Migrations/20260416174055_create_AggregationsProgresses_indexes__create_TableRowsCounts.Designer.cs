@@ -3,6 +3,7 @@ using System;
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Metriflow.Infrastructure.Migrations
 {
     [DbContext(typeof(MetriflowDbContext))]
-    partial class MetriflowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260416174055_create_AggregationsProgresses_indexes__create_TableRowsCounts")]
+    partial class create_AggregationsProgresses_indexes__create_TableRowsCounts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,17 +60,17 @@ namespace Metriflow.Infrastructure.Migrations
                     b.HasKey("PageId", "Date")
                         .HasName("PK_AggregationProgress");
 
-                    b.HasIndex("Correlation");
+                    b.HasIndex("PageId", "Date", "Correlation");
 
-                    b.HasIndex("Daily");
+                    b.HasIndex("PageId", "Date", "Daily");
 
-                    b.HasIndex("Interval");
+                    b.HasIndex("PageId", "Date", "Interval");
 
-                    b.HasIndex("Monthly");
+                    b.HasIndex("PageId", "Date", "Monthly");
 
-                    b.HasIndex("Quarterly");
+                    b.HasIndex("PageId", "Date", "Quarterly");
 
-                    b.HasIndex("Yearly");
+                    b.HasIndex("PageId", "Date", "Yearly");
 
                     b.ToTable("AggregationProgresses");
                 });
@@ -318,56 +321,6 @@ namespace Metriflow.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TableRowsCounts");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            RowsCount = 0,
-                            TableName = "GARecords"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            RowsCount = 0,
-                            TableName = "PSIRecords"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            RowsCount = 0,
-                            TableName = "AggregationProgresses"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            RowsCount = 0,
-                            TableName = "PageAnalytics"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            RowsCount = 0,
-                            TableName = "TimeIntervalsAnalytics"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            RowsCount = 0,
-                            TableName = "DailyAnalytics"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            RowsCount = 0,
-                            TableName = "MonthlyAnalytics"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            RowsCount = 0,
-                            TableName = "YearlyAnalytics"
-                        });
                 });
 
             modelBuilder.Entity("Metriflow.Domain.Entities.TimeInterval", b =>
