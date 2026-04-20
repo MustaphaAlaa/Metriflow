@@ -185,7 +185,7 @@ public class StreamData : IStreamData
 
     private List<Task> WorkersTask<T>(Channel<List<T>> channel, Func<List<T>, Task> onBatch)
     {
-        const int publishBatchSize = 2400;
+        const int publishBatchSize = 5000;
         var workers = Enumerable
             .Range(0, 4)
             .Select(_ =>

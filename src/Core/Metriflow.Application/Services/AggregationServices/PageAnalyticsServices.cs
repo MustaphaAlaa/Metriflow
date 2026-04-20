@@ -36,6 +36,8 @@ public class PageAnalyticsServices(ILogger<PageAnalyticsServices> logger) : IPag
     public List<PageAnalytics> RecordsToPageAnalytics(IEnumerable<AggregateRecordsJoins> noneAggregateRecords)
     {
        logger.LogInformation("@@@@@@@RecordsToPageAnalytics method.");
+       //Create function PSQL Function and write in it GetTimeInterval Logic.
+       
       var records =   noneAggregateRecords.Select(record => new PageAnalytics()
         {  
                 PageId = record.PageId,
