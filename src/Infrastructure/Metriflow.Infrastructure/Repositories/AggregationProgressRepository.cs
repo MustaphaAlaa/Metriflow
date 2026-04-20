@@ -1,11 +1,15 @@
+using System.Data;
+using IRepository;
 using IRepository.Generic;
 using Metriflow.Domain.CustomAttributes;
 using Metriflow.Domain.Entities;
-using Metriflow.Domain.Entities.Workers;
-using Metriflow.Domain.Interfaces;
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Npgsql;
+using Repositories.Ado;
 
 namespace Repositories.Generic;
 
@@ -13,10 +17,16 @@ namespace Repositories.Generic;
 public class AggregationProgressRepository : BaseRepository<AggregationProgress>, IAggregationProgressRepository
 {
     private readonly MetriflowDbContext Db;
+    private readonly ILogger<AggregationProgressRepository> _logger;
+    private readonly ITrackTableCountRepository _trackTableCountRepository;
 
-    public AggregationProgressRepository(MetriflowDbContext context) : base(context)
+    public AggregationProgressRepository(MetriflowDbContext context,
+    ILogger<AggregationProgressRepository> logger
+    , ITrackTableCountRepository trackTableCountRepository) : base(context)
     {
         Db = context;
+        _logger = logger;
+        _trackTableCountRepository = trackTableCountRepository;
     }
 
     public void IntervalAggregated(AggregationProgress aggregationProgress)
@@ -24,7 +34,7 @@ public class AggregationProgressRepository : BaseRepository<AggregationProgress>
         aggregationProgress.Interval = true;
     }
 
- 
+
 
     public void CorrelationAggregated(AggregationProgress aggregationProgress)
     {
@@ -129,8 +139,8 @@ public class AggregationProgressRepository : BaseRepository<AggregationProgress>
 
     public IQueryable<AggregationProgress> GetNoneIntervalsAggregateRecords()
     {
-          var query = Db.AggregationProgresses.Where(e => !e.Interval);
-          return query;
+        var query = Db.AggregationProgresses.Where(e => !e.Interval);
+        return query;
 
     }
 
@@ -162,22 +172,93 @@ public class AggregationProgressRepository : BaseRepository<AggregationProgress>
 
     private IQueryable<AggregateRecordsJoins> GetJoins(IQueryable<AggregationProgress> queryable)
     {
-        var qs = from ap in queryable 
-            join ga in Db.GARecords
-                on new { ap.PageId, Date = ap.Date }
-                equals new { ga.PageId, Date = (DateTime)(object)ga.Ticks } 
-            join psi in Db.PSIRecords
-                on new { ap.PageId, Date = ap.Date }
-                equals new { psi.PageId, Date = (DateTime)(object)psi.Ticks }
-            select new AggregateRecordsJoins
-            {
-                AggregationProgress = ap,
-                Date = ap.Date,
-                PageId = ap.PageId,
-                GARecord = ga,
-                PSIRecord = psi
-            };
+        var qs = from ap in queryable
+                 join ga in Db.GARecords
+                     on new { ap.PageId, Date = ap.Date }
+                     equals new { ga.PageId, Date = (DateTime)(object)ga.Ticks }
+                 join psi in Db.PSIRecords
+                     on new { ap.PageId, Date = ap.Date }
+                     equals new { psi.PageId, Date = (DateTime)(object)psi.Ticks }
+                 select new AggregateRecordsJoins
+                 {
+                     AggregationProgress = ap,
+                     Date = ap.Date,
+                     PageId = ap.PageId,
+                     GARecord = ga,
+                     PSIRecord = psi
+                 };
 
         return qs;
+    }
+
+    public async Task<int> InsertMissingAggregationProgressesAsync()
+    {
+        await _db.Database.OpenConnectionAsync();
+
+        var connection = (NpgsqlConnection)_db.Database.GetDbConnection() ?? throw new InvalidOperationException("No active transaction");
+
+        if (connection.State != ConnectionState.Open)
+            throw new InvalidOperationException("There's no open Connection For PostgresSQL.");
+
+        var strategy = _db.Database.CreateExecutionStrategy();
+     var   affectedRows = 0;
+        await strategy.ExecuteAsync(async () =>
+         {
+             using var transaction = await connection.BeginTransactionAsync();
+
+             string sql = """
+        INSERT INTO "AggregationProgresses" (
+            "PageId",
+            "Date",
+            "Daily",
+            "Monthly",
+            "Quarterly",
+            "Yearly",
+            "Interval",
+            "Weekly",
+        "Correlation",
+            "IsCompleted"
+        )
+         SELECT
+        src."PageId",
+        src."Date",
+        FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE
+        FROM (
+            SELECT "PageId", "Date" FROM "GARecords"
+            UNION ALL
+            SELECT "PageId", "Date" FROM "PSIRecords"
+        ) AS src
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM "AggregationProgresses" ap
+            WHERE ap."PageId" = src."PageId"
+            AND ap."Date"   = src."Date"
+        )
+        ON CONFLICT ("PageId", "Date") DO NOTHING;
+        """;
+
+
+
+             try
+             {
+
+                 using var cmd = new NpgsqlCommand(sql, connection, transaction);
+                 cmd.CommandTimeout = 300; // 5 minutes
+                   affectedRows = await cmd.ExecuteNonQueryAsync();
+
+                 await _trackTableCountRepository.AlterTableRowsCountAsync("AggregationProgresses", affectedRows);
+
+
+                     await transaction.CommitAsync();
+               
+
+             }
+             catch
+             {
+                 await transaction.RollbackAsync();
+                 throw;
+             }
+         });
+         return affectedRows;
     }
 }

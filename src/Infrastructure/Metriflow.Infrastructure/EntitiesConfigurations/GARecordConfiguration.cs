@@ -9,16 +9,16 @@ public class GARecordConfiguration : IEntityTypeConfiguration<GARecord>
         Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<GARecord> builder
     )
     {
-        builder.HasKey(x=>x.Id);
-        builder.Property(x => x.Id).ValueGeneratedOnAdd();
-       
+        // builder.HasKey(x => x.Id);
+        // builder.Property(x => x.Id).ValueGeneratedOnAdd();
+
+        builder.HasKey(x => new { PageId = x.PageId, Date = x.Ticks });
         builder.Property(x => x.Ticks)
-            .HasConversion(ticks => new DateTime(ticks,DateTimeKind.Utc),
+            .HasConversion(ticks => new DateTime(ticks, DateTimeKind.Utc),
                 date => date.Ticks)
-            .HasJsonPropertyName("Date");
+            .HasJsonPropertyName("Date")
+            .HasColumnName("Date");
 
-
-        builder.HasIndex(x => new { x.Ticks, Page = x.PageId, })
-            .IsUnique(true);
+       
     }
 }

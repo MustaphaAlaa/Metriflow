@@ -8,7 +8,8 @@ public class DailyAnalyticsConfiguration : IEntityTypeConfiguration<DailyAnalyti
     public void Configure(
         Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<DailyAnalytics> builder
     )
-    { 
-        builder.HasIndex(ds => ds.Date);
+    {
+        
+        builder.HasKey(ds => new { ds.PageId, ds.Date });
     }
 }

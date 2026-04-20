@@ -4,6 +4,7 @@ using Metriflow.Domain.CustomAttributes;
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 
 namespace Repositories.Generic;
 
@@ -122,6 +123,8 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity>
     {
         return await _db.SaveChangesAsync();
     }
+
+    
 
     public void ClearTracking()
     {

@@ -4,7 +4,6 @@ using Metriflow.Application.Services;
 using Metriflow.Domain.Entities;
 using Metriflow.Domain.Entities.Enums;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Protocols;
 using Npgsql.BackendMessages;
 
 namespace Metriflow.Infrastructure.EntitiesConfigurations;

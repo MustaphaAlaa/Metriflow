@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using IRepository;
 using IRepository.Generic;
 using Metriflow.Domain.CustomAttributes;
 using Metriflow.Domain.Entities;
@@ -6,14 +7,14 @@ using Metriflow.Domain.Entities.Reports;
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using Npgsql.Internal;
 
 namespace Repositories.Generic;
 
- 
-
 [ServiceRegistration(ServiceLifetime.Scoped, typeof(IPageAnalyticsRepository))]
-public class PageAnalyticsRepository(MetriflowDbContext context) : BaseRepository<PageAnalytics>(context), IPageAnalyticsRepository 
+public class PageAnalyticsRepository(MetriflowDbContext context, ITrackTableCountRepository trackTableCountRepository)
+    : BaseRepository<PageAnalytics>(context), IPageAnalyticsRepository
 {
     protected readonly MetriflowDbContext _db = context;
 
@@ -49,7 +50,7 @@ public class PageAnalyticsRepository(MetriflowDbContext context) : BaseRepositor
                     join pa in _db.PageAnalytics on new { ap.Date, ap.PageId } equals new { pa.Date, pa.PageId }
                     select new PageAnalytics()
                     {
-                        Id = pa.Id,
+                        // Id = pa.Id,
                         Date = pa.Date,
                         PageId = pa.PageId,
                         Users = pa.Users,
@@ -61,4 +62,156 @@ public class PageAnalyticsRepository(MetriflowDbContext context) : BaseRepositor
                     };
         return query;
     }
+
+
+    public async Task<int> CorrlelationAsync()
+    {
+        var strategy = _db.Database.CreateExecutionStrategy();
+
+        
+        var    insertionCount = 0;
+
+
+        await strategy.ExecuteAsync(async () =>
+        {
+            await _db.Database.OpenConnectionAsync();
+            var connection = _db.Database.GetDbConnection() as NpgsqlConnection;
+            using var transaction = await connection.BeginTransactionAsync();
+
+
+
+            var sql = """
+            INSERT INTO "PageAnalytics" (
+            "PageId", "Date", "Intervals", "Users",
+            "Sessions", "Views", "PerformanceScore", "LcpMs"
+            )
+            SELECT
+            pa."PageId",
+            pa."Date",
+            get_timeinterval(EXTRACT(HOUR FROM pa."Date")),
+            ga."Users",
+            ga."Sessions",
+            ga."Views",
+            psi."PerformanceScore",
+            psi."LCP_MS"
+            FROM (
+            "GARecords" AS ga
+            JOIN "PSIRecords" AS psi ON ga."PageId" = psi."PageId" AND ga."Date" = psi."Date"
+            JOIN "AggregationProgresses" AS pa ON ga."PageId" = pa."PageId" AND ga."Date" = pa."Date"
+
+            )
+            Where  exists(
+            SELECT 1 FROM
+            (
+            Select  pa."PageId",  pa."Date" FROM "AggregationProgresses" AS pa
+            EXCEPT
+            SELECT  aaa."PageId" , aaa."Date" FROM "PageAnalytics" as aaa
+            )
+            ) and pa."Correlation" = false;
+
+
+            UPDATE "AggregationProgresses"
+            SET "Correlation" = true
+            Where (
+            "AggregationProgresses"."Correlation" = false
+            and  EXISTS (
+            SELECT 1
+            FROM "PageAnalytics"
+            WHERE "AggregationProgresses"."PageId" = "PageAnalytics"."PageId"
+            AND "AggregationProgresses"."Date" = "PageAnalytics"."Date"
+            )
+            );
+
+
+            UPDATE "AggregationProgresses"
+            SET "Correlation" = true
+            WHERE "Correlation" = false
+            AND EXISTS (
+            SELECT 1
+            FROM "PageAnalytics"
+            WHERE "AggregationProgresses"."PageId" = "PageAnalytics"."PageId"
+            AND "AggregationProgresses"."Date" = "PageAnalytics"."Date"
+            );
+        """;
+            //     var sql = """
+            //             INSERT INTO "PageAnalytics" (
+            //         "PageId", "Date", "Intervals", "Users",
+            //         "Sessions", "Views", "PerformanceScore", "LcpMs"
+            //         )
+            //         SELECT
+            //                 pa."PageId",
+            //                 pa."Date",
+            //                 get_timeinterval(EXTRACT(HOUR FROM pa."Date")),
+            //                 ga."Users",
+            //                 ga."Sessions",
+            //                 ga."Views",
+            //                 psi."PerformanceScore",
+            //                 psi."LCP_MS"
+            //         FROM (
+            //             "GARecords" AS ga
+            //             JOIN "PSIRecords" AS psi ON ga."PageId" = psi."PageId" AND ga."Date" = psi."Date"
+            //             JOIN "AggregationProgresses" AS pa ON ga."PageId" = pa."PageId" AND ga."Date" = pa."Date"
+            //                 )
+            // Where  exists(
+            //     Select 1 FROM "AggregationProgresses" WHERE "AggregationProgresses"."Correlation" = false
+            // );
+
+
+            //         UPDATE "AggregationProgresses"
+            //         SET "Correlation" = true
+            //         Where (
+            //     "AggregationProgresses"."Correlation" = false
+            //         and  EXISTS (
+            //     SELECT 1
+            //     FROM "PageAnalytics"
+            //     WHERE "AggregationProgresses"."PageId" = "PageAnalytics"."PageId"
+            //     AND "AggregationProgresses"."Date" = "PageAnalytics"."Date"
+            // ));
+            // """;
+            // var sql = """
+            // WITH inserted_rows AS (
+            // INSERT INTO "PageAnalytics" (
+            // "PageId", "Date", "Intervals", "Users", 
+            // "Sessions", "Views", "PerformanceScore", "LcpMs"
+            // )
+            //   SELECT
+            //         pa."PageId",
+            //         pa."Date",
+            //         get_timeinterval(EXTRACT(HOUR FROM pa."Date")),
+            //         ga."Users",
+            //         ga."Sessions",
+            //         ga."Views",
+            //         psi."PerformanceScore",
+            //         psi."LCP_MS"
+            // FROM "GARecords" AS ga
+            //  JOIN "PSIRecords" AS psi ON ga."PageId" = psi."PageId" AND ga."Date" = psi."Date"
+            // JOIN "AggregationProgresses" AS pa ON ga."PageId" = pa."PageId" AND ga."Date" = pa."Date"
+            //  WHERE pa."Correlation" = false
+            // RETURNING "PageId", "Date"  
+            // )
+            // UPDATE "AggregationProgresses"
+            // SET "Correlation" = true
+            // FROM inserted_rows
+            // WHERE "AggregationProgresses"."PageId" = inserted_rows."PageId"
+            // AND "AggregationProgresses"."Date" = inserted_rows."Date";
+            // """;
+
+            try
+            {
+                using var cmd = new NpgsqlCommand(sql, connection, transaction);
+                cmd.CommandTimeout = 300; // 5 minutes
+                  insertionCount = await cmd.ExecuteNonQueryAsync();
+                var updateTrackedTable = await trackTableCountRepository.AlterTableRowsCountAsync("PageAnalytics", insertionCount);
+                await transaction.CommitAsync();
+               
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        });
+         return insertionCount;
+    }
+
 }

@@ -11,9 +11,8 @@ public class YearlyAnalyticsConfiguration : IEntityTypeConfiguration<YearlyAnaly
     {
         try
         {
-            builder.HasKey(x => x.Id);
-            builder.HasIndex(ds => new { ds.PageId, ds.Year })
-                .IsUnique();
+            builder.HasKey(ds => new { ds.PageId, ds.Year });
+        
             
         }
         catch (Exception ex)

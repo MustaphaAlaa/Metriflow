@@ -1,8 +1,10 @@
+using IRepository;
 using IRepository.Generic;
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Repositories.Ado;
 using Repositories.Generic;
 
 namespace Infrastructure.Extensions;
@@ -21,6 +23,8 @@ public static class InfrastructureLayerExtensions
 
         service.AddScoped<IPageRepository, PageRepository>();
         service.AddScoped<IAggregationProgressRepository, AggregationProgressRepository>();
+        service.AddScoped<ITrackTableCountRepository, TrackTableCountRepository>();
+        service.AddScoped<IUow, UnitOfWork>();
 
         service.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
     }
