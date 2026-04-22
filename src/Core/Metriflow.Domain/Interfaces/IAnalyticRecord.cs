@@ -7,4 +7,5 @@ public interface IAnalyticRecord
 {
     long Ticks { get; }
     int PageId { get; }
+    Boolean IsCorrelation { get; }  
 }

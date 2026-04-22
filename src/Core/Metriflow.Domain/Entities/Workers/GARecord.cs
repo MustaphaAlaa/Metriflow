@@ -6,7 +6,7 @@ using Metriflow.Domain.Interfaces;
 
 namespace Metriflow.Domain.Entities.Workers;
 
-[AnalyticRecord( enTypesKey.GA)]
+[AnalyticRecord(enTypesKey.GA)]
 public class GARecord : IAnalyticRecord
 {
     // [Key]
@@ -16,9 +16,11 @@ public class GARecord : IAnalyticRecord
     public long Users { get; set; }
     public long Views { get; set; }
     public long Sessions { get; set; }
+
     [NotMapped]
     public DateTime Date => new DateTime(Ticks, DateTimeKind.Utc);
 
+    public bool IsCorrelation { get; set; } = false;
 
     public override string ToString()
     {

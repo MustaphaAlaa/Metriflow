@@ -18,6 +18,8 @@ public class PSIRecord : IAnalyticRecord
     [NotMapped]
     public DateTime Date => new DateTime(Ticks, DateTimeKind.Utc);
 
+    public bool IsCorrelation {get; set;} = false;
+
     public override string ToString()
     {
         return

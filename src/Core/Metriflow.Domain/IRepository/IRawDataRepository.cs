@@ -2,8 +2,8 @@ using Metriflow.Domain.Entities.Workers;
 
 namespace IRepository.Generic;
 
-public interface IRawDataRepository  
+public interface IRawDataRepository
 {
-    Task AddGaRecordsBulk(IEnumerable<GARecord> gaRecords);
-    Task AddPsiRecordsBulk(IEnumerable<PSIRecord> psiRecords);
+    Task AddGaRecordsBulk(List<List<GARecord>> gaRecords, int count);
+    Task AddPsiRecordsBulk(List<List<PSIRecord>> psiRecords, int count);
 }
