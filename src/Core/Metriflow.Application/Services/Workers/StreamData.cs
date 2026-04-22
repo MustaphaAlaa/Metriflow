@@ -101,7 +101,7 @@ public class StreamData : IStreamData
         return producer;
     }
 
-    
+
     /// <summary>
     /// Streams records from a JSON file using asynchronous deserialization.
     /// </summary>

@@ -35,7 +35,7 @@ internal class Program
                     services.AddScoped<IProducer, Producer>();
 
                     services.AddRegisterReflection();
-                    ;
+                    
                 }
             )
             .Build();

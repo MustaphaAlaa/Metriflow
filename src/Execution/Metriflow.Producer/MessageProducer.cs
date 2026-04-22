@@ -31,20 +31,21 @@ public class MessageProducer(
     {
         try
         {
+            const int batchSize = 25000;
             logger.LogInformation("Start sending data......");
             var gaMockJson = this.JsonFilePath("GA-mock.json");
             var psiMockJson = this.JsonFilePath("PSI-mock.json");
 
             var GA = streamData.RunPipelineAsync<GARecord>(
                 gaMockJson,
-                4000,
+                batchSize,
                 (gaRecords) =>
                     producer.PublishAnalyticRecords<GARecord>(gaRecords, _settings.Queues.GA, _settings.Exchange)
             );
 
             var PSI = streamData.RunPipelineAsync<PSIRecord>(
                 psiMockJson,
-                4000,
+                batchSize,
                 (psiRecords) =>
                     producer.PublishAnalyticRecords<PSIRecord>(psiRecords, _settings.Queues.PSI, _settings.Exchange)
             );

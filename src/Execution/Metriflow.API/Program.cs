@@ -4,8 +4,12 @@ using Metriflow.Application.Extensions;
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Generic;
-
+using Serilog;
 var builder = WebApplication.CreateBuilder(args);
+
+
+
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -14,6 +18,8 @@ builder.Services.AddApplicationLayerDiServices();
 builder.Services.AddInfrastructureLayer(builder.Configuration);
 
 var app = builder.Build();
+
+
 
 // using (var scope = app.Services.CreateScope())
 // {
