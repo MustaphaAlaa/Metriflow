@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -18,11 +17,12 @@ namespace Metriflow.Infrastructure.Migrations
                 name: "GARecords",
                 columns: table => new
                 {
-                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    PageId = table.Column<int>(type: "integer", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PageId = table.Column<int>(type: "int", nullable: false),
                     Users = table.Column<long>(type: "bigint", nullable: false),
                     Views = table.Column<long>(type: "bigint", nullable: false),
-                    Sessions = table.Column<long>(type: "bigint", nullable: false)
+                    Sessions = table.Column<long>(type: "bigint", nullable: false),
+                    IsCorrelation = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -33,9 +33,9 @@ namespace Metriflow.Infrastructure.Migrations
                 name: "Pages",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Path = table.Column<string>(type: "text", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Path = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -46,10 +46,11 @@ namespace Metriflow.Infrastructure.Migrations
                 name: "PSIRecords",
                 columns: table => new
                 {
-                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    PageId = table.Column<int>(type: "integer", nullable: false),
-                    PerformanceScore = table.Column<int>(type: "integer", nullable: false),
-                    LCP_MS = table.Column<long>(type: "bigint", nullable: false)
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PageId = table.Column<int>(type: "int", nullable: false),
+                    PerformanceScore = table.Column<int>(type: "int", nullable: false),
+                    LCP_MS = table.Column<long>(type: "bigint", nullable: false),
+                    IsCorrelation = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -57,13 +58,27 @@ namespace Metriflow.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TableRowsCounts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TableName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RowsCount = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TableRowsCounts", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TimeIntervals",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Interval = table.Column<byte>(type: "smallint", nullable: false),
-                    IntervalDescription = table.Column<string>(type: "text", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Interval = table.Column<byte>(type: "tinyint", nullable: false),
+                    IntervalDescription = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -74,11 +89,11 @@ namespace Metriflow.Infrastructure.Migrations
                 name: "User",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Email = table.Column<string>(type: "text", nullable: false),
-                    PasswordHash = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -89,16 +104,16 @@ namespace Metriflow.Infrastructure.Migrations
                 name: "AggregationProgresses",
                 columns: table => new
                 {
-                    PageId = table.Column<int>(type: "integer", nullable: false),
-                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Interval = table.Column<bool>(type: "boolean", nullable: false),
-                    Correlation = table.Column<bool>(type: "boolean", nullable: false),
-                    Daily = table.Column<bool>(type: "boolean", nullable: false),
-                    Weekly = table.Column<bool>(type: "boolean", nullable: false),
-                    Monthly = table.Column<bool>(type: "boolean", nullable: false),
-                    Yearly = table.Column<bool>(type: "boolean", nullable: false),
-                    Quarterly = table.Column<bool>(type: "boolean", nullable: false),
-                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false)
+                    PageId = table.Column<int>(type: "int", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Interval = table.Column<bool>(type: "bit", nullable: false),
+                    Correlation = table.Column<bool>(type: "bit", nullable: false),
+                    Daily = table.Column<bool>(type: "bit", nullable: false),
+                    Weekly = table.Column<bool>(type: "bit", nullable: false),
+                    Monthly = table.Column<bool>(type: "bit", nullable: false),
+                    Yearly = table.Column<bool>(type: "bit", nullable: false),
+                    Quarterly = table.Column<bool>(type: "bit", nullable: false),
+                    IsCompleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -115,13 +130,13 @@ namespace Metriflow.Infrastructure.Migrations
                 name: "DailyAnalytics",
                 columns: table => new
                 {
-                    PageId = table.Column<int>(type: "integer", nullable: false),
-                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ReceivedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    PageId = table.Column<int>(type: "int", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ReceivedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TotalUsers = table.Column<long>(type: "bigint", nullable: false),
                     TotalSessions = table.Column<long>(type: "bigint", nullable: false),
                     TotalViews = table.Column<long>(type: "bigint", nullable: false),
-                    AvgPerformance = table.Column<double>(type: "double precision", nullable: false)
+                    AvgPerformance = table.Column<double>(type: "float", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -138,12 +153,12 @@ namespace Metriflow.Infrastructure.Migrations
                 name: "MonthlyAnalytics",
                 columns: table => new
                 {
-                    PageId = table.Column<int>(type: "integer", nullable: false),
-                    YearMonth = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    PageId = table.Column<int>(type: "int", nullable: false),
+                    YearMonth = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TotalUsers = table.Column<long>(type: "bigint", nullable: false),
                     TotalSessions = table.Column<long>(type: "bigint", nullable: false),
                     TotalViews = table.Column<long>(type: "bigint", nullable: false),
-                    AvgPerformance = table.Column<double>(type: "double precision", nullable: false)
+                    AvgPerformance = table.Column<double>(type: "float", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -160,13 +175,13 @@ namespace Metriflow.Infrastructure.Migrations
                 name: "YearlyAnalytics",
                 columns: table => new
                 {
-                    PageId = table.Column<int>(type: "integer", nullable: false),
-                    Year = table.Column<int>(type: "integer", nullable: false),
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PageId = table.Column<int>(type: "int", nullable: false),
+                    Year = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TotalUsers = table.Column<long>(type: "bigint", nullable: false),
                     TotalSessions = table.Column<long>(type: "bigint", nullable: false),
                     TotalViews = table.Column<long>(type: "bigint", nullable: false),
-                    AvgPerformance = table.Column<double>(type: "double precision", nullable: false)
+                    AvgPerformance = table.Column<double>(type: "float", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -183,13 +198,13 @@ namespace Metriflow.Infrastructure.Migrations
                 name: "PageAnalytics",
                 columns: table => new
                 {
-                    PageId = table.Column<int>(type: "integer", nullable: false),
-                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Intervals = table.Column<int>(type: "integer", nullable: false),
+                    PageId = table.Column<int>(type: "int", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Intervals = table.Column<int>(type: "int", nullable: false),
                     Users = table.Column<long>(type: "bigint", nullable: false),
                     Sessions = table.Column<long>(type: "bigint", nullable: false),
                     Views = table.Column<long>(type: "bigint", nullable: false),
-                    PerformanceScore = table.Column<double>(type: "double precision", nullable: false),
+                    PerformanceScore = table.Column<double>(type: "float", nullable: false),
                     LcpMs = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
@@ -213,13 +228,13 @@ namespace Metriflow.Infrastructure.Migrations
                 name: "TimeIntervalsAnalytics",
                 columns: table => new
                 {
-                    PageId = table.Column<int>(type: "integer", nullable: false),
-                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    TimeIntervalId = table.Column<int>(type: "integer", nullable: false),
+                    PageId = table.Column<int>(type: "int", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TimeIntervalId = table.Column<int>(type: "int", nullable: false),
                     TotalUsers = table.Column<long>(type: "bigint", nullable: false),
                     TotalSessions = table.Column<long>(type: "bigint", nullable: false),
                     TotalViews = table.Column<long>(type: "bigint", nullable: false),
-                    AvgPerformance = table.Column<double>(type: "double precision", nullable: false)
+                    AvgPerformance = table.Column<double>(type: "float", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -270,6 +285,21 @@ namespace Metriflow.Infrastructure.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "TableRowsCounts",
+                columns: new[] { "Id", "RowsCount", "TableName" },
+                values: new object[,]
+                {
+                    { 1, 0, "GARecords" },
+                    { 2, 0, "PSIRecords" },
+                    { 3, 0, "AggregationProgresses" },
+                    { 4, 0, "PageAnalytics" },
+                    { 5, 0, "TimeIntervalsAnalytics" },
+                    { 6, 0, "DailyAnalytics" },
+                    { 7, 0, "MonthlyAnalytics" },
+                    { 8, 0, "YearlyAnalytics" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "TimeIntervals",
                 columns: new[] { "Id", "Interval", "IntervalDescription" },
                 values: new object[,]
@@ -281,6 +311,36 @@ namespace Metriflow.Infrastructure.Migrations
                     { 5, (byte)5, "12-hour: 4:00 PM – 7:59 PM | 24-hour: 16:00 – 19:59" },
                     { 6, (byte)6, "12-hour: 8:00 PM – 11:59 PM | 24-hour: 20:00 – 23:59" }
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AggregationProgresses_Correlation",
+                table: "AggregationProgresses",
+                column: "Correlation");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AggregationProgresses_Daily",
+                table: "AggregationProgresses",
+                column: "Daily");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AggregationProgresses_Interval",
+                table: "AggregationProgresses",
+                column: "Interval");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AggregationProgresses_Monthly",
+                table: "AggregationProgresses",
+                column: "Monthly");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AggregationProgresses_Quarterly",
+                table: "AggregationProgresses",
+                column: "Quarterly");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AggregationProgresses_Yearly",
+                table: "AggregationProgresses",
+                column: "Yearly");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PageAnalytics_Intervals",
@@ -331,6 +391,9 @@ namespace Metriflow.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "PSIRecords");
+
+            migrationBuilder.DropTable(
+                name: "TableRowsCounts");
 
             migrationBuilder.DropTable(
                 name: "TimeIntervalsAnalytics");

@@ -3,17 +3,17 @@ using System;
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace Metriflow.Infrastructure.Migrations
 {
     [DbContext(typeof(MetriflowDbContext))]
-    [Migration("20260416183210_Seeding_tableRowsCount_data")]
-    partial class Seeding_tableRowsCount_data
+    [Migration("20260421021239_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,56 +21,56 @@ namespace Metriflow.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.21")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("Metriflow.Domain.Entities.AggregationProgress", b =>
                 {
                     b.Property<int>("PageId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("Correlation")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<bool>("Daily")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<bool>("Interval")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsCompleted")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<bool>("Monthly")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<bool>("Quarterly")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<bool>("Weekly")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<bool>("Yearly")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.HasKey("PageId", "Date")
                         .HasName("PK_AggregationProgress");
 
-                    b.HasIndex("PageId", "Date", "Correlation");
+                    b.HasIndex("Correlation");
 
-                    b.HasIndex("PageId", "Date", "Daily");
+                    b.HasIndex("Daily");
 
-                    b.HasIndex("PageId", "Date", "Interval");
+                    b.HasIndex("Interval");
 
-                    b.HasIndex("PageId", "Date", "Monthly");
+                    b.HasIndex("Monthly");
 
-                    b.HasIndex("PageId", "Date", "Quarterly");
+                    b.HasIndex("Quarterly");
 
-                    b.HasIndex("PageId", "Date", "Yearly");
+                    b.HasIndex("Yearly");
 
                     b.ToTable("AggregationProgresses");
                 });
@@ -78,16 +78,16 @@ namespace Metriflow.Infrastructure.Migrations
             modelBuilder.Entity("Metriflow.Domain.Entities.DailyAnalytics", b =>
                 {
                     b.Property<int>("PageId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<double>("AvgPerformance")
-                        .HasColumnType("double precision");
+                        .HasColumnType("float");
 
                     b.Property<DateTime>("ReceivedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<long>("TotalSessions")
                         .HasColumnType("bigint");
@@ -106,13 +106,13 @@ namespace Metriflow.Infrastructure.Migrations
             modelBuilder.Entity("Metriflow.Domain.Entities.MonthlyAnalytic", b =>
                 {
                     b.Property<int>("PageId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("YearMonth")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<double>("AvgPerformance")
-                        .HasColumnType("double precision");
+                        .HasColumnType("float");
 
                     b.Property<long>("TotalSessions")
                         .HasColumnType("bigint");
@@ -132,13 +132,13 @@ namespace Metriflow.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Path")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -273,19 +273,19 @@ namespace Metriflow.Infrastructure.Migrations
             modelBuilder.Entity("Metriflow.Domain.Entities.PageAnalytics", b =>
                 {
                     b.Property<int>("PageId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Intervals")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<long>("LcpMs")
                         .HasColumnType("bigint");
 
                     b.Property<double>("PerformanceScore")
-                        .HasColumnType("double precision");
+                        .HasColumnType("float");
 
                     b.Property<long>("Sessions")
                         .HasColumnType("bigint");
@@ -307,16 +307,16 @@ namespace Metriflow.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("RowsCount")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<string>("TableName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -377,16 +377,16 @@ namespace Metriflow.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<byte>("Interval")
-                        .HasColumnType("smallint");
+                        .HasColumnType("tinyint");
 
                     b.Property<string>("IntervalDescription")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -437,16 +437,16 @@ namespace Metriflow.Infrastructure.Migrations
             modelBuilder.Entity("Metriflow.Domain.Entities.TimeIntervalAnalytic", b =>
                 {
                     b.Property<int>("PageId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("TimeIntervalId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<double>("AvgPerformance")
-                        .HasColumnType("double precision");
+                        .HasColumnType("float");
 
                     b.Property<long>("TotalSessions")
                         .HasColumnType("bigint");
@@ -468,20 +468,20 @@ namespace Metriflow.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -494,12 +494,17 @@ namespace Metriflow.Infrastructure.Migrations
             modelBuilder.Entity("Metriflow.Domain.Entities.Workers.GARecord", b =>
                 {
                     b.Property<int>("PageId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("Ticks")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("Date")
                         .HasAnnotation("Relational:JsonPropertyName", "Date");
+
+                    b.Property<bool>("IsCorrelation")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<long>("Sessions")
                         .HasColumnType("bigint");
@@ -518,18 +523,23 @@ namespace Metriflow.Infrastructure.Migrations
             modelBuilder.Entity("Metriflow.Domain.Entities.Workers.PSIRecord", b =>
                 {
                     b.Property<int>("PageId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("Ticks")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("Date")
                         .HasAnnotation("Relational:JsonPropertyName", "Date");
+
+                    b.Property<bool>("IsCorrelation")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<long>("LCP_MS")
                         .HasColumnType("bigint");
 
                     b.Property<int>("PerformanceScore")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.HasKey("PageId", "Ticks");
 
@@ -539,16 +549,16 @@ namespace Metriflow.Infrastructure.Migrations
             modelBuilder.Entity("Metriflow.Domain.Entities.YearlyAnalytics", b =>
                 {
                     b.Property<int>("PageId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("Year")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<double>("AvgPerformance")
-                        .HasColumnType("double precision");
+                        .HasColumnType("float");
 
                     b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<long>("TotalSessions")
                         .HasColumnType("bigint");
