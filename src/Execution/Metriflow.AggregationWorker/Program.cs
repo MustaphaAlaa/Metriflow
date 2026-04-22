@@ -17,6 +17,8 @@ using Serilog;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
+    .WriteTo.File("logs/log.txt")
+    
     .CreateBootstrapLogger();
 var builder = Host.CreateApplicationBuilder(args);
 

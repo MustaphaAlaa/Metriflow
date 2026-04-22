@@ -17,11 +17,12 @@ public class RawDataWorker(
         {
             rawDataConsumer.Consume(stoppingToken);
             await Task.Delay(Timeout.Infinite, stoppingToken);
+            logger.LogWarning("%%%%%%%% Raw Data Worker is Done. %%%%%%%%%%");
         }
         catch (Exception ex)
         {
-            logger.LogCritical(ex, "Raw Data Worker failed");
-            throw;
+            logger.LogCritical(ex, "!!!!!!!! Raw Data Worker failed");
+           throw new Exception("!!!!!! Raw Data Worker failed", ex);
         }
     }
 }

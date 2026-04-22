@@ -1,6 +1,10 @@
+using System.Threading.Channels;
+
+
 using System.Threading.Tasks;
 using Metriflow.Domain;
 using Metriflow.Domain.Entities.Enums;
+using Metriflow.Domain.Entities.Workers;
 using Metriflow.Domain.Interfaces;
 
 namespace Metriflow.AggregationWorker.Interfaces.Correlation;
@@ -11,12 +15,8 @@ namespace Metriflow.AggregationWorker.Interfaces.Correlation;
 /// </summary>
 public interface IRawDataConsumerMessageHandler<T> where T: class, IAnalyticRecord
 {
-    /// <summary>
-    /// Handle an incoming analytic record of type <typeparamref name="T"/>.
-    /// </summary>
-    /// <typeparam name="T">The record type, must implement <see cref="IAnalyticRecord"/>.</typeparam>
-    /// <param name="type">A short type identifier (for example, "ga" or "psi").</param>
-    /// <param name="record">The record instance to be handled.</param>
-    Task HandleIncomingRecordAsync(enTypesKey type, List<T> record)
-         ;
+ 
+
+    Task HandleIncomingGaRecordAsync( Channel<List<GARecord>> channel, CancellationToken stoppingToken);
+    Task HandleIncomingPsiRecordAsync( Channel<List<PSIRecord>> channel, CancellationToken stoppingToken);
 }
