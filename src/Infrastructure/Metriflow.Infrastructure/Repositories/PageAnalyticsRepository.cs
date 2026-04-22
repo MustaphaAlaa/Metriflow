@@ -5,10 +5,9 @@ using Metriflow.Domain.CustomAttributes;
 using Metriflow.Domain.Entities;
 using Metriflow.Domain.Entities.Reports;
 using Metriflow.Infrastructure;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
-using Npgsql.Internal;
 
 namespace Repositories.Generic;
 
@@ -75,7 +74,7 @@ public class PageAnalyticsRepository(MetriflowDbContext context, ITrackTableCoun
         await strategy.ExecuteAsync(async () =>
         {
             await _db.Database.OpenConnectionAsync();
-            var connection = _db.Database.GetDbConnection() as NpgsqlConnection;
+            var connection = _db.Database.GetDbConnection() as SqlConnection;
             using var transaction = await connection.BeginTransactionAsync();
 
 
@@ -133,75 +132,15 @@ public class PageAnalyticsRepository(MetriflowDbContext context, ITrackTableCoun
             AND "AggregationProgresses"."Date" = "PageAnalytics"."Date"
             );
         """;
-            //     var sql = """
-            //             INSERT INTO "PageAnalytics" (
-            //         "PageId", "Date", "Intervals", "Users",
-            //         "Sessions", "Views", "PerformanceScore", "LcpMs"
-            //         )
-            //         SELECT
-            //                 pa."PageId",
-            //                 pa."Date",
-            //                 get_timeinterval(EXTRACT(HOUR FROM pa."Date")),
-            //                 ga."Users",
-            //                 ga."Sessions",
-            //                 ga."Views",
-            //                 psi."PerformanceScore",
-            //                 psi."LCP_MS"
-            //         FROM (
-            //             "GARecords" AS ga
-            //             JOIN "PSIRecords" AS psi ON ga."PageId" = psi."PageId" AND ga."Date" = psi."Date"
-            //             JOIN "AggregationProgresses" AS pa ON ga."PageId" = pa."PageId" AND ga."Date" = pa."Date"
-            //                 )
-            // Where  exists(
-            //     Select 1 FROM "AggregationProgresses" WHERE "AggregationProgresses"."Correlation" = false
-            // );
-
-
-            //         UPDATE "AggregationProgresses"
-            //         SET "Correlation" = true
-            //         Where (
-            //     "AggregationProgresses"."Correlation" = false
-            //         and  EXISTS (
-            //     SELECT 1
-            //     FROM "PageAnalytics"
-            //     WHERE "AggregationProgresses"."PageId" = "PageAnalytics"."PageId"
-            //     AND "AggregationProgresses"."Date" = "PageAnalytics"."Date"
-            // ));
-            // """;
-            // var sql = """
-            // WITH inserted_rows AS (
-            // INSERT INTO "PageAnalytics" (
-            // "PageId", "Date", "Intervals", "Users", 
-            // "Sessions", "Views", "PerformanceScore", "LcpMs"
-            // )
-            //   SELECT
-            //         pa."PageId",
-            //         pa."Date",
-            //         get_timeinterval(EXTRACT(HOUR FROM pa."Date")),
-            //         ga."Users",
-            //         ga."Sessions",
-            //         ga."Views",
-            //         psi."PerformanceScore",
-            //         psi."LCP_MS"
-            // FROM "GARecords" AS ga
-            //  JOIN "PSIRecords" AS psi ON ga."PageId" = psi."PageId" AND ga."Date" = psi."Date"
-            // JOIN "AggregationProgresses" AS pa ON ga."PageId" = pa."PageId" AND ga."Date" = pa."Date"
-            //  WHERE pa."Correlation" = false
-            // RETURNING "PageId", "Date"  
-            // )
-            // UPDATE "AggregationProgresses"
-            // SET "Correlation" = true
-            // FROM inserted_rows
-            // WHERE "AggregationProgresses"."PageId" = inserted_rows."PageId"
-            // AND "AggregationProgresses"."Date" = inserted_rows."Date";
-            // """;
+          
 
             try
             {
-                using var cmd = new NpgsqlCommand(sql, connection, transaction);
+                using var cmd = new SqlCommand(sql, connection);
                 cmd.CommandTimeout = 300; // 5 minutes
+                
                   insertionCount = await cmd.ExecuteNonQueryAsync();
-                var updateTrackedTable = await trackTableCountRepository.AlterTableRowsCountAsync("PageAnalytics", insertionCount);
+                // var updateTrackedTable = await trackTableCountRepository.AlterTableRowsCountAsync("PageAnalytics", insertionCount);
                 await transaction.CommitAsync();
                
             }

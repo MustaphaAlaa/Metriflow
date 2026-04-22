@@ -1,23 +1,24 @@
 using IRepository;
 using Metriflow.Domain.CustomAttributes;
 using Metriflow.Infrastructure;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 
 namespace Repositories.Ado;
 
-[ServiceRegistration( ServiceLifetime.Scoped, typeof(ITrackTableCountRepository))]
+[ServiceRegistration(ServiceLifetime.Scoped, typeof(ITrackTableCountRepository))]
 public class TrackTableCountRepository(MetriflowDbContext context, ILogger<TrackTableCountRepository> logger) : ITrackTableCountRepository
 {
     public async Task<int> AlterTableRowsCountAsync(string tableName, int rowsCount)
     {
-        var connection = (NpgsqlConnection)context.Database.CurrentTransaction.GetDbTransaction().Connection
+        var dbTransaction = context.Database.CurrentTransaction.GetDbTransaction();
+        var connection = (SqlConnection)dbTransaction.Connection
                    ?? throw new InvalidOperationException("No active transaction");
 
-        await using var cmd = new NpgsqlCommand("""
-            UPDATE "TableRowsCounts" SET "RowsCount" =  "RowsCount" + @rowCount  WHERE  "TableName" = @tableName
+        await using var cmd = new SqlCommand("""
+            UPDATE TableRowsCounts SET RowsCount =  RowsCount + @rowCount  WHERE  TableName = @tableName
             """, connection)
         {
             Parameters =
@@ -26,7 +27,7 @@ public class TrackTableCountRepository(MetriflowDbContext context, ILogger<Track
         new("rowCount", rowsCount)
     }
         };
-
+        cmd.Transaction = (SqlTransaction)dbTransaction;
         var affectedRows = await cmd.ExecuteNonQueryAsync();
         return affectedRows;
 

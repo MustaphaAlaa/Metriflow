@@ -250,14 +250,14 @@ public class RabbitMqConsumer : IAsyncDisposable, IMessageBrokerConsumer
         await channel.BasicConsumeAsync(queue: queueName, autoAck: false, consumer, cancellationToken);
         _logger.LogInformation("Started consuming from queue: {QueueName}", queueName);
 
-        // try
-        // {
-        //     await Task.Delay(Timeout.Infinite, cancellationToken);
-        // }
-        // catch (TaskCanceledException)
-        // {
-        //     _logger.LogInformation("Consumer stopped for queue {QueueName}", queueName);
-        // }
+        try
+        {
+            await Task.Delay(Timeout.Infinite, cancellationToken);
+        }
+        catch (TaskCanceledException)
+        {
+            _logger.LogInformation("Consumer stopped for queue {QueueName}", queueName);
+        }
     }
 
     /// <summary>

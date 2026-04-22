@@ -79,7 +79,7 @@ public class RabbitMqProducer : IMessageBrokerProducer, IAsyncDisposable
     {
         if (_sharedChannel is null)
             throw new InvalidOperationException("Shared channel not initialized.");
-
+    
         var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
         await _sharedChannel.BasicPublishAsync(exchange, routingKey, body: body);
     }
@@ -112,7 +112,7 @@ public class RabbitMqProducer : IMessageBrokerProducer, IAsyncDisposable
         if (sharedChannel)
         {
              await this.InitializeSharedChannelAsync(exchangeName);
-            await this.PublishWithSharedChannelAsync(message, exchangeName, routingKey);
+             await this.PublishWithSharedChannelAsync(message, exchangeName, routingKey);
         } 
         else  await this.PublishWithNewChannelAsync(message, exchangeName, routingKey);
     }

@@ -12,13 +12,18 @@ public class GARecordConfiguration : IEntityTypeConfiguration<GARecord>
         // builder.HasKey(x => x.Id);
         // builder.Property(x => x.Id).ValueGeneratedOnAdd();
 
-        builder.HasKey(x => new { PageId = x.PageId, Date = x.Ticks });
+        // builder.HasKey(x => new { PageId = x.PageId, Date = x.Ticks });
+        
+        builder.HasNoKey();
+        
         builder.Property(x => x.Ticks)
             .HasConversion(ticks => new DateTime(ticks, DateTimeKind.Utc),
                 date => date.Ticks)
             .HasJsonPropertyName("Date")
             .HasColumnName("Date");
 
-       
+        builder.Property(x => x.IsCorrelation).HasDefaultValue(false);
+
+
     }
 }

@@ -1,111 +1,101 @@
-using System.Data;
+using System.Collections;
 using IRepository;
 using IRepository.Generic;
 using Metriflow.Domain.CustomAttributes;
 using Metriflow.Domain.Entities;
 using Metriflow.Domain.Entities.Workers;
 using Metriflow.Infrastructure;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Npgsql;
+using Microsoft.VisualBasic;
 
 namespace Repositories.Ado;
 
 [ServiceRegistration(ServiceLifetime.Scoped, typeof(IRawDataRepository))]
-public class RawDataRepository(MetriflowDbContext context,
-ITrackTableCountRepository trackTableCountRepository, ILogger<RawDataRepository> logger) : IRawDataRepository
+public class RawDataRepository(
+    MetriflowDbContext context,
+    ITrackTableCountRepository trackTableCountRepository,
+    ILogger<RawDataRepository> logger) : IRawDataRepository
 {
-
-    public async Task AddGaRecordsBulk(IEnumerable<GARecord> lst)
+    public async Task AddGaRecordsBulk(List<List<GARecord>> lst, int count)
     {
-        var connection = (NpgsqlConnection)context.Database.CurrentTransaction.GetDbTransaction().Connection
-                       ?? throw new InvalidOperationException("No active transaction");
-
-        var count = 0;
-        using (var write = await connection.BeginBinaryImportAsync("""
-        Copy "GARecords" ("Date", "PageId", "Users", "Views", "Sessions")
-        FROM STDIN (FORMAT BINARY)
-        """))
+        try
         {
+            var dbTransaction = (await context.Database.BeginTransactionAsync()).GetDbTransaction();
+            var connection = (SqlConnection)dbTransaction.Connection
+                             ?? throw new InvalidOperationException("No active transaction");
+
+            using var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.TableLock, (SqlTransaction)dbTransaction);
+            
+            using var reader = new GARecordDataReader(lst);
+             
+            bulkCopy.DestinationTableName = "GARecords";
+             
+            await bulkCopy.WriteToServerAsync(reader);
+            
+            await trackTableCountRepository.AlterTableRowsCountAsync("GARecords", count);
+            
+            await context.Database.CommitTransactionAsync();
+            logger.LogInformation("Successfully bulk inserted {Count} GA records", count);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("!!!!!!!!!!! Failed to bulk ga records !!!!!!!!!!!!!!");
+            logger.LogError(ex, ex.Message);
             try
             {
-                foreach (var item in lst)
-                {
-                    await write.StartRowAsync();
-
-
-
-                    var date = new DateTime(item.Ticks, DateTimeKind.Utc);
-                    write.Write(date, NpgsqlTypes.NpgsqlDbType.TimestampTz);
-
-                    write.Write(item.PageId);
-                    write.Write(item.Users, NpgsqlTypes.NpgsqlDbType.Bigint);
-                    write.Write(item.Views, NpgsqlTypes.NpgsqlDbType.Bigint);
-                    write.Write(item.Sessions, NpgsqlTypes.NpgsqlDbType.Bigint);
-                    count++;
-
-                }
-                await write.CompleteAsync();
-
+                await context.Database.RollbackTransactionAsync();
             }
-            catch (Exception ex)
+            catch (Exception rollbackEx)
             {
-                logger.LogError(ex, "#####@@@@@@ Disposing GA lst");
-                await write.DisposeAsync(); // force cancel COPY properly
-                throw;
+                logger.LogError(rollbackEx, "Failed to rollback GA transaction");
             }
-
+            throw;
         }
-
-        await trackTableCountRepository.AlterTableRowsCountAsync("GARecords", count);
-
-
     }
 
-    public async Task AddPsiRecordsBulk(IEnumerable<PSIRecord> lst)
+    public async Task AddPsiRecordsBulk(List<List<PSIRecord>> lst, int count)
     {
-        var connection = (NpgsqlConnection)context.Database.CurrentTransaction.GetDbTransaction().Connection
-                       ?? throw new InvalidOperationException("No active transaction");
-
-        // if (connection.State != ConnectionState.Open)
-        //     throw new InvalidOperationException("PostgreSQL connection required");
-        var count = 0;
-        using (var write = await connection.BeginBinaryImportAsync("""
-        Copy "PSIRecords" ( "Date", "PageId", "PerformanceScore", "LCP_MS")
-        FROM STDIN (FORMAT BINARY)
-        """))
+        try
         {
+              
+                
+             
+            var dbTransaction = (await context.Database.BeginTransactionAsync()).GetDbTransaction();
+            var connection = (SqlConnection)dbTransaction.Connection
+                             ?? throw new InvalidOperationException("No active transaction");
+
+            using var bulkCopy = new SqlBulkCopy(
+                connection,
+                SqlBulkCopyOptions.TableLock,
+                (SqlTransaction)dbTransaction);
+            
+            using var reader = new PSIRecordDataReader(lst);
+            
+            bulkCopy.DestinationTableName = "PSIRecords";
+            
+            await bulkCopy.WriteToServerAsync(reader);
+            
+            await trackTableCountRepository.AlterTableRowsCountAsync("PSIRecords", count);
+            await context.Database.CommitTransactionAsync();
+            logger.LogInformation("Successfully bulk inserted {Count} PSI records", count);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("!!!!!!!!!!! Failed to bulk psi records !!!!!!!!!!!!!!");
+            logger.LogError(ex, ex.Message);
             try
             {
-                foreach (var item in lst)
-                {
-                    await write.StartRowAsync();
-                    var date = new DateTime(item.Ticks, DateTimeKind.Utc);
-
-                    write.Write(date, NpgsqlTypes.NpgsqlDbType.TimestampTz);
-                    write.Write(item.PageId);
-                    write.Write(item.PerformanceScore);
-                    write.Write(item.LCP_MS, NpgsqlTypes.NpgsqlDbType.Bigint);
-                    
-                    count++;
-                }
-                await write.CompleteAsync();
+                await context.Database.RollbackTransactionAsync();
             }
-            catch (Exception ex)
+            catch (Exception rollbackEx)
             {
-                logger.LogError(ex, "#####@@@@@@ Disposing PSI lst");
-                await write.DisposeAsync(); // force cancel COPY properly
-                throw;
+                logger.LogError(rollbackEx, "Failed to rollback PSI transaction");
             }
-
+            throw;
         }
-
-        await trackTableCountRepository.AlterTableRowsCountAsync("PSIRecords", count);
     }
-
-
-
-
 }

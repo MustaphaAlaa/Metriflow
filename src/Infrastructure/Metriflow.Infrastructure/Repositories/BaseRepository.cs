@@ -4,7 +4,6 @@ using Metriflow.Domain.CustomAttributes;
 using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
 
 namespace Repositories.Generic;
 

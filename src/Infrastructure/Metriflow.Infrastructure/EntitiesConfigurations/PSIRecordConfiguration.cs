@@ -9,15 +9,13 @@ public class PSIRecordConfiguration : IEntityTypeConfiguration<PSIRecord>
         Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<PSIRecord> builder
     )
     {
-    
-        builder.HasKey(x => new { PageId = x.PageId, Date = x.Ticks });
-
+        builder.Property(x => x.IsCorrelation).HasDefaultValue(false);
+        // builder.HasKey(x => new { PageId = x.PageId, Date = x.Ticks });
+        builder.HasNoKey();
         builder.Property(x => x.Ticks)
             .HasConversion(ticks => new DateTime(ticks, DateTimeKind.Utc),
                 date => date.Ticks)
             .HasJsonPropertyName("Date")
             .HasColumnName("Date");
-
-
     }
 }

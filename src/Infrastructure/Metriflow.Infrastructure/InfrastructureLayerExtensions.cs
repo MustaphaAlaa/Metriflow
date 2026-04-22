@@ -13,11 +13,11 @@ public static class InfrastructureLayerExtensions
 {
     public static void AddInfrastructureLayer(this IServiceCollection service, IConfigurationManager configuration)
     {
-        var conn = configuration.GetConnectionString("Postgres")
-                   ?? throw new InvalidOperationException("Postgres connection string not found");
+        var conn = configuration.GetConnectionString("MSSQL")
+                   ?? throw new InvalidOperationException("SQLServer connection string not found");
         Console.WriteLine($"Connection string :{conn ?? "not found there a null"}");
         service.AddDbContext<MetriflowDbContext>(
-            options => options.UseNpgsql(conn),
+            options => options.UseSqlServer(conn),
             ServiceLifetime.Scoped
         );
 

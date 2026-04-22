@@ -20,10 +20,10 @@ public class MetriflowDbContextFactory : IDesignTimeDbContextFactory<MetriflowDb
             .Build();
 
         var optionsBuilder = new DbContextOptionsBuilder<MetriflowDbContext>();
-        var connectionString = configuration.GetConnectionString("Postgres");
+        var connectionString = configuration.GetConnectionString("sqlServer");
             // ?? "Host=localhost;Port=5432;Database=metriflow_db;Username=postgres;Password=postgres";
         
-        optionsBuilder.UseNpgsql(connectionString);
+        optionsBuilder.UseSqlServer(connectionString);
 
         return new MetriflowDbContext(optionsBuilder.Options);
     }
