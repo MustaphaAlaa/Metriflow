@@ -10,7 +10,6 @@ using Metriflow.Domain.Entities.Workers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-
 namespace Metriflow.AggregationWorker.Services;
 
 /// <summary>
@@ -23,19 +22,22 @@ public class RawDataConsumer : IRawDataConsumer
     private readonly IProducer _producer;
     private readonly RabbitMqSettings _rabbitMqSettings;
     private readonly IServiceScopeFactory _serviceScopeFactory;
+    const int boundChannelSize = 200;
 
     public RawDataConsumer(
         ILogger<RawDataConsumer> logger,
         IMessageBrokerConsumer consumer,
         IProducer producer,
         IOptions<RabbitMqSettings> options,
-        IServiceScopeFactory serviceScopeFactory)
+        IServiceScopeFactory serviceScopeFactory
+    )
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _consumer = consumer ?? throw new ArgumentNullException(nameof(consumer));
         _producer = producer ?? throw new ArgumentNullException(nameof(producer));
         _rabbitMqSettings = options?.Value ?? throw new ArgumentNullException(nameof(options));
-        _serviceScopeFactory = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
+        _serviceScopeFactory =
+            serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
     }
 
     /// <inheritdoc />
@@ -53,7 +55,7 @@ public class RawDataConsumer : IRawDataConsumer
     private async Task ConsumeGA(CancellationToken stoppingToken)
     {
         var channel = Channel.CreateBounded<List<GARecord>>(
-            new BoundedChannelOptions(1000)
+            new BoundedChannelOptions(boundChannelSize)
             {
                 SingleWriter = true,
                 SingleReader = false,
@@ -61,12 +63,12 @@ public class RawDataConsumer : IRawDataConsumer
             }
         );
 
-
         using var scope = _serviceScopeFactory.CreateScope();
-        var handler = scope.ServiceProvider
-            .GetRequiredService<IRawDataConsumerMessageHandler<GARecord>>();
+        var handler = scope.ServiceProvider.GetRequiredService<
+            IRawDataConsumerMessageHandler<GARecord>
+        >();
         var workers = Task.Run(() =>
-            handler.HandleIncomingGaRecordAsync(channel, stoppingToken)
+            handler.HandleIncomingAnalyticsRecordsAsync(channel, stoppingToken)
         );
 
         try
@@ -77,32 +79,42 @@ public class RawDataConsumer : IRawDataConsumer
                 async (List<GARecord> ga) =>
                 {
                     _logger.LogInformation($"{ga.Count} of {enTypesKey.GA} records are received.");
-                    _logger.LogInformation($"$###### GARecords Chunk Count:   ${ga.Count} ########");
+                    _logger.LogInformation(
+                        $"$###### GARecords Chunk Count:   ${ga.Count} ########"
+                    );
 
                     stoppingToken.ThrowIfCancellationRequested();
 
                     try
                     {
-                        if (ga.Count == 0) return;
+                        if (ga.Count == 0)
+                            return;
 
                         await channel.Writer.WriteAsync(ga, stoppingToken);
                         _logger.LogInformation(
-                            $"$###### GARecords Chunk Count:   ${ga.Count}. %%% Is wrote in Channel, Channel Count is ${channel.Reader.Count}%%%  ########");
+                            $"$###### GARecords Chunk Count:   ${ga.Count}. %%% Is wrote in Channel, Channel Count is ${channel.Reader.Count}%%%  ########"
+                        );
                     }
                     catch (ObjectDisposedException ex)
                     {
                         // Service provider is disposed, likely during shutdown
-                        _logger.LogWarning(ex,
-                            "!!!!!!!!!!!!!!!!!!!!!! Service provider was disposed while processing message. Application may be shutting down. !!!!!!!!!!!");
+                        _logger.LogWarning(
+                            ex,
+                            "!!!!!!!!!!!!!!!!!!!!!! Service provider was disposed while processing message. Application may be shutting down. !!!!!!!!!!!"
+                        );
                         // Throw OperationCanceledException to signal graceful shutdown and prevent retries
                         throw new OperationCanceledException(
-                            "!!!!!!!!!!!!!!!!!!!!!! Service provider was disposed during processing. !!!!!!!!!", ex,
-                            stoppingToken);
+                            "!!!!!!!!!!!!!!!!!!!!!! Service provider was disposed during processing. !!!!!!!!!",
+                            ex,
+                            stoppingToken
+                        );
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex,
-                            "!!!!!!!!!!!!!!!!!!!!!! An exception is thrown. Application may be shutting down.");
+                        _logger.LogWarning(
+                            ex,
+                            "!!!!!!!!!!!!!!!!!!!!!! An exception is thrown. Application may be shutting down."
+                        );
                         throw;
                     }
                 },
@@ -126,7 +138,7 @@ public class RawDataConsumer : IRawDataConsumer
     private async Task ConsumePSI(CancellationToken stoppingToken)
     {
         var channel = Channel.CreateBounded<List<PSIRecord>>(
-            new BoundedChannelOptions(1000)
+            new BoundedChannelOptions(boundChannelSize)
             {
                 SingleWriter = true,
                 SingleReader = false,
@@ -134,13 +146,14 @@ public class RawDataConsumer : IRawDataConsumer
             }
         );
 
-
         using var scope = _serviceScopeFactory.CreateScope();
-        var handler = scope.ServiceProvider
-            .GetRequiredService<IRawDataConsumerMessageHandler<PSIRecord>>();
+        var handler = scope.ServiceProvider.GetRequiredService<
+            IRawDataConsumerMessageHandler<PSIRecord>
+        >();
 
-
-        var workers = Task.Run(() => handler.HandleIncomingPsiRecordAsync(channel, stoppingToken));
+        var workers = Task.Run(() =>
+            handler.HandleIncomingAnalyticsRecordsAsync(channel, stoppingToken)
+        );
         try
         {
             var now = DateTime.Now;
@@ -149,35 +162,45 @@ public class RawDataConsumer : IRawDataConsumer
                 routingKey: _rabbitMqSettings.Queues.PSI,
                 async (List<PSIRecord> psi) =>
                 {
-                    _logger.LogInformation($"{psi.Count} of {enTypesKey.PSI} records are received.");
+                    _logger.LogInformation(
+                        $"{psi.Count} of {enTypesKey.PSI} records are received."
+                    );
 
-
-                    _logger.LogInformation($"$###### PSIRecords Chunk Count:   ${psi.Count}  ########");
+                    _logger.LogInformation(
+                        $"$###### PSIRecords Chunk Count:   ${psi.Count}  ########"
+                    );
                     stoppingToken.ThrowIfCancellationRequested();
-
 
                     try
                     {
-                        if (psi.Count == 0) return;
+                        if (psi.Count == 0)
+                            return;
 
                         await channel.Writer.WriteAsync(psi, stoppingToken);
                         _logger.LogInformation(
-                            $"$###### PSIRecords Chunk Count:   ${psi.Count}. %%% Is wrote in Channel, Channel Count is ${channel.Reader.Count}%%% ########");
+                            $"$###### PSIRecords Chunk Count:   ${psi.Count}. %%% Is wrote in Channel, Channel Count is ${channel.Reader.Count}%%% ########"
+                        );
                     }
                     catch (ObjectDisposedException ex)
                     {
                         // Service provider is disposed, likely during shutdown
-                        _logger.LogWarning(ex,
-                            "!!!!!!!!!!!!!!!!!!!!!!!! Service provider was disposed while processing message. Application may be shutting down. !!!!!!!!!!!!");
+                        _logger.LogWarning(
+                            ex,
+                            "!!!!!!!!!!!!!!!!!!!!!!!! Service provider was disposed while processing message. Application may be shutting down. !!!!!!!!!!!!"
+                        );
                         // Throw OperationCanceledException to signal graceful shutdown and prevent retries
                         throw new OperationCanceledException(
-                            "!!!!!!!!!!! Service provider was disposed during processing. !!!!!!!!!!!", ex,
-                            stoppingToken);
+                            "!!!!!!!!!!! Service provider was disposed during processing. !!!!!!!!!!!",
+                            ex,
+                            stoppingToken
+                        );
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex,
-                            "!!!!!!!!!!!!!!!!!!!!!! An exception is thrown. Application may be shutting down.");
+                        _logger.LogWarning(
+                            ex,
+                            "!!!!!!!!!!!!!!!!!!!!!! An exception is thrown. Application may be shutting down."
+                        );
                         throw;
                     }
                 },

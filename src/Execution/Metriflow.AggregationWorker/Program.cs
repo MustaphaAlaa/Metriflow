@@ -18,21 +18,22 @@ using Serilog;
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .WriteTo.File("logs/log.txt")
-    
     .CreateBootstrapLogger();
+    
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Services.AddSerilog((services, lc) => lc
-    .ReadFrom.Configuration(builder.Configuration)
-    .ReadFrom.Services(services)
-    .Enrich.FromLogContext());
-
+builder.Services.AddSerilog(
+    (services, lc) =>
+        lc
+            .ReadFrom.Configuration(builder.Configuration)
+            .ReadFrom.Services(services)
+            .Enrich.FromLogContext()
+);
 
 builder.Services.AddHostedService<RawDataWorker>();
 
 // builder.Services.AddHostedService<AggregationProgressWorker>();
 // builder.Services.AddHostedService<PagesAnalyticWorker>();
-
 
 // builder.Services.AddHostedService<IntervalAnalyticsWorker>();
 
@@ -42,16 +43,14 @@ builder.Services.AddHostedService<RawDataWorker>();
 
 builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMQ"));
 
-
 builder.Services.AddSingleton<IRawDataConsumer, RawDataConsumer>();
 builder.Services.AddSingleton<IProducer, Producer>();
 
-
-builder.Services.AddScoped(typeof(IRawDataConsumerMessageHandler<>), typeof(RawDataConsumerMessageHandler<>));
-builder.Services.AddScoped<IPageAnalyticsOrchestration,
-    PageAnalyticsOrchestration>();
-
-
+builder.Services.AddScoped(
+    typeof(IRawDataConsumerMessageHandler<>),
+    typeof(RawDataConsumerMessageHandler<>)
+);
+builder.Services.AddScoped<IPageAnalyticsOrchestration, PageAnalyticsOrchestration>();
 
 builder.Services.AddInfrastructureLayer(builder.Configuration);
 builder.Services.AddApplicationLayerDiServices();
