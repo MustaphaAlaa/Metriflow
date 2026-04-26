@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Metriflow.Application.Interfaces;
@@ -79,7 +78,7 @@ public class RabbitMqProducer : IMessageBrokerProducer, IAsyncDisposable
     {
         if (_sharedChannel is null)
             throw new InvalidOperationException("Shared channel not initialized.");
-    
+
         var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
         await _sharedChannel.BasicPublishAsync(exchange, routingKey, body: body);
     }
@@ -97,6 +96,7 @@ public class RabbitMqProducer : IMessageBrokerProducer, IAsyncDisposable
             durable: true,
             autoDelete: false
         );
+
         var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
         await channel.BasicPublishAsync(exchangeName, routingKey, body: body);
     }
@@ -107,13 +107,19 @@ public class RabbitMqProducer : IMessageBrokerProducer, IAsyncDisposable
             await _sharedChannel.CloseAsync();
     }
 
-    public async Task PublishAsync<T>(T message, string exchangeName, string routingKey, bool sharedChannel = false)
+    public async Task PublishAsync<T>(
+        T message,
+        string exchangeName,
+        string routingKey,
+        bool sharedChannel = false
+    )
     {
         if (sharedChannel)
         {
-             await this.InitializeSharedChannelAsync(exchangeName);
-             await this.PublishWithSharedChannelAsync(message, exchangeName, routingKey);
-        } 
-        else  await this.PublishWithNewChannelAsync(message, exchangeName, routingKey);
+            await this.InitializeSharedChannelAsync(exchangeName);
+            await this.PublishWithSharedChannelAsync(message, exchangeName, routingKey);
+        }
+        else
+            await this.PublishWithNewChannelAsync(message, exchangeName, routingKey);
     }
 }
