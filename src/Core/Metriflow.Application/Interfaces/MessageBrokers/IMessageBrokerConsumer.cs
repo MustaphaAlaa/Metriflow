@@ -1,5 +1,3 @@
-using RabbitMQ.Client;
-
 namespace Metriflow.Application.Interfaces;
 
 /// <summary>
@@ -13,30 +11,8 @@ namespace Metriflow.Application.Interfaces;
 /// Implementations are expected to deserialize the raw message payload into <typeparamref name="T"/>
 /// and invoke the provided <paramref name="handleMessage"/> callback for each message.
 /// </remarks>
-public interface IMessageBrokerConsumer
+public interface IMessageBrokerConsumer : IMessageBrokerConsumerChannels
 {
-    /// <summary>
-    /// Consume messages of type <typeparamref name="T"/> using the supplied channel.
-    /// </summary>
-    /// <typeparam name="T">The CLR type to which the message payload will be deserialized.</typeparam>
-    /// <param name="channel">An open AMQP channel instance to use for consuming messages.</param>
-    /// <param name="queueName">The queue name to consume from. The implementation may declare/bind the queue if necessary.</param>
-    /// <param name="exchangeName">The exchange name to bind the queue to if required by the implementation.</param>
-    /// <param name="routingKey">The routing key to use when binding or filtering messages.</param>
-    /// <param name="handleMessage">Async callback invoked for each successfully deserialized message.</param>
-    /// <param name="cancellationToken">Token used to stop consuming and to abort long-running operations.</param>
-    /// <returns>A <see cref="Task"/> that completes when consumption has stopped (for example when <paramref name="cancellationToken"/> is cancelled or the channel closes).</returns>
-    /// <exception cref="ArgumentNullException">Thrown if required arguments are null.</exception>
-    /// <exception cref="OperationCanceledException">May be thrown when <paramref name="cancellationToken"/> is cancelled.</exception>
-    Task ConsumeFromChannelAsync<T>(
-        IChannel channel,
-        string queueName,
-        string exchangeName,
-        string routingKey,
-        Func<T, Task> handleMessage,
-        CancellationToken cancellationToken
-    );
-
     /// <summary>
     /// Create a new channel and perform message consumption for messages of type <typeparamref name="T"/>.
     /// </summary>
@@ -85,12 +61,6 @@ public interface IMessageBrokerConsumer
     );
 
     /// <summary>
-    /// Create a new AMQP channel.
-    /// </summary>
-    /// <returns>A task that resolves to a fresh <see cref="IChannel"/> instance. Caller is responsible for channel lifetime.</returns>
-    Task<IChannel> CreateNewChannelAsync();
-
-    /// <summary>
     /// Asynchronously dispose the consumer and release resources (channels, connections, etc.).
     /// </summary>
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous dispose operation.</returns>
@@ -103,4 +73,4 @@ public interface IMessageBrokerConsumer
     /// <param name="exchangeName">Exchange to prepare on the shared channel.</param>
     /// <returns>A <see cref="Task"/> that completes when initialization finishes.</returns>
     Task InitializeSharedChannelAsync(string queueName, string exchangeName);
- }
+}
