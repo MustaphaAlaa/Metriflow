@@ -4,6 +4,7 @@ using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Metriflow.Infrastructure.Migrations
 {
     [DbContext(typeof(MetriflowDbContext))]
-    partial class MetriflowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260428012049_Create_NonclustredIndex_For_RawData")]
+    partial class Create_NonclustredIndex_For_RawData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -69,7 +72,7 @@ namespace Metriflow.Infrastructure.Migrations
 
                     b.HasIndex("Yearly");
 
-                    b.ToTable("AggregationProgresses", (string)null);
+                    b.ToTable("AggregationProgresses");
                 });
 
             modelBuilder.Entity("Metriflow.Domain.Entities.DailyAnalytics", b =>
@@ -97,7 +100,7 @@ namespace Metriflow.Infrastructure.Migrations
 
                     b.HasKey("PageId", "Date");
 
-                    b.ToTable("DailyAnalytics", (string)null);
+                    b.ToTable("DailyAnalytics");
                 });
 
             modelBuilder.Entity("Metriflow.Domain.Entities.MonthlyAnalytic", b =>
@@ -122,7 +125,7 @@ namespace Metriflow.Infrastructure.Migrations
 
                     b.HasKey("PageId", "YearMonth");
 
-                    b.ToTable("MonthlyAnalytics", (string)null);
+                    b.ToTable("MonthlyAnalytics");
                 });
 
             modelBuilder.Entity("Metriflow.Domain.Entities.Page", b =>
@@ -142,7 +145,7 @@ namespace Metriflow.Infrastructure.Migrations
                     b.HasIndex("Path")
                         .IsUnique();
 
-                    b.ToTable("Pages", (string)null);
+                    b.ToTable("Pages");
 
                     b.HasData(
                         new
@@ -297,7 +300,7 @@ namespace Metriflow.Infrastructure.Migrations
 
                     b.HasIndex("Intervals");
 
-                    b.ToTable("PageAnalytics", (string)null);
+                    b.ToTable("PageAnalytics");
                 });
 
             modelBuilder.Entity("Metriflow.Domain.Entities.TableRowsCount", b =>
@@ -317,7 +320,7 @@ namespace Metriflow.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TableRowsCounts", (string)null);
+                    b.ToTable("TableRowsCounts");
 
                     b.HasData(
                         new
@@ -390,7 +393,7 @@ namespace Metriflow.Infrastructure.Migrations
                     b.HasIndex("Interval")
                         .IsUnique();
 
-                    b.ToTable("TimeIntervals", (string)null);
+                    b.ToTable("TimeIntervals");
 
                     b.HasData(
                         new
@@ -458,7 +461,7 @@ namespace Metriflow.Infrastructure.Migrations
 
                     b.HasIndex("TimeIntervalId");
 
-                    b.ToTable("TimeIntervalsAnalytics", (string)null);
+                    b.ToTable("TimeIntervalsAnalytics");
                 });
 
             modelBuilder.Entity("Metriflow.Domain.Entities.User", b =>
@@ -485,26 +488,26 @@ namespace Metriflow.Infrastructure.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("User", (string)null);
+                    b.ToTable("User");
                 });
 
             modelBuilder.Entity("Metriflow.Domain.Entities.Workers.GARecord", b =>
                 {
-                    b.Property<bool>("IsCorrelation")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<int>("PageId")
                         .HasColumnType("int");
-
-                    b.Property<long>("Sessions")
-                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("Ticks")
                         .HasColumnType("datetime2")
                         .HasColumnName("Date")
                         .HasAnnotation("Relational:JsonPropertyName", "Date");
+
+                    b.Property<bool>("IsCorrelation")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<long>("Sessions")
+                        .HasColumnType("bigint");
 
                     b.Property<long>("Users")
                         .HasColumnType("bigint");
@@ -512,20 +515,28 @@ namespace Metriflow.Infrastructure.Migrations
                     b.Property<long>("Views")
                         .HasColumnType("bigint");
 
+                    b.HasKey("PageId", "Ticks");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("PageId", "Ticks"), false);
+
                     b.HasIndex("IsCorrelation")
                         .HasFilter("[IsCorrelation] = 1");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("IsCorrelation"), false);
 
-                    b.HasIndex("PageId", "Ticks");
-
-                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("PageId", "Ticks"), false);
-
-                    b.ToTable("GARecords", (string)null);
+                    b.ToTable("GARecords");
                 });
 
             modelBuilder.Entity("Metriflow.Domain.Entities.Workers.PSIRecord", b =>
                 {
+                    b.Property<int>("PageId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Ticks")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("Date")
+                        .HasAnnotation("Relational:JsonPropertyName", "Date");
+
                     b.Property<bool>("IsCorrelation")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -534,27 +545,19 @@ namespace Metriflow.Infrastructure.Migrations
                     b.Property<long>("LCP_MS")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("PageId")
-                        .HasColumnType("int");
-
                     b.Property<int>("PerformanceScore")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("Ticks")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("Date")
-                        .HasAnnotation("Relational:JsonPropertyName", "Date");
+                    b.HasKey("PageId", "Ticks");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("PageId", "Ticks"), false);
 
                     b.HasIndex("IsCorrelation")
                         .HasFilter("[IsCorrelation] = 1");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("IsCorrelation"), false);
 
-                    b.HasIndex("PageId", "Ticks");
-
-                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("PageId", "Ticks"), false);
-
-                    b.ToTable("PSIRecords", (string)null);
+                    b.ToTable("PSIRecords");
                 });
 
             modelBuilder.Entity("Metriflow.Domain.Entities.YearlyAnalytics", b =>
@@ -582,7 +585,7 @@ namespace Metriflow.Infrastructure.Migrations
 
                     b.HasKey("PageId", "Year");
 
-                    b.ToTable("YearlyAnalytics", (string)null);
+                    b.ToTable("YearlyAnalytics");
                 });
 
             modelBuilder.Entity("Metriflow.Domain.Entities.AggregationProgress", b =>
