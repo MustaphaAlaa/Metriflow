@@ -9,9 +9,18 @@ public class PSIRecordConfiguration : IEntityTypeConfiguration<PSIRecord>
         Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<PSIRecord> builder
     )
     {
-        builder.Property(x => x.IsCorrelation).HasDefaultValue(false);
-        // builder.HasKey(x => new { PageId = x.PageId, Date = x.Ticks });
         builder.HasNoKey();
+
+        builder.Property(x => x.IsCorrelation).HasDefaultValue(false);
+
+
+        builder.HasIndex(x => new { PageId = x.PageId, Date = x.Ticks })
+            .IsClustered(false);
+       
+        builder.HasIndex(x => x.IsCorrelation)
+            .HasFilter("[IsCorrelation] = 1")
+            .IsClustered(false);
+
         builder.Property(x => x.Ticks)
             .HasConversion(ticks => new DateTime(ticks, DateTimeKind.Utc),
                 date => date.Ticks)
