@@ -12,6 +12,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Repositories.Generic;
 
+
+
+
 [ServiceRegistration(lifetime: ServiceLifetime.Scoped, typeof(IAggregationProgressRepository))]
 public class AggregationProgressRepository : BaseRepository<AggregationProgress>, IAggregationProgressRepository
 {

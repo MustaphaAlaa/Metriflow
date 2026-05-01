@@ -28,6 +28,7 @@ public class TrackTableCountRepository(MetriflowDbContext context, ILogger<Track
     }
         };
         cmd.Transaction = (SqlTransaction)dbTransaction;
+        cmd.CommandTimeout = 180;
         var affectedRows = await cmd.ExecuteNonQueryAsync();
         return affectedRows;
 
