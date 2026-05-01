@@ -1,7 +1,10 @@
 using System.Threading.Channels;
 using Metriflow.AggregationWorker.Interfaces.Correlation;
+using Metriflow.Application.Entities;
 using Metriflow.Application.Interfaces;
+using Metriflow.Application.Interfaces.Workers;
 using Metriflow.Domain.Interfaces;
+using Microsoft.Extensions.Options;
 
 namespace Metriflow.AggregationWorker.Services;
 
@@ -11,12 +14,17 @@ namespace Metriflow.AggregationWorker.Services;
 /// </summary>
 public class RawDataConsumerMessageHandler<T>(
     ILogger<RawDataConsumerMessageHandler<T>> logger,
+    IOptions<RabbitMqSettings> options,
+    IProducer producer,
     IServiceScopeFactory scopeFactory
 ) : IRawDataConsumerMessageHandler<T>
     where T : class, IAnalyticRecord
 {
-    const int batchCount = 150_000;
+    private readonly RabbitMqSettings _rabbitMqSettings = options.Value;
+    const int batchCount = 300_000;
     static readonly TimeSpan flushTimeout = TimeSpan.FromSeconds(50);
+    List<List<T>> outerRecordsLst = new();
+    int accumulator = 0;
 
     public async Task HandleIncomingAnalyticsRecordsAsync(
         Channel<List<T>> channel,
@@ -35,10 +43,7 @@ public class RawDataConsumerMessageHandler<T>(
 
     private async Task Process(Channel<List<T>> channel, CancellationToken stoppingToken)
     {
-        var accumulator = 0;
-        List<List<T>> outerRecordsLst = new List<List<T>>();
-
-        logger.LogInformation($"Processing {nameof(T)}");
+        logger.LogInformation($"Processing {typeof(T).Name}");
         // );
         try
         {
@@ -67,9 +72,7 @@ public class RawDataConsumerMessageHandler<T>(
 
                         if (accumulator >= batchCount)
                         {
-                            await Flush(outerRecordsLst, accumulator);
-                            outerRecordsLst.Clear();
-                            accumulator = 0;
+                            await Flush();
                         }
                     }
                 }
@@ -82,9 +85,7 @@ public class RawDataConsumerMessageHandler<T>(
                     // Otherwise, it was just our timeoutCts. Flush if we have data!
                     if (outerRecordsLst.Count > 0)
                     {
-                        await Flush(outerRecordsLst, accumulator);
-                        outerRecordsLst.Clear();
-                        accumulator = 0;
+                        await Flush();
                     }
                 }
             }
@@ -99,14 +100,12 @@ public class RawDataConsumerMessageHandler<T>(
 
             if (outerRecordsLst.Count > 0)
             {
-                await Flush(outerRecordsLst, accumulator);
-                outerRecordsLst.Clear();
-                accumulator = 0;
+                await Flush();
             }
         }
     }
 
-    async Task Flush(List<List<T>> outerRecordsLst, int accumulator)
+    async Task Flush()
     {
         logger.LogInformation(
             "@@@@@@ Flushing {Count} {RecordType} records to database...",
@@ -119,5 +118,23 @@ public class RawDataConsumerMessageHandler<T>(
         var repo = scope.ServiceProvider.GetRequiredService<IRecordBatchSaver<T>>();
 
         await repo.SaveBulkAsync(outerRecordsLst, accumulator);
+        await Notify(accumulator);
+        outerRecordsLst.Clear();
+        accumulator = 0;
+    }
+
+    private async Task Notify(int recordsCount)
+    {
+        await producer.NotifyCompletedMessageAsync(
+            message: new AggregationCompletedMessage
+            {
+                CorrelationId = Guid.NewGuid(),
+                CompletedType = AggregationType.Records,
+                ProcessedCount = recordsCount,
+                CompletedAt = DateTime.UtcNow,
+            },
+            routingKey: _rabbitMqSettings.Queues.Correlation,
+            exchangeName: _rabbitMqSettings.Exchange
+        );
     }
 }

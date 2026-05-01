@@ -4,9 +4,7 @@ using Metriflow.Application.Interfaces;
 
 namespace Metriflow.AggregationWorker.Workers;
 
-public class RawDataWorker(
-    IRawDataConsumer rawDataConsumer,
-    ILogger<RawDataWorker> logger)
+public class RawDataWorker(IRawDataConsumer rawDataConsumer, ILogger<RawDataWorker> logger)
     : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -22,7 +20,7 @@ public class RawDataWorker(
         catch (Exception ex)
         {
             logger.LogCritical(ex, "!!!!!!!! Raw Data Worker failed");
-           throw new Exception("!!!!!! Raw Data Worker failed", ex);
+            throw new Exception("!!!!!! Raw Data Worker failed", ex);
         }
     }
 }

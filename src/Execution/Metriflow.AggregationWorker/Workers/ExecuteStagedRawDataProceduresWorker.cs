@@ -6,9 +6,9 @@ using Microsoft.Extensions.Options;
 
 namespace Metriflow.AggregationWorker.Workers;
 
-public class AggregationProgressWorker(
-    ILogger<AggregationProgressWorker> logger,
-    IMessageBrokerConsumer consumer,
+public class ExecuteStagedRawDataProceduresWorker(
+    ILogger<ExecuteStagedRawDataProceduresWorker> logger,
+    IMessageBrokerConsumerChannels consumer,
     IProducer producer,
     IServiceScopeFactory serviceScopeFactory,
     IOptions<RabbitMqSettings> options
@@ -18,30 +18,23 @@ public class AggregationProgressWorker(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // while (!stoppingToken.IsCancellationRequested)
-        // {
-        // await Task.Delay(1000 * 20);
         var channel = await consumer.CreateNewChannelAsync();
         await consumer.ConsumeFromChannelAsync<AggregationCompletedMessage>(
             channel,
-            routingKey: _rabbitMqSettings.Queues.Correlation,
-            exchangeName: _rabbitMqSettings.Exchange,
             queueName: _rabbitMqSettings.Queues.Correlation,
-            handleMessage: async (msg) =>
+            exchangeName: _rabbitMqSettings.Exchange,
+            routingKey: _rabbitMqSettings.Queues.Correlation,
+            handleMessage: async (AggregationCompletedMessage) =>
             {
-                if (msg.ProcessedCount > 1)
-                    return;
+                logger.LogInformation("");
                 using var scope = serviceScopeFactory.CreateScope();
-
-                var aggregationProgressRepository =
+                var rawDataRepository =
                     scope.ServiceProvider.GetRequiredService<IRawDataRepository>();
-
-                await aggregationProgressRepository.ExecuteStagedProcedures();
-                await Notify(1);
+                await rawDataRepository.ExecuteAnalyticsPagesCorrelationAsync();
+                logger.LogInformation("");
             },
             cancellationToken: stoppingToken
         );
-        // }
     }
 
     private async Task Notify(int recordsCount)
@@ -50,11 +43,11 @@ public class AggregationProgressWorker(
             new AggregationCompletedMessage
             {
                 CorrelationId = Guid.NewGuid(),
-                CompletedType = AggregationType.Records,
+                CompletedType = AggregationType.Page,
                 ProcessedCount = recordsCount,
                 CompletedAt = DateTime.UtcNow,
             },
-            _rabbitMqSettings.Queues.Correlation,
+            _rabbitMqSettings.Queues.IntervalAggregation,
             _rabbitMqSettings.Exchange
         );
     }

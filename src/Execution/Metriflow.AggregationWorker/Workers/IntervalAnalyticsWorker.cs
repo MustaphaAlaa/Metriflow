@@ -45,7 +45,7 @@ public class IntervalAnalyticsWorker(ILogger<IntervalAnalyticsWorker> logger,
                     await Notify(pagesNumber);
                 }
                 else
-                    logger.LogInformation("@@@@The count of records to aggregate to Intervals is zero.");
+                    logger.LogInformation("@@@@The count of records to aggregate to Interval is zero.");
             },
             stoppingToken
         );
