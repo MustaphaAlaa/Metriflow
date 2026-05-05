@@ -1,124 +1,366 @@
-# I'll rewrite the Readme soon
+# Metriflow: Web Analytics ETL and Reporting Platform
 
-<!-- # **Metriflow: Web Analytics Data Aggregator**
+Metriflow is a high-throughput web analytics data platform designed to ingest large volumes of raw event data, process it through a multi-stage asynchronous aggregation pipeline, and expose secure reporting APIs for analytical consumption.
 
-The system is designed to ingest raw data from mocked external web analytics sources (Google Analytics and PageSpeed Insights), process it through a real message broker (RabbitMQ), aggregate daily statistics, and expose secure reporting APIs.
+The system simulates external analytics sources such as Google Analytics (GA) and PageSpeed Insights (PSI), but the core focus of the project is backend architecture, throughput optimization, fault-tolerant processing, and scalable reporting.
 
-## 🔑 Key Features
+<!-- In its current form, Metriflow is no longer a simple worker-based aggregator. It has evolved into a full ETL pipeline optimized for high-ingestion workloads, staged aggregation, and fast reporting across bounded and arbitrary date ranges. -->
 
-- **Data Ingestion (JSON Sources)**  
-  Reads mock data from **Google Analytics (GA)** and **PageSpeed Insights (PSI)** JSON files. Each record represents a page’s metrics for a specific date. The system standardizes and merges both datasets into unified analytical records.
+## Project Overview
 
-- **Message Production (RabbitMQ)**  
-  A **.NET console producer** simulates real-time API data by publishing GA, and PSI records, one by one, to a RabbitMQ **exchange**, ensuring asynchronous and decoupled processing.
+The platform processes analytics records through a staged pipeline:
+Raw → Staged → Page → Intervals → Daily → Monthly → Yearly
+Data ingestion and processing are deliberately decoupled through RabbitMQ. Multiple background workers execute aggregation sequentially while maintaining consistency in the presence of retries, duplicates, and late-arriving data.
+The system has been benchmarked to process:
+26 million records in under 3 minutes
+(13M GA + 13M PSI processed in parallel)
 
-- **Aggregation & Persistence (EF Core + Postgres)**  
-  A second **.NET Worker Service (Consumer)** processes these consolidated records, computes per-page and per-day totals and averages, and persists the results in **Postgres** using **Entity Framework Core**.
+**This was achieved through:**
 
-- **Secure Reporting API (ASP.NET Core)**  
-  Provides authenticated endpoints for authorized users to query aggregated analytics (daily, per page, and overview reports) using **JWT-based authentication**.
+- producer-consumer channels.
+- streaming JSON deserialization
+- batch bulk inserts using SqlBulkCopy
+- minimized write contention on ingestion tables
+- staged aggregation using stored procedures
 
-- **Reliability & Fault Tolerance**  
-  Ensures message delivery integrity with **acknowledgment on success**, **retry logic (3 attempts with exponential backoff)**.
+---
 
-- **Containerized Infrastructure**  
-  Fully orchestrated with **Docker Compose**, including the **API**, **Worker Services**, **Postgres**, **RabbitMQ**, and **Redis** — ensuring easy local development and consistent deployment.
+## Key Features
 
-## **🛠️ Tech Stack**
+### High-Throughput Data Ingestion
 
-| Component             | Technology                      | Role                                                              |
-| :-------------------- | :------------------------------ | :---------------------------------------------------------------- |
-| **Backend API**       | ASP.NET Core (.NET 8\)          | RESTful Reporting API                                             |
-| **Producer/Consumer** | .NET Worker Service             | Handles Ingestion, Queuing, and Aggregation                       |
-| **Database**          | Postgres (via Docker)         | Persistent storage for Raw Data and Daily Statistics              |
-| **ORM**               | Entity Framework Core (EF Core) | Database interaction and migrations                               |
-| **Message Broker**    | RabbitMQ                        | Reliable, asynchronous messaging                                  |
-| **Authentication**    | JWT (Bearer Token)              | Securing API endpoints                                            |
-| **Caching**           | Redis                           | Used for session management or potential rate limiting (optional) |
-| **Runtime**           | Docker Compose                  | Orchestration of all services                                     |
+The ingestion layer reads structured analytics data from mock external sources and streams records without loading entire files into memory.
 
-## **📐 Architecture Flow Diagram**
+**Key implementation details:**
 
-The system follows a clear, event-driven flow designed for decoupled, reliable, and time-aware data processing.
+- streaming JSON deserialization for low memory pressure.
+- producer-consumer channels for controlled parallelism.
+- SqlBulkCopy batch persistence at 250,000 records per batch.
 
-1. **Data Producer (Console App)**  
-   Reads mock **Google Analytics (GA)** and **PageSpeed Insights (PSI)** JSON files and publishes each raw record (as-is) to the **analytics.raw** exchange on **RabbitMQ** to simulate real-time data streaming.
+- parallel ingestion of GA and PSI datasets
 
+This ingestion path is optimized for write throughput rather than ORM convenience.
 
-2. **Aggregation Worker (Consumer)**  
-   Listens to the **analytics.daily.q** queue, consumes correlated records, calculates per-page and per-day aggregates (totals and averages), and persists the results to **Postgres** via **EF Core**.
+---
 
-3. **Reporting API (ASP.NET Core)**  ****
-   Exposes the aggregated analytics through **JWT-protected endpoints**, providing reports by day, by page, and overall summaries.
+### Queue-Based ETL Pipeline
 
-4. **Containerized Environment (Docker Compose)**  
-   All components — **API**, **Workers**, **RabbitMQ**, **Redis**, and **Postgres** — run as isolated containers, ensuring reliable orchestration and consistent local development.
+RabbitMQ acts as the decoupling boundary between ingestion and downstream processing.
 
-## **⚙️ Setup and Running the Application**
+The system runs 7 background worker services, each responsible for a stage in the aggregation pipeline.
 
-### **Prerequisites**
+**Processing chain:**
 
-You must have the following installed:
+- Raw ingestion.
+- Staging normalization.
+- Page-level aggregation.
+- Interval aggregation.
+- Daily aggregation.
+- Monthly aggregation.
+- Yearly aggregation.
 
-- [Docker](https://www.docker.com/get-started/)
-- Docker Compose (Usually included with Docker Desktop)
+This separation makes the pipeline easier to scale, retry, and reason about operationally.
 
-### **Step 1: Start All Services**
+---
 
-Navigate to the root directory of the repository where the docker-compose.yml file is located and run:
+### Multi-Level Aggregation Strategy
 
-`docker compose up \--build \-d
-`
+Aggregations are precomputed incrementally across bounded reporting dimensions.
+Pre-aggregated tables support fast reporting across.
 
-This command will:
+**common time slices:**
 
-1. Build the ASP.NET Core API and Worker Service images.
-2. Start the RabbitMQ broker, Postgres database, and Redis cache containers.
-3. Run the **Producer Worker Service**, which will automatically read the bundled mock JSON files and start publishing data to RabbitMQ.
-4. Run the **Consumer Worker Service**, which will start listening to the queue, aggregating data, and persisting it to the Postgres DB.
+- page-level metrics.
+- interval summaries.
+- daily summaries.
+- monthly summaries.
+- yearly summaries.
 
-Wait a few moments for the Postgres to initialize and the workers to process the initial data queue.
+For queries that do not fit these fixed aggregation boundaries, Redis is used to support arbitrary date-range lookups without creating unbounded combinations of precomputed tables.
 
-### **Step 2: Access Swagger and Seed/Login**
+---
 
-The API is available at port 8080\.
+### Late-Arriving and Duplicate Data Handling
 
-1. Open the Swagger UI in your browser: http://localhost:8080/swagger/index.html
+The pipeline is built to maintain consistency when data arrives out of order or overlaps previously processed ranges.
 
-### **Step 3: Obtain a JSON Web Token (JWT)**
+**It does this by:**
 
-All reporting endpoints are secured using JWT Bearer Authentication.
+- detecting existing aggregates.
+- identifying upstream changes.
+- recomputing affected downstream aggregates.
+- updating partial results instead of blindly appending.
 
-1. **Sign Up:** Use the /Auth/signup endpoint in Swagger to create a new user (e.g., email: test@user.com, password: password123).
-2. **Log In:** Use the /Auth/login endpoint with the newly created credentials.
-3. **Copy JWT:** The successful response will return a Bearer JWT. Copy this token.
+This ensures analytical correctness across the entire aggregation chain.
 
-### **Step 4: Access Secured Reports**
+---
 
-1. In the Swagger UI, click the green **Authorize** button (top right).
-2. In the value field, paste the copied JWT, prefixed by Bearer (e.g., Bearer eyJhbGc...). Click **Authorize** and then **Close**.
-3. You can now access the secured reporting endpoints:
-   - GET /reports/overview: Get totals across all pages and dates.
-   - GET /reports/pages: Get aggregated statistics grouped by page.
+### Secure Reporting API
 
-## **🗄️ Database Schema Summary**
+The reporting layer exposes REST endpoints for querying aggregated analytics.
 
-The primary reporting endpoints pull from the DailyStats table, which holds the aggregated data.
+**Security features include:**
 
-| Table Name | Purpose                                      | Key Fields                                      |
-| :--------- | :------------------------------------------- | :---------------------------------------------- |
-| Users      | Authentication and Authorization             | Id, Email, PasswordHash                         |
-| Page       | Store page's path to prevent redundancy data | Id, Path                                        |
-| RawData    | Stores every combined record from GA/PSI     | Date, PageId, Users, PerformanceScore           |
-| DailyStats | **Aggregated Report Data**                   | Date, TotalUsers, AvgPerformance, LastUpdatedAt |
+- JWT authentication.
+- ASP.NET Core Identity.
+- Rate limiting for endpoint protection
 
-## **✨ Bonus Features Implemented**
+<!-- The API is optimized for read-heavy reporting workloads. -->
 
-- **Docker Healthchecks:** Healthchecks are configured in docker-compose.yml for the RabbitMQ and Postgres containers.
-- **Clear Logging:** Detailed console output is provided across the Producer and Consumer services, clearly indicating:
-  - Messages published to RabbitMQ.
-  - Messages consumed.
-  - Successful data save to Postgres.
-  - Detailed retry attempts on transient database failures.
+---
 
-**Happy coding\!** -->
+### Load Testing at Scale
+
+A companion load-testing tool was built specifically for this system.
+Hyper JSON Generator produces millions of analytics records.
+
+See [Hyper JSON Generator Code](https://github.com/MustaphaAlaa/HyperJSONGenerator)
+
+**using:**
+
+- Utf8JsonWriter
+- CPU-cache-efficient structs
+
+The tool exists to validate ingestion throughput and memory stability under large synthetic workloads.
+
+---
+
+### Containerized Development Environment
+
+The full platform is containerized with Docker Compose.
+Services include:
+
+- API
+- Worker services
+- SQL Server
+- RabbitMQ
+- Redis
+
+This ensures reproducible local development and predictable service orchestration.
+
+---
+
+### Why Both ADO.NET and EF Core?
+
+A major architectural change in the current version is the deliberate use of both ADO.NET and Entity Framework Core.
+This is not accidental and not transitional.
+ADO.NET is used for write-heavy and throughput-critical workloads
+
+**ADO.NET is used where raw performance matters most:**
+
+- High-volume ingestion
+- Batch writes via SqlBulkCopy
+- Execution of aggregation stored procedures
+- Explicit transaction handling
+- Retry handling around transient failures
+
+For these workloads, the abstraction cost of an ORM becomes material.
+
+EF Core is used for read-heavy API query paths
+EF Core remains valuable where maintainability and developer productivity matter more than raw write throughput.
+
+**EF Core is used for:**
+
+- Reporting queries
+- API read models
+- Identity/authentication persistence
+- Ordinary relational access patterns
+- Architectural Rationale
+
+The project intentionally uses the right abstraction for the workload.
+
+---
+
+### Architectural Rationale
+
+The project intentionally uses the right abstraction for the workload.
+
+| Workload                      | Type Technology | Reason                                        |
+| ----------------------------- | --------------- | --------------------------------------------- |
+| High-throughput ingestion     | ADO.NET         | Lowest overhead, bulk insert support          |
+| Complex aggregation execution | ADO.NET         | Stored procedures, transaction control        |
+| Reporting reads               | EF Core         | Faster development, cleaner query composition |
+| Identity/auth                 | EF Core         | Standard ASP.NET Core integration             |
+
+This hybrid data-access model is one of the core technical decisions in the current architecture.
+
+---
+
+## Technology Stack
+
+| Component                   | Technology                  | Role                                       |
+| --------------------------- | --------------------------- | ------------------------------------------ |
+| Backend API                 | ASP.NET Core (.NET 8)       | Secure reporting API                       |
+| Worker Services             | .NET Worker Services        | Ingestion and staged aggregation           |
+| Database                    | SQL Server                  | Persistent analytical storage              |
+| High-throughput data access | ADO.NET                     | Bulk ingestion, stored procedure execution |
+| ORM                         | Entity Framework Core       | Read-heavy query paths and identity        |
+| Message Broker              | RabbitMQ                    | Asynchronous decoupled processing          |
+| Cache                       | Redis                       | Arbitrary date-range reporting             |
+| Authentication              | ASP.NET Core Identity + JWT | API security                               |
+| Testing                     | xUnit, Moq                  | Aggregation and business logic validation  |
+| CI/CD                       | GitHub Actions              | Build and validation pipeline              |
+| Runtime                     | Docker Compose              | Local orchestration                        |
+
+---
+
+### Architecture Flow
+
+**1. Ingestion.**
+
+Analytics records from GA and PSI are streamed and inserted into raw ingestion tables using batched bulk operations.
+
+**2. Queue Dispatch.**
+
+RabbitMQ decouples ingestion from downstream aggregation.
+Each stage consumes completed work from the previous stage.
+
+**3. Sequential Aggregation Pipeline.**
+
+Worker services execute staged transformations:
+Raw → Staged → Page → Intervals → Daily → Monthly → Yearly
+Aggregation logic is implemented primarily in stored procedures.
+
+**4. Reporting API.**
+
+The API reads pre-aggregated data using EF Core.
+Redis supplements requests for non-standard date ranges.
+
+---
+
+### Database Strategy
+
+Raw ingestion tables
+Raw tables are optimized for writes.
+
+**Design decisions include:**
+
+- No clustered indexes on high-ingestion raw tables
+- Minimized write contention during bulk insert operations
+
+**Analytical tables**
+Aggregated reporting tables use:
+
+- Columnstore indexes
+
+This provides:
+
+- compression benefits
+
+- improved scan speed
+
+- better analytical query performance
+
+**Aggregation execution**
+Aggregation logic is encapsulated in stored procedures with:
+
+- ACID transactions.
+
+- Retry handling for transient failures.
+
+**Database Schema Summary**
+The exact schema may evolve, but the current model is conceptually organized around these layers:
+
+| Table Group         | Purpose                                     |
+| ------------------- | ------------------------------------------- |
+| Raw tables          | High-throughput ingestion of source records |
+| Staging tables      | Normalization and source merging            |
+| Page aggregates     | Page-level correlation                      |
+| Interval aggregates | Interval reporting                          |
+| Daily aggregates    | Daily reporting                             |
+| Monthly aggregates  | Monthly reporting                           |
+| Yearly aggregates   | Yearly reporting                            |
+| Identity tables     | Users, authentication, authorization        |
+
+---
+
+### Setup and Running the Application
+
+**Prerequisites**
+Install:
+
+- Docker
+- Docker Compose
+
+Start the Platform
+**From the repository root:**
+`docker compose up --build -d`
+
+This will start:
+
+- API
+- worker services
+- SQL Server
+- RabbitMQ
+- Redis
+
+Allow several moments for containers to initialize and for the initial pipeline execution to complete.
+
+---
+
+**Accessing the API**
+Swagger should be available once the API container is ready.
+Typical URL:
+http://localhost:8080/swagger
+
+---
+
+### Authentication
+
+Reporting endpoints are protected by JWT.
+Typical flow:
+
+Register a user
+
+Log in
+
+Copy returned JWT
+
+Authorize through Swagger using:
+
+` Bearer <token>`
+
+Example Reporting Capabilities
+Depending on the current API surface, reporting endpoints provide access to:
+
+overall summaries
+
+page-level analytics
+
+bounded date-range reports
+
+arbitrary date-range analytics (with Redis support when pre-aggregates are insufficient)
+
+---
+
+### Testing
+
+The project includes unit tests covering core aggregation and business rules.
+Run tests with:
+dotnet test
+
+---
+
+### CI/CD
+
+GitHub Actions is configured for automated validation.
+Typical pipeline responsibilities include:
+
+- restore
+- build
+- test execution
+
+---
+
+### Current Engineering Focus
+
+The current version of Metriflow is primarily a backend systems engineering project focused on:
+
+- Large-scale ingestion
+- Asynchronous pipeline design
+- Data consistency under reprocessing
+- Hybrid data-access strategy
+
+- Analytical query optimization
+
+It is intentionally optimized around throughput, correctness, and operational scalability, rather than simple CRUD application design.
