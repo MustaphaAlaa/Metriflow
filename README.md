@@ -1,4 +1,6 @@
-# **Metriflow: Web Analytics Data Aggregator**
+# I'll rewrite the Readme soon
+
+<!-- # **Metriflow: Web Analytics Data Aggregator**
 
 The system is designed to ingest raw data from mocked external web analytics sources (Google Analytics and PageSpeed Insights), process it through a real message broker (RabbitMQ), aggregate daily statistics, and expose secure reporting APIs.
 
@@ -119,4 +121,4 @@ The primary reporting endpoints pull from the DailyStats table, which holds the 
   - Successful data save to Postgres.
   - Detailed retry attempts on transient database failures.
 
-**Happy coding\!**
+**Happy coding\!** -->
