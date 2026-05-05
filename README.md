@@ -6,6 +6,30 @@ The system simulates external analytics sources such as Google Analytics (GA) an
 
 <!-- In its current form, Metriflow is no longer a simple worker-based aggregator. It has evolved into a full ETL pipeline optimized for high-ingestion workloads, staged aggregation, and fast reporting across bounded and arbitrary date ranges. -->
 
+## Table of Contents
+
+- [Metriflow: Web Analytics ETL and Reporting Platform](#metriflow-web-analytics-etl-and-reporting-platform)
+  - [Table of Contents](#table-of-contents)
+  - [Project Overview](#project-overview)
+  - [Key Features](#key-features)
+    - [High-Throughput Data Ingestion](#high-throughput-data-ingestion)
+    - [Queue-Based ETL Pipeline](#queue-based-etl-pipeline)
+    - [Multi-Level Aggregation Strategy](#multi-level-aggregation-strategy)
+    - [Late-Arriving and Duplicate Data Handling](#late-arriving-and-duplicate-data-handling)
+    - [Secure Reporting API](#secure-reporting-api)
+    - [Load Testing at Scale](#load-testing-at-scale)
+    - [Containerized Development Environment](#containerized-development-environment)
+    - [Why Both ADO.NET and EF Core?](#why-both-adonet-and-ef-core)
+    - [Architectural Rationale](#architectural-rationale)
+  - [Technology Stack](#technology-stack)
+    - [Architecture Flow](#architecture-flow)
+    - [Database Strategy](#database-strategy)
+    - [Setup and Running the Application](#setup-and-running-the-application)
+    - [Authentication](#authentication)
+    - [Testing](#testing)
+    - [CI/CD](#cicd)
+    - [Current Engineering Focus](#current-engineering-focus)
+
 ## Project Overview
 
 The platform processes analytics records through a staged pipeline:
