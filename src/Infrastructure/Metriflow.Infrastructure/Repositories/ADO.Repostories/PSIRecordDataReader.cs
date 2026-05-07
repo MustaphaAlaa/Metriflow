@@ -5,13 +5,11 @@ using Metriflow.Domain.Entities.Workers;
 namespace Repositories.Ado;
 
 public class PSIRecordDataReader(List<List<PSIRecord>> psiRecords) : IDataReader
-
-
 {
     private readonly IEnumerator<IEnumerable<PSIRecord>> _outer = psiRecords.GetEnumerator();
     private IEnumerator<PSIRecord>? _inner;
     private PSIRecord _current;
-
+    public int FieldCount => 6;
 
     public bool Read()
     {
@@ -32,7 +30,6 @@ public class PSIRecordDataReader(List<List<PSIRecord>> psiRecords) : IDataReader
         }
     }
 
-
     public object GetValue(int i)
     {
         return i switch
@@ -41,22 +38,37 @@ public class PSIRecordDataReader(List<List<PSIRecord>> psiRecords) : IDataReader
             1 => _current.PageId,
             2 => _current.LCP_MS,
             3 => _current.PerformanceScore,
-            4 => _current.IsCorrelation,
-            _ => throw new IndexOutOfRangeException()
+            4 => _current.ComputeHash(),
+            5 => _current.IsCorrelation,
+            _ => throw new IndexOutOfRangeException(),
         };
     }
 
-    public int FieldCount => 5;
+    public string GetName(int i) =>
+        i switch
+        {
+            0 => "Date",
+            1 => "PageId",
+            2 => "LCP_MS",
+            3 => "PerformanceScore",
+            4 => "Hash",
+            5 => "IsCorrelation",
+            _ => throw new IndexOutOfRangeException(),
+        };
 
-    public string GetName(int i) => i switch
+    public int GetOrdinal(string name)
     {
-        0 => "Date",
-        1 => "PageId",
-        2 => "LCP_MS",
-        3 => "PerformanceScore",
-        4 => "IsCorrelation",
-        _ => throw new IndexOutOfRangeException()
-    };
+        return name switch
+        {
+            "Date" => 0,
+            "PageId" => 1,
+            "PerformanceScore" => 2,
+            "LCP_MS" => 3,
+            "Hash" => 4,
+            "IsCorrelation" => 5,
+            _ => throw new IndexOutOfRangeException($"Unknown column: {name}"),
+        };
+    }
 
     public void Dispose()
     {
@@ -65,10 +77,10 @@ public class PSIRecordDataReader(List<List<PSIRecord>> psiRecords) : IDataReader
     }
 
     public bool NextResult() => false;
+
     //reset of methods
 
-
-public object this[int i] => throw new NotImplementedException();
+    public object this[int i] => throw new NotImplementedException();
 
     public object this[string name] => throw new NotImplementedException();
 
@@ -77,7 +89,6 @@ public object this[int i] => throw new NotImplementedException();
     public bool IsClosed => throw new NotImplementedException();
 
     public int RecordsAffected => throw new NotImplementedException();
-
 
     public void Close()
     {
@@ -134,9 +145,10 @@ public object this[int i] => throw new NotImplementedException();
         throw new NotImplementedException();
     }
 
-    [return:
-        DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields |
-                                   DynamicallyAccessedMemberTypes.PublicProperties)]
+    [return: DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.PublicFields
+            | DynamicallyAccessedMemberTypes.PublicProperties
+    )]
     public Type GetFieldType(int i)
     {
         throw new NotImplementedException();
@@ -167,12 +179,6 @@ public object this[int i] => throw new NotImplementedException();
         throw new NotImplementedException();
     }
 
-
-    public int GetOrdinal(string name)
-    {
-        throw new NotImplementedException();
-    }
-
     public DataTable? GetSchemaTable()
     {
         throw new NotImplementedException();
@@ -182,7 +188,6 @@ public object this[int i] => throw new NotImplementedException();
     {
         throw new NotImplementedException();
     }
-
 
     public int GetValues(object[] values)
     {

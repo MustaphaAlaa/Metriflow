@@ -5,13 +5,11 @@ using Metriflow.Domain.Entities.Workers;
 namespace Repositories.Ado;
 
 public class GARecordDataReader(List<List<GARecord>> gARecords) : IDataReader
-
-
 {
-
     private readonly IEnumerator<IEnumerable<GARecord>> _outer = gARecords.GetEnumerator();
     private IEnumerator<GARecord>? _inner;
-    private GARecord _current ;
+    private GARecord _current;
+    public int FieldCount => 7;
 
     public bool NextResult() => false;
 
@@ -34,11 +32,8 @@ public class GARecordDataReader(List<List<GARecord>> gARecords) : IDataReader
         }
     }
 
-
-
     public object GetValue(int i)
     {
-
         return i switch
         {
             0 => new DateTime(_current.Ticks, DateTimeKind.Utc),
@@ -46,34 +41,49 @@ public class GARecordDataReader(List<List<GARecord>> gARecords) : IDataReader
             2 => _current.Users,
             3 => _current.Views,
             4 => _current.Sessions,
-            5 => _current.IsCorrelation,
-            _ => throw new IndexOutOfRangeException()
+            5 => _current.ComputeHash(),
+            6 => _current.IsCorrelation,
+            _ => throw new IndexOutOfRangeException(),
         };
     }
 
-    public int FieldCount => 6;
+    public string GetName(int i) =>
+        i switch
+        {
+            0 => "Date",
+            1 => "PageId",
+            2 => "Users",
+            3 => "Views",
+            4 => "Sessions",
+            5 => "Hash",
+            6 => "IsCorrelation",
+            _ => throw new IndexOutOfRangeException(),
+        };
 
-    public string GetName(int i) => i switch
+    public int GetOrdinal(string name)
     {
-        0 => "Date",
-        1 => "PageId",
-        2 => "Users",
-        3 => "Views",
-        4 => "Sessions",
-        5 => "IsCorrelation",
-        _ => throw new IndexOutOfRangeException()
-    };
+        return name switch
+        {
+            "Date" => 0,
+            "PageId" => 1,
+            "Users" => 2,
+            "Views" => 3,
+            "Sessions" => 4,
+            "Hash" => 5,
+            "IsCorrelation" => 6,
+            _ => throw new IndexOutOfRangeException($"Unknown column: {name}"),
+        };
+    }
 
     public void Dispose()
     {
         _inner?.Dispose();
         _outer?.Dispose();
     }
-    
+
     //reset of methods
 
-
-public object this[int i] => throw new NotImplementedException();
+    public object this[int i] => throw new NotImplementedException();
 
     public object this[string name] => throw new NotImplementedException();
 
@@ -83,13 +93,10 @@ public object this[int i] => throw new NotImplementedException();
 
     public int RecordsAffected => throw new NotImplementedException();
 
-
     public void Close()
     {
         throw new NotImplementedException();
     }
-
-
 
     public bool GetBoolean(int i)
     {
@@ -141,7 +148,10 @@ public object this[int i] => throw new NotImplementedException();
         throw new NotImplementedException();
     }
 
-    [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
+    [return: DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.PublicFields
+            | DynamicallyAccessedMemberTypes.PublicProperties
+    )]
     public Type GetFieldType(int i)
     {
         throw new NotImplementedException();
@@ -172,13 +182,6 @@ public object this[int i] => throw new NotImplementedException();
         throw new NotImplementedException();
     }
 
-
-
-    public int GetOrdinal(string name)
-    {
-        throw new NotImplementedException();
-    }
-
     public DataTable? GetSchemaTable()
     {
         throw new NotImplementedException();
@@ -189,8 +192,6 @@ public object this[int i] => throw new NotImplementedException();
         throw new NotImplementedException();
     }
 
-
-
     public int GetValues(object[] values)
     {
         throw new NotImplementedException();
@@ -200,6 +201,4 @@ public object this[int i] => throw new NotImplementedException();
     {
         throw new NotImplementedException();
     }
-
-
 }

@@ -77,6 +77,14 @@ public class RawDataRepository(
 
             bulkCopy.DestinationTableName = "GARecords";
 
+            bulkCopy.ColumnMappings.Add("Date", "Date");
+            bulkCopy.ColumnMappings.Add("PageId", "PageId");
+            bulkCopy.ColumnMappings.Add("Users", "Users");
+            bulkCopy.ColumnMappings.Add("Views", "Views");
+            bulkCopy.ColumnMappings.Add("Sessions", "Sessions");
+            bulkCopy.ColumnMappings.Add("IsCorrelation", "IsCorrelation");
+            bulkCopy.ColumnMappings.Add("Hash", "Hash");
+
             await bulkCopy.WriteToServerAsync(reader);
 
             await trackTableCountRepository.AlterTableRowsCountAsync("GARecords", count);
@@ -119,6 +127,13 @@ public class RawDataRepository(
             using var reader = new PSIRecordDataReader(lst);
 
             bulkCopy.DestinationTableName = "PSIRecords";
+
+            bulkCopy.ColumnMappings.Add("Date", "Date");
+            bulkCopy.ColumnMappings.Add("PageId", "PageId");
+            bulkCopy.ColumnMappings.Add("PerformanceScore", "PerformanceScore");
+            bulkCopy.ColumnMappings.Add("LCP_MS", "LCP_MS");
+            bulkCopy.ColumnMappings.Add("IsCorrelation", "IsCorrelation");
+            bulkCopy.ColumnMappings.Add("Hash", "Hash");
 
             await bulkCopy.WriteToServerAsync(reader);
 

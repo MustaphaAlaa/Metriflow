@@ -1,5 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.IO.Hashing;
+using System.Security;
+using System.Text;
 using Metriflow.Domain.CustomAttributes;
 using Metriflow.Domain.Entities.Enums;
 using Metriflow.Domain.Interfaces;
@@ -25,5 +28,20 @@ public class GARecord : IAnalyticRecord
     public override string ToString()
     {
         return $"Ticks: {this.Ticks}, PageId: {this.PageId}, Users: {this.Users},Views: {this.Views}, Sessions: {this.Sessions}";
+    }
+
+    private Guid? _hashGuid = null;
+
+    public Guid Hash { get; set; }
+
+    public Guid ComputeHash()
+    {
+        var raw = $"{Ticks}|{PageId}|{Users}|{Views}|{Sessions}";
+
+        var bytes = Encoding.UTF8.GetBytes(raw);
+
+        var hash = XxHash128.Hash(bytes);
+        var guid = new Guid(hash);
+        return guid;
     }
 }
