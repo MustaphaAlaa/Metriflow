@@ -4,6 +4,7 @@ using Metriflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Metriflow.Infrastructure.Migrations
 {
     [DbContext(typeof(MetriflowDbContext))]
-    partial class MetriflowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260507224611_alter_StoredProcedures")]
+    partial class alter_StoredProcedures
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

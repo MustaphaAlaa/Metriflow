@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Metriflow.Infrastructure.Migrations
 {
     [DbContext(typeof(MetriflowDbContext))]
-    [Migration("20260428181108_create__sp_correlateStagedData__Procedure")]
-    partial class create__sp_correlateStagedData__Procedure
+    [Migration("20260507172635_Add_hashColumns_to_RawData_tables")]
+    partial class Add_hashColumns_to_RawData_tables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -493,6 +493,9 @@ namespace Metriflow.Infrastructure.Migrations
 
             modelBuilder.Entity("Metriflow.Domain.Entities.Workers.GARecord", b =>
                 {
+                    b.Property<Guid>("Hash")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool>("IsCorrelation")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -529,6 +532,9 @@ namespace Metriflow.Infrastructure.Migrations
 
             modelBuilder.Entity("Metriflow.Domain.Entities.Workers.PSIRecord", b =>
                 {
+                    b.Property<Guid>("Hash")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool>("IsCorrelation")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
