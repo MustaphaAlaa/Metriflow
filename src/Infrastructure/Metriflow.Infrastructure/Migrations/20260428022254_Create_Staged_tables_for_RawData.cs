@@ -10,36 +10,41 @@ namespace Metriflow.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            var gaStaged = """
 
-            var gaStaged ="""
-
-                          CREATE TABLE GARecords_staged
-                          (
-                              Date          datetime2 not null,
-                              PageId        int,
-                              Interval      int,
-                              Users         bigint,
-                              Views         bigint,
-                              Sessions      bigint,
-                              IsCorrelation bit,
-                              INDEX CCI_GARecords_staged CLUSTERED COLUMNSTORE
-                          );
-                          """ ;
+                CREATE TABLE GARecords_staged
+                (
+                    Date          datetime2 not null,
+                    PageId        int,
+                    Interval      int,
+                    Users         bigint,
+                    Views         bigint,
+                    Sessions      bigint,
+                    Hash uniqueidentifier not null,
+                    IsCorrelation bit,
+                    INDEX CCI_GARecords_staged CLUSTERED COLUMNSTORE
+                );
+                CREATE UNIQUE NONCLUSTERED INDEX UX_GARecords_staged_Hash
+                      ON GARecords_staged(Hash);
+                """;
             migrationBuilder.Sql(gaStaged);
-            var psaStaged ="""
+            var psaStaged = """
 
 
-                           CREATE TABLE PSARecords_staged
-                           (
-                               Date             datetime2   not null,
-                               PageId           int    not null,
-                               Interval         int    not null,
-                               PerformanceScore int    not null,
-                               LCP_MS           bigint not null,
-                               IsCorrelation    bit    not null,
-                               INDEX CCI_PSARecords_staged CLUSTERED COLUMNSTORE
-                           );
-                           """ ;
+                CREATE TABLE PSARecords_staged
+                (
+                    Date             datetime2   not null,
+                    PageId           int    not null,
+                    Interval         int    not null,
+                    PerformanceScore int    not null,
+                    LCP_MS           bigint not null,
+                    Hash uniqueidentifier not null,
+                    IsCorrelation    bit    not null,
+                    INDEX CCI_PSARecords_staged CLUSTERED COLUMNSTORE
+                );
+                CREATE UNIQUE NONCLUSTERED INDEX UX_PSARecords_staged_Hash
+                     ON PSARecords_staged(Hash);
+                """;
             migrationBuilder.Sql(psaStaged);
         }
 

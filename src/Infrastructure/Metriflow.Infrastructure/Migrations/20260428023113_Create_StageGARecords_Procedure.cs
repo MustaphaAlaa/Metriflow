@@ -25,7 +25,7 @@ var stagedGAProcedure = """
                                         PageId,
                                         Users,
                                         Views,
-                                        Sessions,
+                                        Sessions, 
                                         IsCorrelation
                                     FROM dbo.GARecords WITH (UPDLOCK, READPAST)
                                     WHERE IsCorrelation = 0
@@ -46,10 +46,10 @@ var stagedGAProcedure = """
                                     END,
                                     inserted.Users,
                                     inserted.Views,
-                                    inserted.Sessions,
+                                    inserted.Sessions, 
                                     inserted.IsCorrelation
                                 INTO dbo.GARecords_staged
-                                    (Date, PageId, Interval, Users, Views, Sessions, IsCorrelation);
+                                    (Date, PageId, Interval, Users, Views, Sessions,  IsCorrelation);
                         
                                 COMMIT;
                             END TRY

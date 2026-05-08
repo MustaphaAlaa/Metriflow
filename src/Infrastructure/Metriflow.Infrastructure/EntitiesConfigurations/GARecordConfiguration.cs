@@ -10,24 +10,17 @@ public class GARecordConfiguration : IEntityTypeConfiguration<GARecord>
     )
     {
         builder.HasNoKey();
-        
-        builder.HasIndex(x => new { PageId = x.PageId, Date = x.Ticks })
-            .IsClustered(false);
-         
-        builder.HasIndex(x => x.IsCorrelation)
-             .HasFilter("[IsCorrelation] = 1")
-             .IsClustered(false);
 
-   
+        builder.HasIndex(x => new { PageId = x.PageId, Date = x.Ticks }).IsClustered(false);
 
-        builder.Property(x => x.Ticks)
-            .HasConversion(ticks => new DateTime(ticks, DateTimeKind.Utc),
-                date => date.Ticks)
+        builder.HasIndex(x => x.IsCorrelation).HasFilter("[IsCorrelation] = 1").IsClustered(false);
+
+        builder
+            .Property(x => x.Ticks)
+            .HasConversion(ticks => new DateTime(ticks, DateTimeKind.Utc), date => date.Ticks)
             .HasJsonPropertyName("Date")
             .HasColumnName("Date");
 
         builder.Property(x => x.IsCorrelation).HasDefaultValue(false);
-
-
     }
 }
