@@ -4,6 +4,7 @@ using Metriflow.Application.Entities;
 using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Workers;
 using Metriflow.Domain.Interfaces;
+using Metriflow.Messages.Producers;
 using Microsoft.Extensions.Options;
 
 namespace Metriflow.AggregationWorker.Services;
@@ -16,6 +17,7 @@ public class RawDataConsumerMessageHandler<T>(
     ILogger<RawDataConsumerMessageHandler<T>> logger,
     IOptions<RabbitMqSettings> options,
     IProducer producer,
+    INotifyWorkers notifyWorkers,
     IServiceScopeFactory scopeFactory
 ) : IRawDataConsumerMessageHandler<T>
     where T : class, IAnalyticRecord
@@ -44,7 +46,6 @@ public class RawDataConsumerMessageHandler<T>(
     private async Task Process(Channel<List<T>> channel, CancellationToken stoppingToken)
     {
         logger.LogInformation($"Processing {typeof(T).Name}");
-        // );
         try
         {
             var date = DateTime.UtcNow;
@@ -118,23 +119,14 @@ public class RawDataConsumerMessageHandler<T>(
         var repo = scope.ServiceProvider.GetRequiredService<IRecordBatchSaver<T>>();
 
         await repo.SaveBulkAsync(outerRecordsLst, accumulator);
-        await Notify(accumulator);
+
+        await notifyWorkers.Notify(
+            accumulator,
+            AggregationType.Records,
+            _rabbitMqSettings.Queues.Correlation
+        );
+
         outerRecordsLst.Clear();
         accumulator = 0;
-    }
-
-    private async Task Notify(int recordsCount)
-    {
-        await producer.NotifyCompletedMessageAsync(
-            message: new AggregationCompletedMessage
-            {
-                CorrelationId = Guid.NewGuid(),
-                CompletedType = AggregationType.Records,
-                ProcessedCount = recordsCount,
-                CompletedAt = DateTime.UtcNow,
-            },
-            routingKey: _rabbitMqSettings.Queues.Correlation,
-            exchangeName: _rabbitMqSettings.Exchange
-        );
     }
 }

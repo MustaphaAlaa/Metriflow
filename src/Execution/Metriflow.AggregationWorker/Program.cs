@@ -19,7 +19,7 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .WriteTo.File("logs/log.txt")
     .CreateBootstrapLogger();
-    
+
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddSerilog(
@@ -33,6 +33,7 @@ builder.Services.AddSerilog(
 builder.Services.AddHostedService<RawDataWorker>();
 
 builder.Services.AddHostedService<AggregationProgressWorker>();
+
 // builder.Services.AddHostedService<PagesAnalyticWorker>();
 
 // builder.Services.AddHostedService<IntervalAnalyticsWorker>();

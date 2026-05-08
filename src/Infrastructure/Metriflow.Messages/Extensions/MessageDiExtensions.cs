@@ -16,6 +16,7 @@ public static class MessageDiExtensions
         services.AddSingleton<IMessageBrokerConnection, RabbitMqConnection>();
         services.AddSingleton<IMessageBrokerConsumer, RabbitMqConsumer>();
         services.AddSingleton<IMessageBrokerProducer, RabbitMqProducer>();
+        services.AddSingleton<INotifyWorkers, NotifyWorkers>();
 
         return services;
     }

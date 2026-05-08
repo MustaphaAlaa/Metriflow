@@ -2,6 +2,7 @@ using IRepository.Generic;
 using Metriflow.Application.Entities;
 using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Workers;
+using Metriflow.Messages.Producers;
 using Microsoft.Extensions.Options;
 
 namespace Metriflow.AggregationWorker.Workers;
@@ -11,6 +12,7 @@ public class AggregationProgressWorker(
     IMessageBrokerConsumer consumer,
     IProducer producer,
     IServiceScopeFactory serviceScopeFactory,
+    INotifyWorkers notifyWorkers,
     IOptions<RabbitMqSettings> options
 ) : BackgroundService
 {
@@ -18,9 +20,6 @@ public class AggregationProgressWorker(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // while (!stoppingToken.IsCancellationRequested)
-        // {
-        // await Task.Delay(1000 * 20);
         var channel = await consumer.CreateNewChannelAsync();
         await consumer.ConsumeFromChannelAsync<AggregationCompletedMessage>(
             channel,
@@ -29,7 +28,10 @@ public class AggregationProgressWorker(
             queueName: _rabbitMqSettings.Queues.Correlation,
             handleMessage: async (msg) =>
             {
-                if (msg.ProcessedCount > 1)
+                logger.LogInformation(
+                    $">< Message Arrived atAggregation Worker count {msg.ProcessedCount} -- completed type {msg.CompletedType}"
+                );
+                if (msg.ProcessedCount < 1 || msg.CompletedType != AggregationType.Records)
                     return;
                 using var scope = serviceScopeFactory.CreateScope();
 
@@ -37,25 +39,16 @@ public class AggregationProgressWorker(
                     scope.ServiceProvider.GetRequiredService<IRawDataRepository>();
 
                 await aggregationProgressRepository.ExecuteStagedProcedures();
-                await Notify(1);
+                await notifyWorkers.Notify(
+                    1,
+                    AggregationType.Page,
+                    _rabbitMqSettings.Queues.DailyAggregation
+                );
             },
             cancellationToken: stoppingToken
         );
-        // }
-    }
 
-    private async Task Notify(int recordsCount)
-    {
-        await producer.NotifyCompletedMessageAsync(
-            new AggregationCompletedMessage
-            {
-                CorrelationId = Guid.NewGuid(),
-                CompletedType = AggregationType.Records,
-                ProcessedCount = recordsCount,
-                CompletedAt = DateTime.UtcNow,
-            },
-            _rabbitMqSettings.Queues.Correlation,
-            _rabbitMqSettings.Exchange
-        );
+        await Task.Delay(Timeout.Infinite, stoppingToken);
+        logger.LogWarning("%%%%%%%% Aggregation Worker is Done. %%%%%%%%%%");
     }
 }
