@@ -31,8 +31,8 @@ public class RawDataRepository(
                 ?? throw new InvalidOperationException("No active transaction");
             var cmd = new SqlCommand(
                 """
-                EXEC StagePSARecords;
-                EXEC StageGARecords;
+                EXEC StagePSARecords 300000;
+                EXEC StageGARecords 300000;
                 """,
                 connection
             );
