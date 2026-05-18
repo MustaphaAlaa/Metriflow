@@ -48,7 +48,7 @@ public class YearlyAnalyticsOrchestrator(
                         .Select(g => new MonthlyAnalytic
                         {
                             PageId = pages.First().PageId,
-                            YearMonth = new DateTime(g.Key.Year, g.Key.Month, 1),
+                            // YearMonth = new DateTime(g.Key.Year, g.Key.Month, 1),
                             TotalUsers = g.Sum(p => p.Users),
                             TotalSessions = g.Sum(p => p.Sessions),
                             TotalViews = g.Sum(p => p.Views),

@@ -27,7 +27,7 @@ public class DailyAnalyticsService : IDailyAnalyticsService
 
         var dailyAnalytics = new DailyAnalytics
         {
-            Date = pages[0].Date.Date,
+            // Date = pages[0].Date.Date,
             PageId = pages[0].PageId,
             ReceivedAt = DateTime.UtcNow,
         };

@@ -22,7 +22,7 @@ public class TimeIntervalAnalyticService(ILogger<TimeIntervalAnalyticService> lo
         {
             PageId = data[0].PageId,
             TimeIntervalId = (byte)TimeIntervalUtilities.GetTimeInterval(data[0].Date.Hour),
-            Date = data[0].Date
+            // Date = data[0].Date
         };
         
         AggregateUtilities.Aggregate(timeIntervalAnalytic, data);
