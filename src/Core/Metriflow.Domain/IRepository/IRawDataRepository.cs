@@ -6,6 +6,6 @@ public interface IRawDataRepository
 {
     Task ExecuteStagedProcedures();
     Task AddGaRecordsBulk(List<List<GARecord>> gaRecords, int count);
-    Task AddPsiRecordsBulk(List<List<PSIRecord>> psiRecords, int count);
+    Task AddPSARecordsBulk(List<List<PSARecord>> PSARecords, int count);
     Task ExecuteAnalyticsPagesCorrelationAsync();
 }

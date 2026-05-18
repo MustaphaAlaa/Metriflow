@@ -9,7 +9,7 @@ public class QueueSettings
     public string AggregationCompleted { get; set; } = string.Empty;
     public string AggregationFailed { get; set; } = string.Empty;
     public string GA { get; set; } = string.Empty;
-    public string PSI { get; set; } = string.Empty;
+    public string PSA { get; set; } = string.Empty;
     public string Correlation { get; set; } = string.Empty;
 }
 

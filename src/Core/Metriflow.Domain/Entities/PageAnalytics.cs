@@ -6,12 +6,9 @@ namespace Metriflow.Domain.Entities;
 
 public class PageAnalytics : AnalyticsData
 {
-    // [Key] public Guid Id { get; set; }
-    [ForeignKey("PageId")] public int PageId { get; set; }
     public DateTime Date { get; set; }
-    [ForeignKey("TimeInterval")] public int Intervals { get; set; }
+    public DateOnly DateOnly { get; set; }
 
-
-    public Page Page { get; set; }
+    [ForeignKey("TimeInterval")] public int Interval { get; set; }
     public TimeInterval TimeInterval { get; set; }
 }

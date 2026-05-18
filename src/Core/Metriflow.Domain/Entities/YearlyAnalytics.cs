@@ -5,7 +5,9 @@ namespace Metriflow.Domain.Entities;
 
 public class YearlyAnalytics : AggregateAnalytics
 {
-    [Key]
-    public Guid Id { get; set; }
-    public int Year { get; set; } 
+    /// <summary>
+    /// We care Only about year here;
+    /// The key is year + PageId
+    /// </summary>
+    public int Year { get; set; }
 }
