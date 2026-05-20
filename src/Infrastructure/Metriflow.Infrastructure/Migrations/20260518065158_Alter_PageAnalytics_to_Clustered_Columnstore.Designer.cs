@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Metriflow.Infrastructure.Migrations
 {
     [DbContext(typeof(MetriflowDbContext))]
-    [Migration("20260508052747_convert_PageAnalytics_to_nonclustred")]
-    partial class convert_PageAnalytics_to_nonclustred
+    [Migration("20260518065158_Alter_PageAnalytics_to_Clustered_Columnstore")]
+    partial class Alter_PageAnalytics_to_Clustered_Columnstore
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,25 @@ namespace Metriflow.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Metriflow.Domain.Entities.AggregateRecomputeQueue", b =>
+                {
+                    b.Property<int>("PageId")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<int>("IntervalId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CeratedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("PageId", "Date", "IntervalId");
+
+                    b.ToTable("AggregateRecomputeQueue");
+                });
 
             modelBuilder.Entity("Metriflow.Domain.Entities.AggregationProgress", b =>
                 {
@@ -80,8 +99,8 @@ namespace Metriflow.Infrastructure.Migrations
                     b.Property<int>("PageId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
 
                     b.Property<double>("AvgPerformance")
                         .HasColumnType("float");
@@ -108,8 +127,8 @@ namespace Metriflow.Infrastructure.Migrations
                     b.Property<int>("PageId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("YearMonth")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("YearMonth")
+                        .HasColumnType("date");
 
                     b.Property<double>("AvgPerformance")
                         .HasColumnType("float");
@@ -272,17 +291,20 @@ namespace Metriflow.Infrastructure.Migrations
 
             modelBuilder.Entity("Metriflow.Domain.Entities.PageAnalytics", b =>
                 {
-                    b.Property<int>("PageId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Intervals")
+                    b.Property<DateOnly>("DateOnly")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Interval")
                         .HasColumnType("int");
 
                     b.Property<long>("LcpMs")
                         .HasColumnType("bigint");
+
+                    b.Property<int>("PageId")
+                        .HasColumnType("int");
 
                     b.Property<double>("PerformanceScore")
                         .HasColumnType("float");
@@ -296,11 +318,12 @@ namespace Metriflow.Infrastructure.Migrations
                     b.Property<long>("Views")
                         .HasColumnType("bigint");
 
-                    b.HasKey("PageId", "Date", "Intervals");
+                    b.HasIndex("Interval");
 
-                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("PageId", "Date", "Intervals"), false);
+                    b.HasIndex("PageId", "DateOnly", "Interval")
+                        .HasDatabaseName("IX_PageAnalytics_ReAggregation");
 
-                    b.HasIndex("Intervals");
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("PageId", "DateOnly", "Interval"), false);
 
                     b.ToTable("PageAnalytics");
                 });
@@ -335,7 +358,7 @@ namespace Metriflow.Infrastructure.Migrations
                         {
                             Id = 2,
                             RowsCount = 0,
-                            TableName = "PSIRecords"
+                            TableName = "PSARecords"
                         },
                         new
                         {
@@ -441,8 +464,8 @@ namespace Metriflow.Infrastructure.Migrations
                     b.Property<int>("PageId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
 
                     b.Property<int>("TimeIntervalId")
                         .HasColumnType("int");
@@ -495,6 +518,9 @@ namespace Metriflow.Infrastructure.Migrations
 
             modelBuilder.Entity("Metriflow.Domain.Entities.Workers.GARecord", b =>
                 {
+                    b.Property<DateOnly>("DateOnly")
+                        .HasColumnType("date");
+
                     b.Property<Guid>("Hash")
                         .HasColumnType("uniqueidentifier");
 
@@ -532,8 +558,11 @@ namespace Metriflow.Infrastructure.Migrations
                     b.ToTable("GARecords");
                 });
 
-            modelBuilder.Entity("Metriflow.Domain.Entities.Workers.PSIRecord", b =>
+            modelBuilder.Entity("Metriflow.Domain.Entities.Workers.PSARecord", b =>
                 {
+                    b.Property<DateOnly>("DateOnly")
+                        .HasColumnType("date");
+
                     b.Property<Guid>("Hash")
                         .HasColumnType("uniqueidentifier");
 
@@ -565,7 +594,7 @@ namespace Metriflow.Infrastructure.Migrations
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("PageId", "Ticks"), false);
 
-                    b.ToTable("PSIRecords");
+                    b.ToTable("PSARecords");
                 });
 
             modelBuilder.Entity("Metriflow.Domain.Entities.YearlyAnalytics", b =>
@@ -578,9 +607,6 @@ namespace Metriflow.Infrastructure.Migrations
 
                     b.Property<double>("AvgPerformance")
                         .HasColumnType("float");
-
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<long>("TotalSessions")
                         .HasColumnType("bigint");
@@ -633,7 +659,7 @@ namespace Metriflow.Infrastructure.Migrations
                 {
                     b.HasOne("Metriflow.Domain.Entities.TimeInterval", "TimeInterval")
                         .WithMany()
-                        .HasForeignKey("Intervals")
+                        .HasForeignKey("Interval")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
