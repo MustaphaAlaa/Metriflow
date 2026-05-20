@@ -1,16 +1,16 @@
-using System.Collections;
+using System.Data;
 using IRepository;
 using IRepository.Generic;
 using Metriflow.Domain.CustomAttributes;
-using Metriflow.Domain.Entities;
 using Metriflow.Domain.Entities.Workers;
+using Metriflow.Domain.enums;
 using Metriflow.Infrastructure;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic;
+
 
 namespace Repositories.Ado;
 
@@ -21,44 +21,54 @@ public class RawDataRepository(
     ILogger<RawDataRepository> logger
 ) : IRawDataRepository
 {
-    public async Task ExecuteStagedProcedures()
+    public async Task ExecuteStagedProceduresAsync()
     {
         try
         {
-            var dbTransaction = (await context.Database.BeginTransactionAsync()).GetDbTransaction();
+            // var dbTransaction = (await context.Database.BeginTransactionAsync()).GetDbTransaction();
             var connection =
-                (SqlConnection)dbTransaction.Connection
-                ?? throw new InvalidOperationException("No active transaction");
+                (SqlConnection)context.Database.GetDbConnection();
+            // .;Connection
+            // ?? throw new InvalidOperationException("No active transaction");
+            var batch = (int)enBatchSizes.RawDataBaseBatch;
             var cmd = new SqlCommand(
-                """
-                EXEC StagePSARecords 300000;
-                EXEC StageGARecords 300000;
-                """,
+                $"""
+                 EXEC StagePSARecords {batch};
+                 EXEC StageGARecords {batch};
+                 """,
                 connection
             );
-            cmd.Transaction = (SqlTransaction)dbTransaction;
+            cmd.CommandTimeout = 120;
+
+            if (connection.State != ConnectionState.Open)
+            {
+                await connection.OpenAsync();
+            }
+
+
+            // cmd.Transaction = (SqlTransaction)dbTransaction;
             await cmd.ExecuteNonQueryAsync();
-            await context.Database.CommitTransactionAsync();
+            // await context.Database.CommitTransactionAsync();
             logger.LogInformation("Raw data successfully loaded to staged tables");
         }
         catch (Exception ex)
         {
             logger.LogError("!!!!!!!!!!! Failed to load data to staged tables.  !!!!!!!!!!!!!!");
             logger.LogError(ex, ex.Message);
-            try
-            {
-                await context.Database.RollbackTransactionAsync();
-            }
-            catch (Exception rollbackEx)
-            {
-                logger.LogError(rollbackEx, "Failed to rollback data from staged tables");
-            }
+            // try
+            // {
+            //     await context.Database.RollbackTransactionAsync();
+            // }
+            // catch (Exception rollbackEx)
+            // {
+            //     logger.LogError(rollbackEx, "Failed to rollback data from staged tables");
+            // }
 
             throw;
         }
     }
 
-    public async Task AddGaRecordsBulk(List<List<GARecord>> lst, int count)
+    public async Task AddGaRecordsBulkAsync(List<List<GARecord>> lst, int count)
     {
         try
         {
@@ -78,6 +88,7 @@ public class RawDataRepository(
             bulkCopy.DestinationTableName = "GARecords";
 
             bulkCopy.ColumnMappings.Add("Date", "Date");
+            bulkCopy.ColumnMappings.Add("DateOnly", "DateOnly");
             bulkCopy.ColumnMappings.Add("PageId", "PageId");
             bulkCopy.ColumnMappings.Add("Users", "Users");
             bulkCopy.ColumnMappings.Add("Views", "Views");
@@ -109,7 +120,7 @@ public class RawDataRepository(
         }
     }
 
-    public async Task AddPsiRecordsBulk(List<List<PSIRecord>> lst, int count)
+    public async Task AddPSARecordsBulkAsync(List<List<PSARecord>> lst, int count)
     {
         try
         {
@@ -124,11 +135,12 @@ public class RawDataRepository(
                 (SqlTransaction)dbTransaction
             );
 
-            using var reader = new PSIRecordDataReader(lst);
+            using var reader = new PSARecordDataReader(lst);
 
-            bulkCopy.DestinationTableName = "PSIRecords";
+            bulkCopy.DestinationTableName = "PSARecords";
 
             bulkCopy.ColumnMappings.Add("Date", "Date");
+            bulkCopy.ColumnMappings.Add("DateOnly", "DateOnly");
             bulkCopy.ColumnMappings.Add("PageId", "PageId");
             bulkCopy.ColumnMappings.Add("PerformanceScore", "PerformanceScore");
             bulkCopy.ColumnMappings.Add("LCP_MS", "LCP_MS");
@@ -137,13 +149,13 @@ public class RawDataRepository(
 
             await bulkCopy.WriteToServerAsync(reader);
 
-            await trackTableCountRepository.AlterTableRowsCountAsync("PSIRecords", count);
+            await trackTableCountRepository.AlterTableRowsCountAsync("PSARecords", count);
             await context.Database.CommitTransactionAsync();
-            logger.LogInformation("Successfully bulk inserted {Count} PSI records", count);
+            logger.LogInformation("Successfully bulk inserted {Count} PSA records", count);
         }
         catch (Exception ex)
         {
-            logger.LogError("!!!!!!!!!!! Failed to bulk psi records !!!!!!!!!!!!!!");
+            logger.LogError("!!!!!!!!!!! Failed to bulk PSA records !!!!!!!!!!!!!!");
             logger.LogError(ex, ex.Message);
             try
             {
@@ -151,30 +163,36 @@ public class RawDataRepository(
             }
             catch (Exception rollbackEx)
             {
-                logger.LogError(rollbackEx, "Failed to rollback PSI transaction");
+                logger.LogError(rollbackEx, "Failed to rollback PSA transaction");
             }
 
             throw;
         }
     }
 
+
     public async Task ExecuteAnalyticsPagesCorrelationAsync()
     {
         try
         {
-            var dbTransaction = (await context.Database.BeginTransactionAsync()).GetDbTransaction();
-            var connection =
-                (SqlConnection)dbTransaction.Connection
-                ?? throw new InvalidOperationException("No active transaction");
+            var connection = (SqlConnection)context.Database.GetDbConnection();
+
             var cmd = new SqlCommand(
-                """
-                EXEC sp_correlateStagedData; 
-                """,
+                $"""
+                 EXEC ProcessCorrelatedPageAnalyticsBatch {(int)enBatchSizes.PageAnalyticsBatch}; 
+                 """,
                 connection
             );
-            cmd.Transaction = (SqlTransaction)dbTransaction;
+            cmd.CommandTimeout = 120;
+
+
+            if (connection.State != ConnectionState.Open)
+            {
+                await connection.OpenAsync();
+            }
+
             await cmd.ExecuteNonQueryAsync();
-            await context.Database.CommitTransactionAsync();
+ 
             logger.LogInformation("Staged raw data successfully correlated to PageAnalytics table");
         }
         catch (Exception ex)
@@ -183,16 +201,55 @@ public class RawDataRepository(
                 "!!!!!!!!!!! Failed to correlated raw data to PageAnalytics table.  !!!!!!!!!!!!!!"
             );
             logger.LogError(ex, ex.Message);
-            try
-            {
-                await context.Database.RollbackTransactionAsync();
-            }
-            catch (Exception rollbackEx)
-            {
-                logger.LogError(rollbackEx, "Failed to rollback data from staged tables");
-            }
-
+ 
             throw;
         }
     }
 }
+
+// public class CorrelationRepository(
+//     MetriflowDbContext context,
+//     ILogger<RawDataRepository> logger
+// )
+// {
+//     public async Task ExecuteAnalyticsPagesCorrelationAsync()
+//     {
+//         try
+//         {
+//             var dbTransaction = (await context.Database.BeginTransactionAsync()).GetDbTransaction();
+//             var connection =
+//                 (SqlConnection)dbTransaction.Connection
+//                 ?? throw new InvalidOperationException("No active transaction");
+//             var cmd = new SqlCommand(
+//                 $"""
+//                  EXEC ProcessCorrelatedPageAnalyticsBatch {(int)enBatchSizes.PageAnalyticsBatch}; 
+//                  """,
+//                 connection
+//             );
+//             cmd.Transaction = (SqlTransaction)dbTransaction;
+//             cmd.CommandTimeout = 150;
+//             await cmd.ExecuteNonQueryAsync();
+
+//             await context.Database.CommitTransactionAsync();
+
+//             logger.LogInformation("Staged raw data successfully correlated to PageAnalytics table");
+//         }
+//         catch (Exception ex)
+//         {
+//             logger.LogError(
+//                 "!!!!!!!!!!! Failed to correlated raw data to PageAnalytics table.  !!!!!!!!!!!!!!"
+//             );
+//             logger.LogError(ex, ex.Message);
+//             try
+//             {
+//                 await context.Database.RollbackTransactionAsync();
+//             }
+//             catch (Exception rollbackEx)
+//             {
+//                 logger.LogError(rollbackEx, "Failed to rollback data from staged tables");
+//             }
+
+//             throw;
+//         }
+//     }
+// }

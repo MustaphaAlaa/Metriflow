@@ -15,7 +15,7 @@ public class TableRowsCountConfiguration : IEntityTypeConfiguration<TableRowsCou
            new TableRowsCount[]
            {
                new TableRowsCount{Id = 1, RowsCount= 0, TableName = "GARecords"},
-               new TableRowsCount{Id = 2, RowsCount= 0, TableName = "PSIRecords"},
+               new TableRowsCount{Id = 2, RowsCount= 0, TableName = "PSARecords"},
                new TableRowsCount{Id = 3, RowsCount= 0, TableName = "AggregationProgresses"},
                new TableRowsCount{Id = 4, RowsCount= 0, TableName = "PageAnalytics"},
                new TableRowsCount{Id = 5, RowsCount= 0, TableName = "TimeIntervalsAnalytics"},

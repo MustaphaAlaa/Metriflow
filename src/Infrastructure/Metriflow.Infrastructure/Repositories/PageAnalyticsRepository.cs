@@ -57,7 +57,7 @@ public class PageAnalyticsRepository(MetriflowDbContext context, ITrackTableCoun
                         PerformanceScore = pa.PerformanceScore,
                         Sessions = pa.Sessions,
                         LcpMs = pa.LcpMs,
-                        Intervals = pa.Intervals,
+                        Interval = pa.Interval,
                     };
         return query;
     }
@@ -81,7 +81,7 @@ public class PageAnalyticsRepository(MetriflowDbContext context, ITrackTableCoun
 
             var sql = """
             INSERT INTO "PageAnalytics" (
-            "PageId", "Date", "Intervals", "Users",
+            "PageId", "Date", "Interval", "Users",
             "Sessions", "Views", "PerformanceScore", "LcpMs"
             )
             SELECT
@@ -91,11 +91,11 @@ public class PageAnalyticsRepository(MetriflowDbContext context, ITrackTableCoun
             ga."Users",
             ga."Sessions",
             ga."Views",
-            psi."PerformanceScore",
-            psi."LCP_MS"
+            PSA."PerformanceScore",
+            PSA."LCP_MS"
             FROM (
             "GARecords" AS ga
-            JOIN "PSIRecords" AS psi ON ga."PageId" = psi."PageId" AND ga."Date" = psi."Date"
+            JOIN "PSARecords" AS PSA ON ga."PageId" = PSA."PageId" AND ga."Date" = PSA."Date"
             JOIN "AggregationProgresses" AS pa ON ga."PageId" = pa."PageId" AND ga."Date" = pa."Date"
 
             )

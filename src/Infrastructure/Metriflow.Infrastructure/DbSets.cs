@@ -16,7 +16,7 @@ public partial class MetriflowDbContext
     
     public DbSet<AggregationProgress> AggregationProgresses { get; set; }
      public DbSet<GARecord>  GARecords { get; set; }
-    public DbSet<PSIRecord> PSIRecords { get; set; }
+    public DbSet<PSARecord> PSARecords { get; set; }
     public DbSet<TimeInterval> TimeIntervals { get; set; }
 
 }

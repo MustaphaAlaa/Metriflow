@@ -4,12 +4,17 @@ using Metriflow.Domain.Entities.Workers;
 
 namespace Repositories.Ado;
 
-public class PSIRecordDataReader(List<List<PSIRecord>> psiRecords) : IDataReader
+public class PSARecordDataReader(List<List<PSARecord>> PSARecords) : IDataReader
 {
-    private readonly IEnumerator<IEnumerable<PSIRecord>> _outer = psiRecords.GetEnumerator();
-    private IEnumerator<PSIRecord>? _inner;
-    private PSIRecord _current;
-    public int FieldCount => 6;
+    private readonly IEnumerator<IEnumerable<PSARecord>> _outer = PSARecords.GetEnumerator();
+    private IEnumerator<PSARecord>? _inner;
+    private PSARecord _current;
+    public int FieldCount => 7;
+
+
+    private DateTime _cachedDateTime;
+    private DateOnly _cachedDateOnly;
+    private const long TicksPerDay = 864_000_000_000;
 
     public bool Read()
     {
@@ -18,6 +23,9 @@ public class PSIRecordDataReader(List<List<PSIRecord>> psiRecords) : IDataReader
             if (_inner != null && _inner.MoveNext())
             {
                 _current = _inner.Current;
+                _cachedDateTime = new DateTime(_current.Ticks);
+                _cachedDateOnly = DateOnly.FromDayNumber((int)(_current.Ticks / TicksPerDay));
+
                 return true;
             }
 
@@ -26,21 +34,55 @@ public class PSIRecordDataReader(List<List<PSIRecord>> psiRecords) : IDataReader
 
             _inner?.Dispose();
             _inner = _outer.Current.GetEnumerator();
-            _current = _inner?.Current;
+            // _current = _inner?.Current;
         }
     }
+
+    public bool GetBoolean(int i) => _current.IsCorrelation;
+
+
+    public DateTime GetDateTime(int i)
+    {
+        return i switch
+        {
+            0 => _cachedDateTime,
+            _ => throw new IndexOutOfRangeException()
+        };
+    }
+
+    public Guid GetGuid(int i) => _current.ComputeHash();
 
     public object GetValue(int i)
     {
         return i switch
         {
-            0 => new DateTime(_current.Ticks, DateTimeKind.Utc),
+            0 => _cachedDateTime,
             1 => _current.PageId,
             2 => _current.LCP_MS,
             3 => _current.PerformanceScore,
             4 => _current.ComputeHash(),
             5 => _current.IsCorrelation,
+            6 => _cachedDateOnly,
             _ => throw new IndexOutOfRangeException(),
+        };
+    }
+
+    public int GetInt32(int i)
+    {
+        return i switch
+        {
+            1 => _current.PageId,
+            2 => _current.PerformanceScore,
+            _ => throw new IndexOutOfRangeException()
+        };
+    }
+
+    public long GetInt64(int i)
+    {
+        return i switch
+        {
+            2 => _current.LCP_MS,
+            _ => throw new IndexOutOfRangeException()
         };
     }
 
@@ -53,6 +95,7 @@ public class PSIRecordDataReader(List<List<PSIRecord>> psiRecords) : IDataReader
             3 => "PerformanceScore",
             4 => "Hash",
             5 => "IsCorrelation",
+            6 => "DateOnly",
             _ => throw new IndexOutOfRangeException(),
         };
 
@@ -66,6 +109,7 @@ public class PSIRecordDataReader(List<List<PSIRecord>> psiRecords) : IDataReader
             "LCP_MS" => 3,
             "Hash" => 4,
             "IsCorrelation" => 5,
+            "DateOnly" => 6,
             _ => throw new IndexOutOfRangeException($"Unknown column: {name}"),
         };
     }
@@ -95,10 +139,6 @@ public class PSIRecordDataReader(List<List<PSIRecord>> psiRecords) : IDataReader
         throw new NotImplementedException();
     }
 
-    public bool GetBoolean(int i)
-    {
-        throw new NotImplementedException();
-    }
 
     public byte GetByte(int i)
     {
@@ -130,10 +170,6 @@ public class PSIRecordDataReader(List<List<PSIRecord>> psiRecords) : IDataReader
         throw new NotImplementedException();
     }
 
-    public DateTime GetDateTime(int i)
-    {
-        throw new NotImplementedException();
-    }
 
     public decimal GetDecimal(int i)
     {
@@ -147,7 +183,7 @@ public class PSIRecordDataReader(List<List<PSIRecord>> psiRecords) : IDataReader
 
     [return: DynamicallyAccessedMembers(
         DynamicallyAccessedMemberTypes.PublicFields
-            | DynamicallyAccessedMemberTypes.PublicProperties
+        | DynamicallyAccessedMemberTypes.PublicProperties
     )]
     public Type GetFieldType(int i)
     {
@@ -159,25 +195,12 @@ public class PSIRecordDataReader(List<List<PSIRecord>> psiRecords) : IDataReader
         throw new NotImplementedException();
     }
 
-    public Guid GetGuid(int i)
-    {
-        throw new NotImplementedException();
-    }
 
     public short GetInt16(int i)
     {
         throw new NotImplementedException();
     }
 
-    public int GetInt32(int i)
-    {
-        throw new NotImplementedException();
-    }
-
-    public long GetInt64(int i)
-    {
-        throw new NotImplementedException();
-    }
 
     public DataTable? GetSchemaTable()
     {

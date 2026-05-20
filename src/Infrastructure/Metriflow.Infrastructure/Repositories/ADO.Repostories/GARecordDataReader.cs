@@ -9,9 +9,17 @@ public class GARecordDataReader(List<List<GARecord>> gARecords) : IDataReader
     private readonly IEnumerator<IEnumerable<GARecord>> _outer = gARecords.GetEnumerator();
     private IEnumerator<GARecord>? _inner;
     private GARecord _current;
-    public int FieldCount => 7;
+    public int FieldCount => 8;
+
+
+    private DateTime _cachedDateTime;
+    private DateOnly _cachedDateOnly;
+    private const long TicksPerDay = 864_000_000_000;
 
     public bool NextResult() => false;
+
+
+
 
     public bool Read()
     {
@@ -20,6 +28,8 @@ public class GARecordDataReader(List<List<GARecord>> gARecords) : IDataReader
             if (_inner != null && _inner.MoveNext())
             {
                 _current = _inner.Current;
+                _cachedDateTime = new DateTime(_current.Ticks);
+                _cachedDateOnly = DateOnly.FromDayNumber((int)(_current.Ticks / TicksPerDay));
                 return true;
             }
 
@@ -28,27 +38,34 @@ public class GARecordDataReader(List<List<GARecord>> gARecords) : IDataReader
 
             _inner?.Dispose();
             _inner = _outer.Current.GetEnumerator();
-            _current = _inner?.Current;
+            //_current = _inner?.Current;
         }
     }
+
+    public bool GetBoolean(int i) => _current.IsCorrelation;
+    public DateTime GetDateTime(int i) => _cachedDateTime;
+    public int GetInt32(int i) => _current.PageId;
+    public Guid GetGuid(int i) => _current.ComputeHash();
 
     public object GetValue(int i)
     {
         return i switch
         {
-            0 => new DateTime(_current.Ticks, DateTimeKind.Utc),
+            0 => _cachedDateTime,
             1 => _current.PageId,
             2 => _current.Users,
             3 => _current.Views,
             4 => _current.Sessions,
             5 => _current.ComputeHash(),
             6 => _current.IsCorrelation,
+            7 => _cachedDateOnly,
             _ => throw new IndexOutOfRangeException(),
         };
     }
 
-    public string GetName(int i) =>
-        i switch
+    public string GetName(int i)
+    {
+        return i switch
         {
             0 => "Date",
             1 => "PageId",
@@ -57,8 +74,10 @@ public class GARecordDataReader(List<List<GARecord>> gARecords) : IDataReader
             4 => "Sessions",
             5 => "Hash",
             6 => "IsCorrelation",
+            7 => "DateOnly",
             _ => throw new IndexOutOfRangeException(),
         };
+    }
 
     public int GetOrdinal(string name)
     {
@@ -71,14 +90,31 @@ public class GARecordDataReader(List<List<GARecord>> gARecords) : IDataReader
             "Sessions" => 4,
             "Hash" => 5,
             "IsCorrelation" => 6,
+            "DateOnly"=>7,
             _ => throw new IndexOutOfRangeException($"Unknown column: {name}"),
         };
+    }
+
+
+    public long GetInt64(int i)
+    {
+        switch (i)
+        {
+            case 2:
+                return _current.Users;
+            case 3:
+                return _current.Views;
+            case 4:
+                return _current.Sessions;
+            default:
+                throw new IndexOutOfRangeException($"Unknown column: Hash");
+        }
     }
 
     public void Dispose()
     {
         _inner?.Dispose();
-        _outer?.Dispose();
+        _outer.Dispose();
     }
 
     //reset of methods
@@ -98,10 +134,6 @@ public class GARecordDataReader(List<List<GARecord>> gARecords) : IDataReader
         throw new NotImplementedException();
     }
 
-    public bool GetBoolean(int i)
-    {
-        throw new NotImplementedException();
-    }
 
     public byte GetByte(int i)
     {
@@ -128,15 +160,12 @@ public class GARecordDataReader(List<List<GARecord>> gARecords) : IDataReader
         throw new NotImplementedException();
     }
 
+
     public string GetDataTypeName(int i)
     {
         throw new NotImplementedException();
     }
 
-    public DateTime GetDateTime(int i)
-    {
-        throw new NotImplementedException();
-    }
 
     public decimal GetDecimal(int i)
     {
@@ -162,25 +191,14 @@ public class GARecordDataReader(List<List<GARecord>> gARecords) : IDataReader
         throw new NotImplementedException();
     }
 
-    public Guid GetGuid(int i)
-    {
-        throw new NotImplementedException();
-    }
+
 
     public short GetInt16(int i)
     {
         throw new NotImplementedException();
     }
 
-    public int GetInt32(int i)
-    {
-        throw new NotImplementedException();
-    }
 
-    public long GetInt64(int i)
-    {
-        throw new NotImplementedException();
-    }
 
     public DataTable? GetSchemaTable()
     {

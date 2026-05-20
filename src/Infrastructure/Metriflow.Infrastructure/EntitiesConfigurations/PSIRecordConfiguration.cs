@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Metriflow.Infrastructure.EntitiesConfigurations;
 
-public class PSIRecordConfiguration : IEntityTypeConfiguration<PSIRecord>
+public class PSARecordConfiguration : IEntityTypeConfiguration<PSARecord>
 {
     public void Configure(
-        Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<PSIRecord> builder
+        Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<PSARecord> builder
     )
     {
         builder.HasNoKey();
