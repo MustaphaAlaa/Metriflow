@@ -34,7 +34,7 @@ builder.Services.AddHostedService<RawDataWorker>();
 
 builder.Services.AddHostedService<AggregationProgressWorker>();
 
-// builder.Services.AddHostedService<PagesAnalyticWorker>();
+builder.Services.AddHostedService<PagesAnalyticWorker>();
 
 // builder.Services.AddHostedService<IntervalAnalyticsWorker>();
 

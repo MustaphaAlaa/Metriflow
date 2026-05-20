@@ -1,6 +1,4 @@
 using Metriflow.AggregationWorker.Interfaces;
-using Metriflow.AggregationWorker.Interfaces.Correlation;
-using Metriflow.Application.Interfaces;
 
 namespace Metriflow.AggregationWorker.Workers;
 

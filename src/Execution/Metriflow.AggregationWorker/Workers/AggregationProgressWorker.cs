@@ -23,9 +23,9 @@ public class AggregationProgressWorker(
         var channel = await consumer.CreateNewChannelAsync();
         await consumer.ConsumeFromChannelAsync<AggregationCompletedMessage>(
             channel,
-            routingKey: _rabbitMqSettings.Queues.Correlation,
+            routingKey: _rabbitMqSettings.Queues.StagingData,
             exchangeName: _rabbitMqSettings.Exchange,
-            queueName: _rabbitMqSettings.Queues.Correlation,
+            queueName: _rabbitMqSettings.Queues.StagingData,
             handleMessage: async (msg) =>
             {
                 logger.LogInformation(
@@ -38,11 +38,11 @@ public class AggregationProgressWorker(
                 var aggregationProgressRepository =
                     scope.ServiceProvider.GetRequiredService<IRawDataRepository>();
 
-                await aggregationProgressRepository.ExecuteStagedProcedures();
+                await aggregationProgressRepository.ExecuteStagedProceduresAsync();
                 await notifyWorkers.Notify(
                     1,
                     AggregationType.Page,
-                    _rabbitMqSettings.Queues.DailyAggregation
+                    _rabbitMqSettings.Queues.Correlation
                 );
             },
             cancellationToken: stoppingToken

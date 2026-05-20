@@ -34,23 +34,23 @@ public class MessageProducer(
             const int batchSize = 25000;
             logger.LogInformation("Start sending data......");
             var gaMockJson = this.JsonFilePath("GA-mock.json");
-            var psiMockJson = this.JsonFilePath("PSI-mock.json");
+            var psaMockJson = this.JsonFilePath("PSA-mock.json");
 
-            var GA = streamData.RunPipelineAsync<GARecord>(
+            var gaTask = streamData.RunPipelineAsync<GARecord>(
                 gaMockJson,
                 batchSize,
                 (gaRecords) =>
-                    producer.PublishAnalyticRecords<GARecord>(gaRecords, _settings.Queues.GA, _settings.Exchange)
+                    producer.PublishAnalyticRecords(gaRecords, _settings.Queues.GA, _settings.Exchange)
             );
 
-            var PSI = streamData.RunPipelineAsync<PSIRecord>(
-                psiMockJson,
+            var psaTask = streamData.RunPipelineAsync<PSARecord>(
+                psaMockJson,
                 batchSize,
-                (psiRecords) =>
-                    producer.PublishAnalyticRecords<PSIRecord>(psiRecords, _settings.Queues.PSI, _settings.Exchange)
+                (psaRecords) =>
+                    producer.PublishAnalyticRecords(psaRecords, _settings.Queues.PSA, _settings.Exchange)
             );
 
-            await Task.WhenAll(GA, PSI);
+            await Task.WhenAll(gaTask, psaTask);
 
             logger.LogInformation("All files is processed.");
         }

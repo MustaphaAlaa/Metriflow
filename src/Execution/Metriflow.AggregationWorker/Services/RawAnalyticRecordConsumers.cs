@@ -1,5 +1,4 @@
 using System.Threading.Channels;
-using Metriflow.AggregationWorker.Interfaces;
 using Metriflow.AggregationWorker.Interfaces.Correlation;
 using Metriflow.Application.Entities;
 using Metriflow.Application.Interfaces;
@@ -17,10 +16,10 @@ public class RawAnalyticRecordConsumers<T> : IRawAnalyticRecordConsumers<T>
     private readonly IMessageBrokerConsumerChannels _consumer;
     private readonly RabbitMqSettings _rabbitMqSettings;
     private readonly IServiceScopeFactory _serviceScopeFactory;
-    const int workersCount = 4;
+    const int WorkersCount = 4;
 
     // prefetchCount * workersCount * 3
-    const int boundChannelSize = 30 * workersCount * 3;
+    const int BoundChannelSize = 30 * WorkersCount * 3;
 
     public RawAnalyticRecordConsumers(
         ILogger<RawAnalyticRecordConsumers<T>> logger,
@@ -37,12 +36,12 @@ public class RawAnalyticRecordConsumers<T> : IRawAnalyticRecordConsumers<T>
     }
 
     /// <summary>
-    /// Start consuming PSI messages on a dedicated channel and forward them to the handler.
+    /// Start consuming PSA messages on a dedicated channel and forward them to the handler.
     /// </summary>
     public async Task Consume(string queueName, string routingKey, CancellationToken stoppingToken)
     {
         var channel = Channel.CreateBounded<List<T>>(
-            new BoundedChannelOptions(boundChannelSize)
+            new BoundedChannelOptions(BoundChannelSize)
             {
                 SingleWriter = false,
                 SingleReader = true,
@@ -59,7 +58,7 @@ public class RawAnalyticRecordConsumers<T> : IRawAnalyticRecordConsumers<T>
         var analyticChannel = await _consumer.CreateNewChannelAsync();
 
         var consumers = Enumerable
-            .Range(0, workersCount)
+            .Range(0, WorkersCount)
             .Select(workerId =>
                 Task.Run(async () =>
                 {
@@ -75,12 +74,13 @@ public class RawAnalyticRecordConsumers<T> : IRawAnalyticRecordConsumers<T>
                             async (List<T> recordsLst) =>
                             {
                                 _logger.LogInformation(
-                                    $"{recordsLst.Count} of ${nameof(T)} records are received."
-                                );
+                                    "{Count} of {TypeName} records are received.",
+                                    recordsLst.Count, typeof(T).Name);
 
                                 _logger.LogInformation(
-                                    $"$###### ${nameof(T)} Chunk Count:   ${recordsLst.Count}  ########"
-                                );
+                                    "###### {TypeName} Chunk Count: {Count}  ########",
+                                    typeof(T).Name, recordsLst.Count);
+
                                 stoppingToken.ThrowIfCancellationRequested();
 
                                 try
@@ -90,7 +90,7 @@ public class RawAnalyticRecordConsumers<T> : IRawAnalyticRecordConsumers<T>
 
                                     await channel.Writer.WriteAsync(recordsLst, stoppingToken);
                                     _logger.LogInformation(
-                                        $"$###### ${nameof(T)} Chunk Count:   ${recordsLst.Count}. %%% Is wrote in Channel, Channel Count is ${channel.Reader.Count}%%% ########"
+                                        $"$###### {typeof(T).Name} Chunk Count:   ${recordsLst.Count}. %%% Is wrote in Channel, Channel Count is ${channel.Reader.Count}%%% ########"
                                     );
                                 }
                                 catch (ObjectDisposedException ex)

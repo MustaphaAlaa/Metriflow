@@ -31,12 +31,12 @@ public class RawDataConsumer : IRawDataConsumer
     public async Task Consume(CancellationToken stoppingToken)
     {
         _logger.LogInformation("START CONSUMING............");
-        var gaConsumerTasK = this.ConsumeGARecords(stoppingToken);
-        var psiConsumerTask = this.ConsumePSIRecords(stoppingToken);
-        await Task.WhenAll(gaConsumerTasK, psiConsumerTask);
+        var gaConsumerTasK = this.ConsumeGaRecords(stoppingToken);
+        var psaConsumerTask = this.ConsumePsaRecords(stoppingToken);
+        await Task.WhenAll(gaConsumerTasK, psaConsumerTask);
     }
 
-    private async Task ConsumeGARecords(CancellationToken stoppingToken)
+    private async Task ConsumeGaRecords(CancellationToken stoppingToken)
     {
         _logger.LogInformation("START CONSUMING GA Record............");
 
@@ -52,17 +52,17 @@ public class RawDataConsumer : IRawDataConsumer
         );
     }
 
-    private async Task ConsumePSIRecords(CancellationToken stoppingToken)
+    private async Task ConsumePsaRecords(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("START CONSUMING PSI Records............");
+        _logger.LogInformation("START CONSUMING PSA Records............");
         using var scope = _serviceScopeFactory.CreateScope();
         var handler = scope.ServiceProvider.GetRequiredService<
-            IRawAnalyticRecordConsumers<PSIRecord>
+            IRawAnalyticRecordConsumers<PSARecord>
         >();
 
         await handler.Consume(
-            _rabbitMqSettings.Queues.PSI,
-            _rabbitMqSettings.Queues.PSI,
+            _rabbitMqSettings.Queues.PSA,
+            _rabbitMqSettings.Queues.PSA,
             stoppingToken
         );
     }

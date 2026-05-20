@@ -1,3 +1,4 @@
+using IRepository.Generic;
 using Metriflow.Application.Entities;
 using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Workers;
@@ -33,13 +34,13 @@ public class PagesAnalyticWorker(
                     "$$$$$$$$AggregationCompletedMessage received. CorrelationCount={Count}",
                     message.ProcessedCount
                 );
+                
                 if (message.ProcessedCount > 0)
                 {
                     using var scope = serviceScopeFactory.CreateScope();
-                    var orc = scope.ServiceProvider.GetRequiredService<IPageAnalyticsOrchestration>();
-                    var pagesNumber = await orc.CreatePageAnalyticsAsync();
-
-                    // await Notify(pagesNumber);
+                    var repo = scope.ServiceProvider.GetRequiredService<IRawDataRepository>();
+                    await repo.ExecuteAnalyticsPagesCorrelationAsync();
+ 
                 }
                 else
                     logger.LogInformation("@@@@Records are less than zero.");
@@ -51,15 +52,5 @@ public class PagesAnalyticWorker(
         await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 
-    private async Task Notify(int recordsCount)
-    {
-        await producer.NotifyCompletedMessageAsync(new AggregationCompletedMessage
-            {
-                CorrelationId = Guid.NewGuid(),
-                CompletedType = AggregationType.Page,
-                ProcessedCount = recordsCount,
-                CompletedAt = DateTime.UtcNow,
-            },
-            _rabbitMqSettings.Queues.IntervalAggregation, _rabbitMqSettings.Exchange);
-    }
+    
 }

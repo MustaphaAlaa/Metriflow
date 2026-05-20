@@ -3,6 +3,7 @@ using Metriflow.AggregationWorker.Interfaces.Correlation;
 using Metriflow.Application.Entities;
 using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Workers;
+using Metriflow.Domain.enums;
 using Metriflow.Domain.Interfaces;
 using Metriflow.Messages.Producers;
 using Microsoft.Extensions.Options;
@@ -23,7 +24,7 @@ public class RawDataConsumerMessageHandler<T>(
     where T : class, IAnalyticRecord
 {
     private readonly RabbitMqSettings _rabbitMqSettings = options.Value;
-    const int batchCount = 300_000;
+    const int batchCount = (int)enBatchSizes.RawDataBaseBatch;
     static readonly TimeSpan flushTimeout = TimeSpan.FromSeconds(50);
     List<List<T>> outerRecordsLst = new();
     int accumulator = 0;
@@ -123,7 +124,7 @@ public class RawDataConsumerMessageHandler<T>(
         await notifyWorkers.Notify(
             accumulator,
             AggregationType.Records,
-            _rabbitMqSettings.Queues.Correlation
+            _rabbitMqSettings.Queues.StagingData
         );
 
         outerRecordsLst.Clear();

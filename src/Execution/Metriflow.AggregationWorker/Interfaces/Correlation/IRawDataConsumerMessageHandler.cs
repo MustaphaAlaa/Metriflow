@@ -15,7 +15,7 @@ public interface IRawDataConsumerMessageHandler<T>
     where T : class, IAnalyticRecord
 {
     // Task HandleIncomingGaRecordAsync( Channel<List<GARecord>> channel, CancellationToken stoppingToken);
-    // Task HandleIncomingPsiRecordAsync( Channel<List<PSIRecord>> channel, CancellationToken stoppingToken);
+    // Task HandleIncomingPSARecordAsync( Channel<List<PSARecord>> channel, CancellationToken stoppingToken);
 
     Task HandleIncomingAnalyticsRecordsAsync(
         Channel<List<T>> channel,
