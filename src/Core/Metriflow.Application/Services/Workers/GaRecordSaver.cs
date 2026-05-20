@@ -14,5 +14,5 @@ public class GaRecordSaver : IRecordBatchSaver<GARecord>
     public GaRecordSaver(IRawDataRepository repository) => _repository = repository;
 
     public Task SaveBulkAsync(List<List<GARecord>> batch, int totalCount) =>
-        _repository.AddGaRecordsBulk(batch, totalCount);
+        _repository.AddGaRecordsBulkAsync(batch, totalCount);
 }

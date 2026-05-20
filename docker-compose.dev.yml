@@ -22,20 +22,20 @@ services:
       retries: 5
       start_period: 20s
 
-  redis:
-    image: redis:7-alpine
-    container_name: metriflow-redis-dev
-    restart: always
-    command: redis-server --appendonly yes
-    ports:
-      - "6379:6379"
-    networks:
-      - metriflow-net
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 5s
-      timeout: 3s
-      retries: 5
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: metriflow-redis-dev
+  #   restart: always
+  #   command: redis-server --appendonly yes
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - metriflow-net
+  #   healthcheck:
+  #     test: [ "CMD", "redis-cli", "ping" ]
+  #     interval: 5s
+  #     timeout: 3s
+  #     retries: 5
 
   database:
     image: mcr.microsoft.com/mssql/server:2025-latest
@@ -43,7 +43,7 @@ services:
     user: root # Often required to ensure permissions for volume mounting
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=Sa123456 # SQL Server requires a complex password
+      - MSSQL_SA_PASSWORD=Sa123456
       - MSSQL_PID=Developer
       - MSSQL_DB=metriflowdb
     ports:
@@ -71,8 +71,8 @@ services:
     depends_on:
       database:
         condition: service_healthy
-      redis:
-        condition: service_healthy
+      # redis:
+      #   condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__MSSQL: Server=database,1433;Database=metriflowdb;User Id=sa;Password=Sa123456;TrustServerCertificate=True;
@@ -115,7 +115,8 @@ services:
       RabbitMQ__Queues__AggregationCompleted: metriflow.aggregation.completed
       RabbitMQ__Queues__AggregationFailed: metriflow.aggregation.failed
       RabbitMQ__Queues__GA: metriflow.analytics.GA
-      RabbitMQ__Queues__PSI: metriflow.analytics.PSI
+      RabbitMQ__Queues__PSA: metriflow.analytics.PSA
+      RabbitMQ__Queues__StagingData: metriflow.analytics.StagingData
       RabbitMQ__Queues__Correlation: metriflow.analytics.Correlation
 
     volumes:
@@ -128,12 +129,11 @@ services:
     build:
       context: .
       dockerfile: src/Execution/Metriflow.Producer/Dockerfile.dev
-    
     depends_on:
       rabbitmq:
         condition: service_healthy
-      metriflow-aggregation-worker:
-        condition: service_started
+      database:
+        condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       RabbitMQ__HostName: rabbitmq
@@ -142,7 +142,7 @@ services:
       RabbitMQ__Password: mypassword
       RabbitMQ__Exchange: analytics.raw
       RabbitMQ__Queues__GA: metriflow.analytics.GA
-      RabbitMQ__Queues__PSI: metriflow.analytics.PSI
+      RabbitMQ__Queues__PSI: metriflow.analytics.PSA
       RabbitMQ__Queues__Correlation: metriflow.analytics.Correlation
 
     volumes:
