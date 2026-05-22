@@ -10,7 +10,6 @@ namespace Metriflow.AggregationWorker.Workers;
 public class AggregationProgressWorker(
     ILogger<AggregationProgressWorker> logger,
     IMessageBrokerConsumer consumer,
-    IProducer producer,
     IServiceScopeFactory serviceScopeFactory,
     INotifyWorkers notifyWorkers,
     IOptions<RabbitMqSettings> options
@@ -42,7 +41,8 @@ public class AggregationProgressWorker(
                 await notifyWorkers.Notify(
                     1,
                     AggregationType.Page,
-                    _rabbitMqSettings.Queues.Correlation
+                    _rabbitMqSettings.Queues.Correlation,
+                    stoppingToken
                 );
             },
             cancellationToken: stoppingToken

@@ -7,13 +7,16 @@ using Microsoft.Extensions.Options;
 
 namespace Metriflow.AggregationWorker.Workers;
 
-public class DailyAnalyticsWorker(ILogger<DailyAnalyticsWorker> logger, IMessageBrokerConsumer consumer,
+public class DailyAnalyticsWorker(
+    ILogger<DailyAnalyticsWorker> logger,
+    IMessageBrokerConsumer consumer,
     IProducer producer,
     IServiceScopeFactory serviceScopeFactory,
     IOptions<RabbitMqSettings> optins)
     : BackgroundService
 {
     private readonly RabbitMqSettings _rabbitMqSettings = optins.Value;
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("@@@@DailyAnalyticsWorker is started.");
@@ -42,7 +45,7 @@ public class DailyAnalyticsWorker(ILogger<DailyAnalyticsWorker> logger, IMessage
                     var orc = scope.ServiceProvider.GetRequiredService<IDailyAnalyticsOrchestrator>();
                     var pagesNumber = await orc.AggregateDailyAnalyticsAsync();
 
-                    await Notify(pagesNumber);
+                    await Notify(pagesNumber, stoppingToken);
                 }
                 else
                     logger.LogInformation("@@@@The count of records to aggregate to dailies is zero.");
@@ -54,15 +57,15 @@ public class DailyAnalyticsWorker(ILogger<DailyAnalyticsWorker> logger, IMessage
         await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 
-    private async Task Notify(int recordsCount)
+    private async Task Notify(int recordsCount, CancellationToken cancellationToken)
     {
         await producer.NotifyCompletedMessageAsync(new AggregationCompletedMessage
-        {
-            CorrelationId = Guid.NewGuid(),
-            CompletedType = AggregationType.Daily,
-            ProcessedCount = recordsCount,
-            CompletedAt = DateTime.UtcNow,
-        },
-            _rabbitMqSettings.Queues.MonthlyAggregation, _rabbitMqSettings.Exchange);
+            {
+                CorrelationId = Guid.NewGuid(),
+                CompletedType = AggregationType.Daily,
+                ProcessedCount = recordsCount,
+                CompletedAt = DateTime.UtcNow,
+            },
+            _rabbitMqSettings.Queues.MonthlyAggregation, _rabbitMqSettings.Exchange, cancellationToken);
     }
 }

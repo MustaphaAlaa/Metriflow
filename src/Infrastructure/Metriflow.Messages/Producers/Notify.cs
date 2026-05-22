@@ -1,7 +1,5 @@
 using Metriflow.Application.Entities;
 using Metriflow.Application.Interfaces.Workers;
-using Metriflow.Domain.CustomAttributes;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -9,10 +7,11 @@ namespace Metriflow.Messages.Producers;
 
 public interface INotifyWorkers
 {
-    Task Notify(int recordsCount, AggregationType aggregationType, string routingKey);
+    Task Notify(int recordsCount, AggregationType aggregationType, string routingKey,
+        CancellationToken stoppingToken);
 }
 
-// [ServiceRegistration(ServiceLifetime.Scoped, typeof(INotifyWorkers))]
+
 public class NotifyWorkers(
     ILogger<NotifyWorkers> logger,
     IProducer producer,
@@ -21,7 +20,8 @@ public class NotifyWorkers(
 {
     private readonly RabbitMqSettings _rabbitMqSettings = options.Value;
 
-    public async Task Notify(int recordsCount, AggregationType aggregationType, string routingKey)
+    public async Task Notify(int recordsCount, AggregationType aggregationType, string routingKey,
+        CancellationToken stoppingToken)
     {
         await producer.NotifyCompletedMessageAsync(
             new AggregationCompletedMessage
@@ -32,7 +32,8 @@ public class NotifyWorkers(
                 CompletedAt = DateTime.UtcNow,
             },
             routingKey,
-            _rabbitMqSettings.Exchange
+            _rabbitMqSettings.Exchange,
+            stoppingToken
         );
         logger.LogInformation(
             $">>>>> {nameof(aggregationType)} is completed, ${routingKey} is notified."

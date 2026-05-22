@@ -20,16 +20,20 @@ public interface IProducer
     /// <param name="exchangeName">
     /// The target exchange name.
     /// </param>
+    /// <param name="stoppingToken">
+    /// The Cancellation Token.
+    /// </param>
     /// <returns>
     /// A task that completes when the publish operation finishes.
     /// </returns>
     public Task PublishAnalyticRecords<T>(
         IList<T> data,
         string routingKey,
+        CancellationToken stoppingToken,
         string exchangeName = "analytics.raw"
     )
         where T : IAnalyticRecord;
 
     Task NotifyCompletedMessageAsync(AggregationCompletedMessage message, string routingKey,
-        string exchangeName);
+        string exchangeName, CancellationToken cancellationToken);
 }

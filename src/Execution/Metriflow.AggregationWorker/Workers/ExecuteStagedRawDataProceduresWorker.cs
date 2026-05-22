@@ -35,20 +35,22 @@ public class ExecuteStagedRawDataProceduresWorker(
             },
             cancellationToken: stoppingToken
         );
+        
     }
 
-    private async Task Notify(int recordsCount)
+    private async Task Notify(int recordsCount, CancellationToken cancellationToken)
     {
         await producer.NotifyCompletedMessageAsync(
-            new AggregationCompletedMessage
+            message: new AggregationCompletedMessage
             {
                 CorrelationId = Guid.NewGuid(),
                 CompletedType = AggregationType.Page,
                 ProcessedCount = recordsCount,
                 CompletedAt = DateTime.UtcNow,
             },
-            _rabbitMqSettings.Queues.IntervalAggregation,
-            _rabbitMqSettings.Exchange
+            routingKey: _rabbitMqSettings.Queues.IntervalAggregation,
+            exchangeName: _rabbitMqSettings.Exchange,
+            cancellationToken: cancellationToken
         );
     }
 }

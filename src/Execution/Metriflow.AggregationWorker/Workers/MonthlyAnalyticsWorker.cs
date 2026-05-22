@@ -6,14 +6,16 @@ using Microsoft.Extensions.Options;
 
 namespace Metriflow.AggregationWorker.Workers;
 
-public class MonthlyAnalyticsWorker(ILogger<MonthlyAnalyticsWorker> logger,
-IMessageBrokerConsumer consumer,
-  IProducer producer,
+public class MonthlyAnalyticsWorker(
+    ILogger<MonthlyAnalyticsWorker> logger,
+    IMessageBrokerConsumer consumer,
+    IProducer producer,
     IServiceScopeFactory serviceScopeFactory,
     IOptions<RabbitMqSettings> optins)
     : BackgroundService
 {
     private readonly RabbitMqSettings _rabbitMqSettings = optins.Value;
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("@@@@DailyAnalyticsWorker is started.");
@@ -42,7 +44,7 @@ IMessageBrokerConsumer consumer,
                     var orc = scope.ServiceProvider.GetRequiredService<IMonthlyAnalyticsOrchestrator>();
                     var pagesNumber = await orc.AggregateMonthlyAnalyticsAsync();
 
-                    await Notify(pagesNumber);
+                    await Notify(pagesNumber, stoppingToken);
                 }
                 else
                     logger.LogInformation("@@@@The count of records to aggregate to monthly is zero.");
@@ -54,15 +56,17 @@ IMessageBrokerConsumer consumer,
         await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 
-    private async Task Notify(int recordsCount)
+    private async Task Notify(int recordsCount, CancellationToken cancellationToken)
     {
-        await producer.NotifyCompletedMessageAsync(new AggregationCompletedMessage
-        {
-            CorrelationId = Guid.NewGuid(),
-            CompletedType = AggregationType.Monthly,
-            ProcessedCount = recordsCount,
-            CompletedAt = DateTime.UtcNow,
-        },
-            _rabbitMqSettings.Queues.YearlyAggregation, _rabbitMqSettings.Exchange);
+        await producer.NotifyCompletedMessageAsync(
+            message: new AggregationCompletedMessage
+            {
+                CorrelationId = Guid.NewGuid(),
+                CompletedType = AggregationType.Monthly,
+                ProcessedCount = recordsCount,
+                CompletedAt = DateTime.UtcNow,
+            },
+            routingKey: _rabbitMqSettings.Queues.YearlyAggregation, exchangeName: _rabbitMqSettings.Exchange,
+            cancellationToken: cancellationToken);
     }
 }

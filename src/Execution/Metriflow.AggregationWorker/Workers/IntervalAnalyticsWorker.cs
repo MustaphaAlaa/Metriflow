@@ -6,19 +6,21 @@ using Microsoft.Extensions.Options;
 
 namespace Metriflow.AggregationWorker.Workers;
 
-public class IntervalAnalyticsWorker(ILogger<IntervalAnalyticsWorker> logger,
+public class IntervalAnalyticsWorker(
+    ILogger<IntervalAnalyticsWorker> logger,
     IMessageBrokerConsumer consumer,
     IProducer producer,
     IServiceScopeFactory serviceScopeFactory,
     IOptions<RabbitMqSettings> optins)
     : BackgroundService
 {
-    private readonly RabbitMqSettings _rabbitMqSettings= optins.Value;
+    private readonly RabbitMqSettings _rabbitMqSettings = optins.Value;
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("@@@@IntervalAnalyticsWorker is started.");
 
- 
+
         var analyticChannel = await consumer.CreateNewChannelAsync();
 
         await consumer.ConsumeFromChannelAsync<AggregationCompletedMessage>(
@@ -32,7 +34,7 @@ public class IntervalAnalyticsWorker(ILogger<IntervalAnalyticsWorker> logger,
                     "$$$$$$$$AggregationCompletedMessage received Interval. TimeIntervalCount={Count}",
                     message.ProcessedCount
                 );
-                if (message.ProcessedCount > 0 && message.CompletedType== AggregationType.Page)
+                if (message.ProcessedCount > 0 && message.CompletedType == AggregationType.Page)
                 {
                     logger.LogWarning(
                         "$$$$$$$$To Proccess received Interval. TimeIntervalCount={Count}",
@@ -42,7 +44,7 @@ public class IntervalAnalyticsWorker(ILogger<IntervalAnalyticsWorker> logger,
                     var orc = scope.ServiceProvider.GetRequiredService<ITimeIntervalsOrchestration>();
                     var pagesNumber = await orc.AggregateTimeIntervalsAsync();
 
-                    await Notify(pagesNumber);
+                    await Notify(pagesNumber, stoppingToken);
                 }
                 else
                     logger.LogInformation("@@@@The count of records to aggregate to Interval is zero.");
@@ -54,7 +56,7 @@ public class IntervalAnalyticsWorker(ILogger<IntervalAnalyticsWorker> logger,
         await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 
-    private async Task Notify(int recordsCount)
+    private async Task Notify(int recordsCount, CancellationToken stoppingToken)
     {
         await producer.NotifyCompletedMessageAsync(new AggregationCompletedMessage
             {
@@ -63,6 +65,7 @@ public class IntervalAnalyticsWorker(ILogger<IntervalAnalyticsWorker> logger,
                 ProcessedCount = recordsCount,
                 CompletedAt = DateTime.UtcNow,
             },
-            _rabbitMqSettings.Queues.DailyAggregation, _rabbitMqSettings.Exchange);
+            _rabbitMqSettings.Queues.DailyAggregation, _rabbitMqSettings.Exchange,
+            stoppingToken);
     }
 }

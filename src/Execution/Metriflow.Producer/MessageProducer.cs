@@ -1,8 +1,5 @@
-using System.Threading.Channels;
 using Metriflow.Application.Entities;
-using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Workers;
-using Metriflow.Domain.Entities.Enums;
 using Metriflow.Domain.Entities.Workers;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -27,7 +24,7 @@ public class MessageProducer(
 
     private string JsonFilePath(string filename) => Path.Combine(environment.ContentRootPath, "data", filename);
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken stoppingToken)
     {
         try
         {
@@ -40,14 +37,22 @@ public class MessageProducer(
                 gaMockJson,
                 batchSize,
                 (gaRecords) =>
-                    producer.PublishAnalyticRecords(gaRecords, _settings.Queues.GA, _settings.Exchange)
+                    producer.PublishAnalyticRecords(
+                        data: gaRecords,
+                        routingKey: _settings.Queues.GA,
+                        exchangeName: _settings.Exchange,
+                        stoppingToken: stoppingToken)
             );
 
             var psaTask = streamData.RunPipelineAsync<PSARecord>(
                 psaMockJson,
                 batchSize,
                 (psaRecords) =>
-                    producer.PublishAnalyticRecords(psaRecords, _settings.Queues.PSA, _settings.Exchange)
+                    producer.PublishAnalyticRecords(
+                        data: psaRecords,
+                        routingKey: _settings.Queues.PSA,
+                        exchangeName: _settings.Exchange,
+                        stoppingToken: stoppingToken)
             );
 
             await Task.WhenAll(gaTask, psaTask);

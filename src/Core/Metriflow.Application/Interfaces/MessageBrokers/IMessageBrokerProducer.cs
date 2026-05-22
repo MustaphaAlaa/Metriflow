@@ -70,6 +70,7 @@ public interface IMessageBrokerProducer
         T message,
         string exchangeName,
         string routingKey,
+        CancellationToken cancellationToken,
         bool sharedChannel = false
     );
 }

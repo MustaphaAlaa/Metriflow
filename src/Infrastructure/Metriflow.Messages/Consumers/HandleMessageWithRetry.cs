@@ -9,17 +9,10 @@ namespace Metriflow.Application;
     Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped,
     typeof(IHandleMessageWithRetry)
 )]
-public class HandleMessageWithRetry : IHandleMessageWithRetry
+public class HandleMessageWithRetry(ILogger<HandleMessageWithRetry> logger) : IHandleMessageWithRetry
 {
-    private readonly ILogger<HandleMessageWithRetry> _logger;
-
     private const int MaxRetryAttempts = 3;
     private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(5);
-
-    public HandleMessageWithRetry(ILogger<HandleMessageWithRetry> logger)
-    {
-        _logger = logger;
-    }
 
     public async Task<bool> HandleMessageWithRetryAsync<T>(
         T message,
@@ -32,14 +25,14 @@ public class HandleMessageWithRetry : IHandleMessageWithRetry
         {
             try
             {
-                _logger.LogInformation(
+                logger.LogInformation(
                     $"Attempt {attempt}/{MaxRetryAttempts} to process message from queue {queueName}"
                 );
 
                 await handleMessage(message);
 
                 // Success: Break the loop and return true
-                _logger.LogInformation(
+                logger.LogInformation(
                     "Message processed successfully on attempt {Attempt} from queue {QueueName}.",
                     attempt,
                     queueName
@@ -49,7 +42,7 @@ public class HandleMessageWithRetry : IHandleMessageWithRetry
             catch (OperationCanceledException)
             {
                 // Cancellation requested - stop retrying
-                _logger.LogInformation(
+                logger.LogInformation(
                     "Message processing canceled for queue {QueueName}.",
                     queueName
                 );
@@ -58,7 +51,7 @@ public class HandleMessageWithRetry : IHandleMessageWithRetry
             catch (ObjectDisposedException ex)
             {
                 // Service provider is disposed, likely during shutdown - stop retrying
-                _logger.LogWarning(
+                logger.LogWarning(
                     ex,
                     "Service provider was disposed while processing message from queue {QueueName}. Application may be shutting down. Stopping retries.",
                     queueName
@@ -68,7 +61,7 @@ public class HandleMessageWithRetry : IHandleMessageWithRetry
             catch (Exception ex) when (attempt < MaxRetryAttempts)
             {
                 // Log the failure, but only if we have more retries left
-                _logger.LogWarning(
+                logger.LogWarning(
                     ex,
                     "Message processing failed on attempt {Attempt} from queue {QueueName}. Retrying in {Delay} seconds...",
                     attempt,
@@ -84,7 +77,7 @@ public class HandleMessageWithRetry : IHandleMessageWithRetry
                 catch (TaskCanceledException)
                 {
                     // If cancellation is requested while waiting, stop retrying
-                    _logger.LogInformation(
+                    logger.LogInformation(
                         "Retry delay canceled for queue {QueueName}.",
                         queueName
                     );
@@ -94,7 +87,7 @@ public class HandleMessageWithRetry : IHandleMessageWithRetry
             catch (Exception finalEx)
             {
                 // Final failure after the last attempt
-                _logger.LogError(
+                logger.LogError(
                     finalEx,
                     "Final attempt {Attempt} failed to process message from queue {QueueName}. No more retries.",
                     attempt,

@@ -2,7 +2,6 @@ using System.Threading.Channels;
 using Metriflow.AggregationWorker.Interfaces.Correlation;
 using Metriflow.Application.Entities;
 using Metriflow.Application.Interfaces;
-using Metriflow.Application.Interfaces.Workers;
 using Metriflow.Domain.enums;
 using Metriflow.Domain.Interfaces;
 using Metriflow.Messages.Producers;
@@ -17,7 +16,6 @@ namespace Metriflow.AggregationWorker.Services;
 public class RawDataConsumerMessageHandler<T>(
     ILogger<RawDataConsumerMessageHandler<T>> logger,
     IOptions<RabbitMqSettings> options,
-    IProducer producer,
     INotifyWorkers notifyWorkers,
     IServiceScopeFactory scopeFactory
 ) : IRawDataConsumerMessageHandler<T>
@@ -49,8 +47,6 @@ public class RawDataConsumerMessageHandler<T>(
         logger.LogInformation($"Processing {typeof(T).Name}");
         try
         {
-            var date = DateTime.UtcNow;
-            var lastReceiveTime = DateTime.UtcNow;
             while (true)
             {
                 try
@@ -74,7 +70,7 @@ public class RawDataConsumerMessageHandler<T>(
 
                         if (accumulator >= batchCount)
                         {
-                            await Flush();
+                            await Flush(stoppingToken);
                         }
                     }
                 }
@@ -87,7 +83,7 @@ public class RawDataConsumerMessageHandler<T>(
                     // Otherwise, it was just our timeoutCts. Flush if we have data!
                     if (outerRecordsLst.Count > 0)
                     {
-                        await Flush();
+                        await Flush(stoppingToken);
                     }
                 }
             }
@@ -102,12 +98,12 @@ public class RawDataConsumerMessageHandler<T>(
 
             if (outerRecordsLst.Count > 0)
             {
-                await Flush();
+                await Flush(stoppingToken);
             }
         }
     }
 
-    async Task Flush()
+    async Task Flush(CancellationToken stoppingToken)
     {
         logger.LogInformation(
             "@@@@@@ Flushing {Count} {RecordType} records to database...",
@@ -124,7 +120,8 @@ public class RawDataConsumerMessageHandler<T>(
         await notifyWorkers.Notify(
             accumulator,
             AggregationType.Records,
-            _rabbitMqSettings.Queues.StagingData
+            _rabbitMqSettings.Queues.StagingData,
+            stoppingToken
         );
 
         outerRecordsLst.Clear();
