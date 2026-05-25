@@ -11,9 +11,7 @@ public class YearlyAnalyticsConfiguration : IEntityTypeConfiguration<YearlyAnaly
     {
         try
         {
-            builder.HasKey(ds => new { ds.PageId, ds.Year });
-        
-            
+            builder.HasKey(ds => new { ds.PageId, ds.Year }).IsClustered(false);
         }
         catch (Exception ex)
         {

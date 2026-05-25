@@ -9,10 +9,6 @@ public class TimeIntervalAnalyticsConfiguration : IEntityTypeConfiguration<TimeI
         Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<TimeIntervalAnalytic> builder
     )
     {
-        // builder
-        //     .HasAlternateKey(ds => (new { ds.PageId, ds.YearMonth }))
-        //     .HasName("AK_MonthlyStat_PageMonth");
-
-        builder.HasKey(ds => new { ds.PageId, ds.Date, ds.TimeIntervalId });
+        builder.HasNoKey();
     }
 }
