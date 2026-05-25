@@ -9,4 +9,5 @@ public class PageAnalytics : AnalyticsData
 
     [ForeignKey("TimeInterval")] public int Interval { get; set; }
     public TimeInterval TimeInterval { get; set; }
+    public DateTime CreatedAt { get; set; }
 }

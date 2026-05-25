@@ -8,5 +8,5 @@ public class AggregateRecomputeQueue
     public int PageId { get; set; }
     public DateOnly Date { get; set; }
     public int Interval { get; set; }
-    public DateTime CeratedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 }

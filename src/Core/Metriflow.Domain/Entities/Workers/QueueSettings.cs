@@ -11,7 +11,8 @@ public class QueueSettings
     public string GA { get; set; } = string.Empty;
     public string PSA { get; set; } = string.Empty;
     public string Correlation { get; set; } = string.Empty;
-    public string StagingData { get; set; } = string.Empty; 
+    public string StagingGA { get; set; } = string.Empty;
+    public string StagingPSA { get; set; } = string.Empty;
 }
 
 public class StartAggregationMessage
