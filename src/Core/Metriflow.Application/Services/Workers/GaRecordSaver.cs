@@ -9,9 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 [ServiceRegistration(lifetime: ServiceLifetime.Scoped, typeof(IRecordBatchSaver<GARecord>))]
 public class GaRecordSaver : IRecordBatchSaver<GARecord>
 {
-    private readonly IRawDataRepository _repository;
+    private readonly IGaRecordRepository _repository;
 
-    public GaRecordSaver(IRawDataRepository repository) => _repository = repository;
+    public GaRecordSaver(IGaRecordRepository repository) => _repository = repository;
 
     public Task SaveBulkAsync(List<List<GARecord>> batch, int totalCount) =>
         _repository.AddGaRecordsBulkAsync(batch, totalCount);
