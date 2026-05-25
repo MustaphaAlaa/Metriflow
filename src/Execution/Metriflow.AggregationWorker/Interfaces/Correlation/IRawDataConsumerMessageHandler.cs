@@ -1,8 +1,5 @@
+
 using System.Threading.Channels;
-using System.Threading.Tasks;
-using Metriflow.Domain;
-using Metriflow.Domain.Entities.Enums;
-using Metriflow.Domain.Entities.Workers;
 using Metriflow.Domain.Interfaces;
 
 namespace Metriflow.AggregationWorker.Interfaces.Correlation;
@@ -14,9 +11,6 @@ namespace Metriflow.AggregationWorker.Interfaces.Correlation;
 public interface IRawDataConsumerMessageHandler<T>
     where T : class, IAnalyticRecord
 {
-    // Task HandleIncomingGaRecordAsync( Channel<List<GARecord>> channel, CancellationToken stoppingToken);
-    // Task HandleIncomingPSARecordAsync( Channel<List<PSARecord>> channel, CancellationToken stoppingToken);
-
     Task HandleIncomingAnalyticsRecordsAsync(
         Channel<List<T>> channel,
         CancellationToken stoppingToken

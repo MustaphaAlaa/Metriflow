@@ -1,14 +1,13 @@
 using IRepository.Generic;
 using Metriflow.Application.Entities;
 using Metriflow.Application.Interfaces;
-using Metriflow.Application.Interfaces.Workers;
 using Metriflow.Messages.Producers;
 using Microsoft.Extensions.Options;
 
 namespace Metriflow.AggregationWorker.Workers;
 
-public class AggregationProgressWorker(
-    ILogger<AggregationProgressWorker> logger,
+public class StagedPsaDataWorker(
+    ILogger<StagedPsaDataWorker> logger,
     IMessageBrokerConsumer consumer,
     IServiceScopeFactory serviceScopeFactory,
     INotifyWorkers notifyWorkers,
@@ -22,33 +21,32 @@ public class AggregationProgressWorker(
         var channel = await consumer.CreateNewChannelAsync();
         await consumer.ConsumeFromChannelAsync<AggregationCompletedMessage>(
             channel,
-            routingKey: _rabbitMqSettings.Queues.StagingData,
+            routingKey: _rabbitMqSettings.Queues.StagingPSA,
             exchangeName: _rabbitMqSettings.Exchange,
-            queueName: _rabbitMqSettings.Queues.StagingData,
-            handleMessage: async (msg) =>
+            queueName: _rabbitMqSettings.Queues.StagingPSA,
+            handleMessage: async msg =>
             {
                 logger.LogInformation(
-                    $">< Message Arrived atAggregation Worker count {msg.ProcessedCount} -- completed type {msg.CompletedType}"
-                );
+                    "PSA staging message received. ProcessedCount={Count}, CompletedType={Type}",
+                    msg.ProcessedCount,
+                    msg.CompletedType);
+
                 if (msg.ProcessedCount < 1 || msg.CompletedType != AggregationType.Records)
                     return;
+
                 using var scope = serviceScopeFactory.CreateScope();
+                var stagingRepository = scope.ServiceProvider.GetRequiredService<IPsaStagingRepository>();
+                await stagingRepository.ExecuteStagePsaRecordsAsync(msg.ProcessedCount, stoppingToken);
 
-                var aggregationProgressRepository =
-                    scope.ServiceProvider.GetRequiredService<IRawDataRepository>();
-
-                await aggregationProgressRepository.ExecuteStagedProceduresAsync();
                 await notifyWorkers.Notify(
                     1,
                     AggregationType.Page,
                     _rabbitMqSettings.Queues.Correlation,
-                    stoppingToken
-                );
+                    stoppingToken);
             },
-            cancellationToken: stoppingToken
-        );
+            cancellationToken: stoppingToken);
 
         await Task.Delay(Timeout.Infinite, stoppingToken);
-        logger.LogWarning("%%%%%%%% Aggregation Worker is Done. %%%%%%%%%%");
+        logger.LogWarning("Staged PSA Data Worker is done.");
     }
 }
