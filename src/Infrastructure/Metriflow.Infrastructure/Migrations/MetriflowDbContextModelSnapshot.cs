@@ -30,15 +30,50 @@ namespace Metriflow.Infrastructure.Migrations
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
-                    b.Property<int>("IntervalId")
+                    b.Property<int>("Interval")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("CeratedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("PageId", "Date", "IntervalId");
+                    b.HasKey("PageId", "Date", "Interval");
 
                     b.ToTable("AggregateRecomputeQueue");
+                });
+
+            modelBuilder.Entity("Metriflow.Domain.Entities.AggregationCheckpoint", b =>
+                {
+                    b.Property<string>("PipelineName")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("LastProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("PipelineName");
+
+                    b.ToTable("AggregationCheckpoint");
+
+                    b.HasData(
+                        new
+                        {
+                            PipelineName = "TimeIntervalAggregation",
+                            LastProcessedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            PipelineName = "DailyAggregation",
+                            LastProcessedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            PipelineName = "MonthlyAggregation",
+                            LastProcessedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            PipelineName = "YearlyAggregation",
+                            LastProcessedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        });
                 });
 
             modelBuilder.Entity("Metriflow.Domain.Entities.AggregationProgress", b =>
@@ -116,6 +151,8 @@ namespace Metriflow.Infrastructure.Migrations
 
                     b.HasKey("PageId", "Date");
 
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("PageId", "Date"), false);
+
                     b.ToTable("DailyAnalytics");
                 });
 
@@ -140,6 +177,8 @@ namespace Metriflow.Infrastructure.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("PageId", "YearMonth");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("PageId", "YearMonth"), false);
 
                     b.ToTable("MonthlyAnalytics");
                 });
@@ -288,6 +327,9 @@ namespace Metriflow.Infrastructure.Migrations
 
             modelBuilder.Entity("Metriflow.Domain.Entities.PageAnalytics", b =>
                 {
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
@@ -315,6 +357,11 @@ namespace Metriflow.Infrastructure.Migrations
                     b.Property<long>("Views")
                         .HasColumnType("bigint");
 
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_PageAnalytics_CreatedAt");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("CreatedAt"), false);
+
                     b.HasIndex("Interval");
 
                     b.HasIndex("PageId", "DateOnly", "Interval")
@@ -323,6 +370,29 @@ namespace Metriflow.Infrastructure.Migrations
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("PageId", "DateOnly", "Interval"), false);
 
                     b.ToTable("PageAnalytics");
+                });
+
+            modelBuilder.Entity("Metriflow.Domain.Entities.StagingReadiness", b =>
+                {
+                    b.Property<string>("Source")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid>("BatchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Consumed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.HasKey("Source", "BatchId");
+
+                    b.ToTable("StagingReadiness");
                 });
 
             modelBuilder.Entity("Metriflow.Domain.Entities.TableRowsCount", b =>
@@ -458,17 +528,17 @@ namespace Metriflow.Infrastructure.Migrations
 
             modelBuilder.Entity("Metriflow.Domain.Entities.TimeIntervalAnalytic", b =>
                 {
-                    b.Property<int>("PageId")
-                        .HasColumnType("int");
+                    b.Property<double>("AvgPerformance")
+                        .HasColumnType("float");
 
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
-                    b.Property<int>("TimeIntervalId")
+                    b.Property<int>("PageId")
                         .HasColumnType("int");
 
-                    b.Property<double>("AvgPerformance")
-                        .HasColumnType("float");
+                    b.Property<int>("TimeIntervalId")
+                        .HasColumnType("int");
 
                     b.Property<long>("TotalSessions")
                         .HasColumnType("bigint");
@@ -479,7 +549,7 @@ namespace Metriflow.Infrastructure.Migrations
                     b.Property<long>("TotalViews")
                         .HasColumnType("bigint");
 
-                    b.HasKey("PageId", "Date", "TimeIntervalId");
+                    b.HasIndex("PageId");
 
                     b.HasIndex("TimeIntervalId");
 
@@ -615,6 +685,8 @@ namespace Metriflow.Infrastructure.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("PageId", "Year");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("PageId", "Year"), false);
 
                     b.ToTable("YearlyAnalytics");
                 });

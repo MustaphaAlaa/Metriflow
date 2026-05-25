@@ -19,12 +19,24 @@ namespace Metriflow.Infrastructure.Migrations
                 {
                     PageId = table.Column<int>(type: "int", nullable: false),
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
-                    IntervalId = table.Column<int>(type: "int", nullable: false),
-                    CeratedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Interval = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AggregateRecomputeQueue", x => new { x.PageId, x.Date, x.IntervalId });
+                    table.PrimaryKey("PK_AggregateRecomputeQueue", x => new { x.PageId, x.Date, x.Interval });
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AggregationCheckpoint",
+                columns: table => new
+                {
+                    PipelineName = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    LastProcessedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AggregationCheckpoint", x => x.PipelineName);
                 });
 
             migrationBuilder.CreateTable(
@@ -71,6 +83,20 @@ namespace Metriflow.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StagingReadiness",
+                columns: table => new
+                {
+                    Source = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    BatchId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Consumed = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StagingReadiness", x => new { x.Source, x.BatchId });
                 });
 
             migrationBuilder.CreateTable(
@@ -156,7 +182,8 @@ namespace Metriflow.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DailyAnalytics", x => new { x.PageId, x.Date });
+                    table.PrimaryKey("PK_DailyAnalytics", x => new { x.PageId, x.Date })
+                        .Annotation("SqlServer:Clustered", false);
                     table.ForeignKey(
                         name: "FK_DailyAnalytics_Pages_PageId",
                         column: x => x.PageId,
@@ -178,7 +205,8 @@ namespace Metriflow.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MonthlyAnalytics", x => new { x.PageId, x.YearMonth });
+                    table.PrimaryKey("PK_MonthlyAnalytics", x => new { x.PageId, x.YearMonth })
+                        .Annotation("SqlServer:Clustered", false);
                     table.ForeignKey(
                         name: "FK_MonthlyAnalytics_Pages_PageId",
                         column: x => x.PageId,
@@ -200,7 +228,8 @@ namespace Metriflow.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_YearlyAnalytics", x => new { x.PageId, x.Year });
+                    table.PrimaryKey("PK_YearlyAnalytics", x => new { x.PageId, x.Year })
+                        .Annotation("SqlServer:Clustered", false);
                     table.ForeignKey(
                         name: "FK_YearlyAnalytics_Pages_PageId",
                         column: x => x.PageId,
@@ -216,6 +245,7 @@ namespace Metriflow.Infrastructure.Migrations
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DateOnly = table.Column<DateOnly>(type: "date", nullable: false),
                     Interval = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PageId = table.Column<int>(type: "int", nullable: false),
                     Users = table.Column<long>(type: "bigint", nullable: false),
                     Sessions = table.Column<long>(type: "bigint", nullable: false),
@@ -243,9 +273,9 @@ namespace Metriflow.Infrastructure.Migrations
                 name: "TimeIntervalsAnalytics",
                 columns: table => new
                 {
-                    PageId = table.Column<int>(type: "int", nullable: false),
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
                     TimeIntervalId = table.Column<int>(type: "int", nullable: false),
+                    PageId = table.Column<int>(type: "int", nullable: false),
                     TotalUsers = table.Column<long>(type: "bigint", nullable: false),
                     TotalSessions = table.Column<long>(type: "bigint", nullable: false),
                     TotalViews = table.Column<long>(type: "bigint", nullable: false),
@@ -253,7 +283,6 @@ namespace Metriflow.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TimeIntervalsAnalytics", x => new { x.PageId, x.Date, x.TimeIntervalId });
                     table.ForeignKey(
                         name: "FK_TimeIntervalsAnalytics_Pages_PageId",
                         column: x => x.PageId,
@@ -266,6 +295,17 @@ namespace Metriflow.Infrastructure.Migrations
                         principalTable: "TimeIntervals",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "AggregationCheckpoint",
+                columns: new[] { "PipelineName", "LastProcessedAt" },
+                values: new object[,]
+                {
+                    { "DailyAggregation", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { "MonthlyAggregation", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { "TimeIntervalAggregation", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { "YearlyAggregation", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) }
                 });
 
             migrationBuilder.InsertData(
@@ -371,6 +411,12 @@ namespace Metriflow.Infrastructure.Migrations
                 .Annotation("SqlServer:Clustered", false);
 
             migrationBuilder.CreateIndex(
+                name: "IX_PageAnalytics_CreatedAt",
+                table: "PageAnalytics",
+                column: "CreatedAt")
+                .Annotation("SqlServer:Clustered", false);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PageAnalytics_Interval",
                 table: "PageAnalytics",
                 column: "Interval");
@@ -407,6 +453,11 @@ namespace Metriflow.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_TimeIntervalsAnalytics_PageId",
+                table: "TimeIntervalsAnalytics",
+                column: "PageId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TimeIntervalsAnalytics_TimeIntervalId",
                 table: "TimeIntervalsAnalytics",
                 column: "TimeIntervalId");
@@ -425,6 +476,9 @@ namespace Metriflow.Infrastructure.Migrations
                 name: "AggregateRecomputeQueue");
 
             migrationBuilder.DropTable(
+                name: "AggregationCheckpoint");
+
+            migrationBuilder.DropTable(
                 name: "AggregationProgresses");
 
             migrationBuilder.DropTable(
@@ -441,6 +495,9 @@ namespace Metriflow.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "PSARecords");
+
+            migrationBuilder.DropTable(
+                name: "StagingReadiness");
 
             migrationBuilder.DropTable(
                 name: "TableRowsCounts");
