@@ -1,0 +1,26 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0
+
+WORKDIR /app
+
+# Copy csproj files first (for restore caching)
+
+COPY src/Infrastructure/Metriflow.Infrastructure/Metriflow.Infrastructure.csproj src/Infrastructure/Metriflow.Infrastructure/
+
+COPY src/Execution/Metriflow.DatabaseMigrator/Metriflow.DatabaseMigrator.csproj src/Execution/Metriflow.DatabaseMigrator/
+
+
+
+RUN dotnet restore src/Execution/Metriflow.DatabaseMigrator/Metriflow.DatabaseMigrator.csproj
+
+# Copy the rest of the source 
+COPY src ./src
+
+WORKDIR /app/src/Execution/Metriflow.DatabaseMigrator
+
+# Dev defaults
+ENV ASPNETCORE_ENVIRONMENT=Development
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
+
+# Run directly from source
+CMD ["dotnet", "run"]
+

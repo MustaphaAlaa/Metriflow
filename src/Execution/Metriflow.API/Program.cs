@@ -1,9 +1,5 @@
 using Infrastructure.Extensions;
-using IRepository.Generic;
 using Metriflow.Application.Extensions;
-using Metriflow.Infrastructure;
-using Microsoft.EntityFrameworkCore;
-using Repositories.Generic;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -43,20 +39,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        var dbContext = services.GetRequiredService<MetriflowDbContext>();
-        dbContext.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
-        throw;
-    }
-}
+
 
 app.Run();
