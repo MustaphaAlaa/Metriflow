@@ -66,7 +66,7 @@ public class PageAnalyticsServicesTests
         var result = await _pageAnalyticsServices.NormalizeRawData(message, page);
 
         // Assert
-        result.Intervals.Should().NotBe(default(byte));
+        result.Interval.Should().NotBe(default(byte));
     }
 
     [Fact]
@@ -98,8 +98,8 @@ public class PageAnalyticsServicesTests
         result.Should().HaveCount(1);
         var pageAnalytic = result.First();
         pageAnalytic.PageId.Should().Be(aggregateRecord.PageId);
-        pageAnalytic.LcpMs.Should().Be(aggregateRecord.PSIRecord.LCP_MS);
-        pageAnalytic.PerformanceScore.Should().Be(aggregateRecord.PSIRecord.PerformanceScore);
+        pageAnalytic.LcpMs.Should().Be(aggregateRecord.PsaRecord.LCP_MS);
+        pageAnalytic.PerformanceScore.Should().Be(aggregateRecord.PsaRecord.PerformanceScore);
         pageAnalytic.Users.Should().Be(aggregateRecord.GARecord.Users);
         pageAnalytic.Sessions.Should().Be(aggregateRecord.GARecord.Sessions);
         pageAnalytic.Views.Should().Be(aggregateRecord.GARecord.Views);
@@ -149,6 +149,6 @@ public class PageAnalyticsServicesTests
         var result = _pageAnalyticsServices.RecordsToPageAnalytics(records);
 
         // Assert
-        result.All(x => x.Intervals >= 0 && x.Intervals < 24).Should().BeTrue();
+        result.All(x => x.Interval >= 0 && x.Interval < 24).Should().BeTrue();
     }
 }

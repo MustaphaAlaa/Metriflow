@@ -12,18 +12,17 @@ public class TableRowsCountConfiguration : IEntityTypeConfiguration<TableRowsCou
         builder.HasKey(e => e.Id);
 
         builder.HasData(
-           new TableRowsCount[]
-           {
-               new TableRowsCount{Id = 1, RowsCount= 0, TableName = "GARecords"},
-               new TableRowsCount{Id = 2, RowsCount= 0, TableName = "PSIRecords"},
-               new TableRowsCount{Id = 3, RowsCount= 0, TableName = "AggregationProgresses"},
-               new TableRowsCount{Id = 4, RowsCount= 0, TableName = "PageAnalytics"},
-               new TableRowsCount{Id = 5, RowsCount= 0, TableName = "TimeIntervalsAnalytics"},
-               new TableRowsCount{Id = 6, RowsCount= 0, TableName = "DailyAnalytics"},
-               new TableRowsCount{Id = 7, RowsCount= 0, TableName = "MonthlyAnalytics"},
-               new TableRowsCount{Id = 8, RowsCount= 0, TableName = "YearlyAnalytics"},
-           }
+            new List<TableRowsCount>()
+            {
+                new() { Id = 1, RowsCount = 0, TableName = "GARecords" },
+                new() { Id = 2, RowsCount = 0, TableName = "PSARecords" },
+                new() { Id = 3, RowsCount = 0, TableName = "AggregationProgresses" },
+                new() { Id = 4, RowsCount = 0, TableName = "PageAnalytics" },
+                new() { Id = 5, RowsCount = 0, TableName = "TimeIntervalsAnalytics" },
+                new() { Id = 6, RowsCount = 0, TableName = "DailyAnalytics" },
+                new() { Id = 7, RowsCount = 0, TableName = "MonthlyAnalytics" },
+                new() { Id = 8, RowsCount = 0, TableName = "YearlyAnalytics" },
+            }
         );
-
     }
 }

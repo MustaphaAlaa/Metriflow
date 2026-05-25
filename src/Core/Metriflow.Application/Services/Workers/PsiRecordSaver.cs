@@ -3,14 +3,15 @@ using Metriflow.Application.Interfaces;
 using Metriflow.Domain.CustomAttributes;
 using Metriflow.Domain.Entities.Workers;
 using Microsoft.Extensions.DependencyInjection;
-// Adapter for PSI Records
-[ServiceRegistration(lifetime: ServiceLifetime.Scoped, typeof(IRecordBatchSaver<PSIRecord>))]
-public class PsiRecordSaver : IRecordBatchSaver<PSIRecord>
+
+// Adapter for PSA Records
+[ServiceRegistration(lifetime: ServiceLifetime.Scoped, typeof(IRecordBatchSaver<PSARecord>))]
+public class PSARecordSaver : IRecordBatchSaver<PSARecord>
 {
-    private readonly IRawDataRepository _repository;
+    private readonly IPsaRecordRepository _repository;
 
-    public PsiRecordSaver(IRawDataRepository repository) => _repository = repository;
+    public PSARecordSaver(IPsaRecordRepository repository) => _repository = repository;
 
-    public Task SaveBulkAsync(List<List<PSIRecord>> batch, int totalCount) =>
-        _repository.AddPsiRecordsBulk(batch, totalCount);
+    public Task SaveBulkAsync(List<List<PSARecord>> batch, int totalCount) =>
+        _repository.AddPSARecordsBulkAsync(batch, totalCount);
 }

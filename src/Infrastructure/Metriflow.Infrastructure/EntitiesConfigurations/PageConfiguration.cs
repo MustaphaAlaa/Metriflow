@@ -1,9 +1,9 @@
 using Metriflow.Domain.Entities;
 using Metriflow.Domain.enums;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Metriflow.Infrastructure.EntitiesConfigurations;
+
 
 public class PageConfiguration : IEntityTypeConfiguration<Page>
 {
@@ -16,7 +16,7 @@ public class PageConfiguration : IEntityTypeConfiguration<Page>
 
         builder
             .Property(page => page.Path)
-            .HasConversion<string>(); 
+            .HasConversion<string>();
 
         builder.HasData(pages());
     }
@@ -27,12 +27,11 @@ public class PageConfiguration : IEntityTypeConfiguration<Page>
         var pages = new List<Page>(pagesCount);
 
         for (int i = 1; i < pagesCount; i++)
-            pages.Add( new Page
-            {
-             Id= i,
-             Path   = (enPages)i,
-                
-            }  
+            pages.Add(new Page
+                {
+                    Id = i,
+                    Path = (enPages)i,
+                }
             );
         return pages;
     }

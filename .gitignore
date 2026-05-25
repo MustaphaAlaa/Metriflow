@@ -17,3 +17,4 @@ arc.md
 architecture.md
 Final_Structure.md
 **/logs
+.github/workflows/docker-image.yml

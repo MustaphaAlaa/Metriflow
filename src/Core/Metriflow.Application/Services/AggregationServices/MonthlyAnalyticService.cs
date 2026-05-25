@@ -21,7 +21,7 @@ public class MonthlyAnalyticService(ILogger<MonthlyAnalyticService> logger)
         MonthlyAnalytic monthlyAnalytic = new()
         {
             PageId = data[0].PageId,
-            YearMonth = NormalizeRawAnalyticDate(data[0].Date),
+            // YearMonth = NormalizeRawAnalyticDate(data[0].Date),
             AvgPerformance = data.Average(rawData => rawData.PerformanceScore),
             TotalSessions = data.Sum(rawData => rawData.Sessions),
             TotalViews = data.Sum(rawData => rawData.Views),

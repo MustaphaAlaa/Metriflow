@@ -1,7 +1,4 @@
-using Metriflow.Domain.Entities;
-using Metriflow.Domain.Entities.Workers;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace Metriflow.Infrastructure;
 
@@ -16,7 +13,6 @@ public partial class MetriflowDbContext : DbContext
         base.OnModelCreating(modelBuilder);
         Console.WriteLine("Constructed");
         Console.WriteLine("Configurations");
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(MetriflowDbContext).Assembly); 
-        // modelBuilder.Entity<AggregationProgress>().HasNoKey();
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(MetriflowDbContext).Assembly);
     }
 }

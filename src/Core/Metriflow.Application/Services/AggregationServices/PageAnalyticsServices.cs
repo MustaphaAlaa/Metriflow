@@ -27,7 +27,7 @@ public class PageAnalyticsServices(ILogger<PageAnalyticsServices> logger) : IPag
             Sessions = combinedAnalyticsMessage.Sessions,
             Views = combinedAnalyticsMessage.Views,
             Date = date,
-            Intervals = TimeIntervalUtilities.GetTimeInterval(date.Hour),
+            Interval = TimeIntervalUtilities.GetTimeInterval(date.Hour),
         };
 
         return rawData;
@@ -41,14 +41,14 @@ public class PageAnalyticsServices(ILogger<PageAnalyticsServices> logger) : IPag
       var records =   noneAggregateRecords.Select(record => new PageAnalytics()
         {  
                 PageId = record.PageId,
-                Page = null,
-                LcpMs = record.PSIRecord.LCP_MS,
-                PerformanceScore = record.PSIRecord.PerformanceScore,
+                // Page = null,
+                LcpMs = record.PsaRecord.LCP_MS,
+                PerformanceScore = record.PsaRecord.PerformanceScore,
                 Users = record.GARecord.Users,
                 Sessions = record.GARecord.Sessions,
                 Views = record.GARecord.Views,
                 Date = record.Date,
-                Intervals = TimeIntervalUtilities.GetTimeInterval(record.Date.Hour),   
+                Interval = TimeIntervalUtilities.GetTimeInterval(record.Date.Hour),   
         }).ToList();
         logger.LogInformation("@@@@@@@Records to PageAnalytics is done.");
         return records;

@@ -9,6 +9,21 @@ public class PageAnalyticsConfiguration : IEntityTypeConfiguration<PageAnalytics
         Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<PageAnalytics> builder
     )
     {
-        builder.HasKey(pa => new { pa.PageId, pa.Date, pa.Intervals });
+        builder.HasNoKey();
+
+        builder
+            .HasIndex(pa => new
+            {
+                pa.PageId,
+                pa.DateOnly,
+                Intervals = pa.Interval,
+            })
+            .HasDatabaseName("IX_PageAnalytics_ReAggregation")
+            .IsClustered(false);
+
+        builder
+            .HasIndex(pa => pa.CreatedAt)
+            .HasDatabaseName("IX_PageAnalytics_CreatedAt")
+            .IsClustered(false);
     }
 }

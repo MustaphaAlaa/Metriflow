@@ -4,7 +4,8 @@ namespace Metriflow.Domain.Entities;
 
 public class MonthlyAnalytic : AggregateAnalytics
 {
-    // [Key]
-    // public Guid Id { get; set; }
-    public DateTime YearMonth { get; set; }
+    /// <summary>
+    /// Represent the year and month; I don't care about day here
+    /// </summary>
+    public DateOnly YearMonth { get; set; }
 }

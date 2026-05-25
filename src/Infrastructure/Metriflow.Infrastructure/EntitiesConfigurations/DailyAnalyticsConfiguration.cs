@@ -9,7 +9,6 @@ public class DailyAnalyticsConfiguration : IEntityTypeConfiguration<DailyAnalyti
         Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<DailyAnalytics> builder
     )
     {
-        
-        builder.HasKey(ds => new { ds.PageId, ds.Date });
+        builder.HasKey(ds => new { ds.PageId, ds.Date }).IsClustered(false);
     }
 }

@@ -1,9 +1,6 @@
 using Metriflow.Application.Entities;
-using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Workers;
-using Metriflow.Domain.CustomAttributes;
 using Metriflow.Domain.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Metriflow.Application.Services.Workers;
@@ -15,7 +12,6 @@ namespace Metriflow.Application.Services.Workers;
 /// Acts as an adapter between the streaming pipeline and the message broker,
 /// providing logging and isolating broker-specific concerns from application logic.
 /// </remarks>
- 
 public class Producer : IProducer
 {
     private readonly IMessageBrokerProducer _messageBrokerProducer;
@@ -40,16 +36,19 @@ public class Producer : IProducer
     /// <param name="data">The list of analytic records to publish. Assumed to be non-empty and contain records with Ticks properties.</param>
     /// <param name="routingKey">The routing key for message routing (e.g., "analytics.raw.GA").</param>
     /// <param name="exchangeName">The exchange name to publish to (e.g., "analytics.raw.GA").</param>
+    /// <param name="cancellationToken">The cancellation token</param>
     /// <exception cref="IndexOutOfRangeException">Thrown if data is empty when accessing data[0] for logging.</exception>
     /// <exception cref="Exception">May throw exceptions from the underlying message broker if publishing fails.</exception>
     public async Task PublishAnalyticRecords<T>(
         IList<T> data,
         string routingKey,
+        CancellationToken cancellationToken,
         string exchangeName
     )
         where T : IAnalyticRecord
     {
-        await _messageBrokerProducer.PublishAsync(data, exchangeName, routingKey, true);
+        await _messageBrokerProducer.PublishAsync(data, exchangeName, routingKey, cancellationToken: cancellationToken,
+            sharedChannel: true);
         _logger.LogInformation("Running on Thread: {thread}", Thread.CurrentThread.ManagedThreadId);
 
         var recordCount = data.Count;
@@ -67,9 +66,11 @@ public class Producer : IProducer
     }
 
     public async Task NotifyCompletedMessageAsync(AggregationCompletedMessage message, string routingKey,
-        string exchangeName)
+        string exchangeName, CancellationToken stoppingToken)
     {
-        await _messageBrokerProducer.PublishAsync(message, exchangeName, routingKey, true);
+        await _messageBrokerProducer.PublishAsync(message,
+            exchangeName: exchangeName, routingKey: routingKey, cancellationToken: stoppingToken,
+            sharedChannel: true);
         _logger.LogInformation("Running on Thread: {thread}", Thread.CurrentThread.ManagedThreadId);
 
         _logger.LogInformation(

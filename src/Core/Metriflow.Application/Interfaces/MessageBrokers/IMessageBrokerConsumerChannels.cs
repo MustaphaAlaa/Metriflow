@@ -23,7 +23,8 @@ public interface IMessageBrokerConsumerChannels
         string exchangeName,
         string routingKey,
         Func<T, Task> handleMessage,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        int prefetchCount = 30
     );
 
     /// <summary>

@@ -10,29 +10,20 @@ namespace Metriflow.Messages.Producers;
 /// <summary>
 /// Implements the RabbitMQ message publishing functionality.
 /// </summary>
-public class RabbitMqProducer : IMessageBrokerProducer, IAsyncDisposable
+public class RabbitMqProducer(
+    IMessageBrokerConnection connection,
+    ILogger<RabbitMqProducer> logger,
+    IMessageBrokerBinding messageBrokerBinding)
+    : IMessageBrokerProducer, IAsyncDisposable
 {
-    private readonly IMessageBrokerConnection _connection;
-    private readonly ILogger<RabbitMqProducer> _logger;
     private IChannel? _sharedChannel;
-
-    /// <summary>
-    /// Initializes a new instance of the RabbitMqProducer class.
-    /// </summary>
-    /// <param name="connection">The RabbitMQ connection instance.</param>
-    /// <param name="logger">The logger instance for logging producer events.</param>
-    public RabbitMqProducer(IMessageBrokerConnection connection, ILogger<RabbitMqProducer> logger)
-    {
-        _connection = connection;
-        _logger = logger;
-    }
 
     public async Task InitializeSharedChannelAsync(string exchangeName)
     {
         if (_sharedChannel is null)
         {
-            _sharedChannel = await _connection.CreateNewChannelAsync();
-            _logger.LogInformation("Shared channel created.");
+            _sharedChannel = await connection.CreateNewChannelAsync();
+            logger.LogInformation("Shared channel created.");
         }
 
         await _sharedChannel.ExchangeDeclareAsync(
@@ -45,7 +36,7 @@ public class RabbitMqProducer : IMessageBrokerProducer, IAsyncDisposable
 
     public async Task<IChannel> CreateNewChannelAsync(string exchangeName)
     {
-        var channel = await _connection.CreateNewChannelAsync();
+        var channel = await connection.CreateNewChannelAsync();
 
         await channel.ExchangeDeclareAsync(
             exchange: exchangeName,
@@ -73,11 +64,19 @@ public class RabbitMqProducer : IMessageBrokerProducer, IAsyncDisposable
     public async Task PublishWithSharedChannelAsync<T>(
         T message,
         string exchange,
-        string routingKey
+        string routingKey,
+        CancellationToken stoppingToken
     )
     {
         if (_sharedChannel is null)
             throw new InvalidOperationException("Shared channel not initialized.");
+
+
+        await messageBrokerBinding.BindQueueToExchangeAsync(channel: _sharedChannel, exchangeName: exchange,
+            routingKey: routingKey,
+            queueName: routingKey,
+            stoppingToken: stoppingToken);
+
 
         var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
         await _sharedChannel.BasicPublishAsync(exchange, routingKey, body: body);
@@ -86,16 +85,17 @@ public class RabbitMqProducer : IMessageBrokerProducer, IAsyncDisposable
     public async Task PublishWithNewChannelAsync<T>(
         T message,
         string exchangeName,
-        string routingKey
+        string routingKey,
+        CancellationToken stoppingToken
     )
     {
-        using var channel = await _connection.CreateNewChannelAsync();
-        await channel.ExchangeDeclareAsync(
-            exchange: exchangeName,
-            type: ExchangeType.Direct,
-            durable: true,
-            autoDelete: false
-        );
+        using var channel = await connection.CreateNewChannelAsync();
+
+
+        await messageBrokerBinding.BindQueueToExchangeAsync(channel: channel, exchangeName: exchangeName,
+            routingKey: routingKey,
+            queueName: routingKey,
+            stoppingToken: stoppingToken);
 
         var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
         await channel.BasicPublishAsync(exchangeName, routingKey, body: body);
@@ -111,15 +111,17 @@ public class RabbitMqProducer : IMessageBrokerProducer, IAsyncDisposable
         T message,
         string exchangeName,
         string routingKey,
+        CancellationToken stoppingToken,
         bool sharedChannel = false
     )
     {
         if (sharedChannel)
         {
             await this.InitializeSharedChannelAsync(exchangeName);
-            await this.PublishWithSharedChannelAsync(message, exchangeName, routingKey);
+            await this.PublishWithSharedChannelAsync(message, exchangeName, routingKey, stoppingToken);
         }
         else
-            await this.PublishWithNewChannelAsync(message, exchangeName, routingKey);
+            await this.PublishWithNewChannelAsync(message, exchangeName, routingKey, stoppingToken);
     }
 }
+ 

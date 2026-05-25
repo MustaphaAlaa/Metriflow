@@ -155,7 +155,7 @@ public class MonthlyAnalyticServiceTests
         var result = _monthlyAnalyticService.NormalizeMonthlyAnalytic(pageAnalytics);
 
         // Assert
-        result.YearMonth.Should().Be(new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Utc));
+        result.YearMonth.Should().Be(new DateOnly(2024, 6, 1));
     }
 
     [Fact]

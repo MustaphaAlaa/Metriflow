@@ -1,0 +1,356 @@
+ 
+        
+/*
+================================================================================
+Procedure: correlateStagedData
+Author: <Your Name>
+Description:
+    Correlates matching staged analytics records from:
+        - GARecords_staged
+        - PSARecords_staged
+
+    The procedure joins uncorrelated rows from both staging tables,
+    inserts the merged result into PageAnalytics,
+    detects late-arriving aggregates,
+    and marks processed staging rows as correlated.
+
+--------------------------------------------------------------------------------
+Goals
+--------------------------------------------------------------------------------
+
+1. Join uncorrelated staged records from:
+       - GARecords_staged
+       - PSARecords_staged
+
+2. Insert the correlated result into:
+       - PageAnalytics
+
+3. Detect late-arriving analytical data:
+       If an aggregate already exists in TimeIntervalAnalytics,
+       then incoming records indicate a late arrival.
+
+4. Mark affected aggregates as dirty by inserting keys into:
+       - DirtyTimeIntervalAggregates
+
+5. Mark processed staged rows as correlated.
+
+--------------------------------------------------------------------------------
+Processing Flow
+--------------------------------------------------------------------------------
+
+Step 1:
+    Create temporary batch table.
+
+Step 2:
+    Join matching uncorrelated rows from staging tables.
+
+Step 3:
+    Insert joined records into temporary table.
+
+Step 4:
+    Insert batch into PageAnalytics.
+
+Step 5:
+    Detect late arrivals and mark dirty aggregates.
+
+Step 6:
+    Mark staged rows as correlated.
+
+Step 7:
+    Cleanup temporary resources.
+
+--------------------------------------------------------------------------------
+Transaction Behavior
+--------------------------------------------------------------------------------
+
+- Uses explicit transaction handling.
+- Uses XACT_ABORT for automatic rollback on runtime errors.
+- Entire batch is atomic.
+
+--------------------------------------------------------------------------------
+Parameters
+--------------------------------------------------------------------------------
+
+@BatchSize INT
+    Maximum number of correlated rows processed per execution.
+
+--------------------------------------------------------------------------------
+Important Notes
+--------------------------------------------------------------------------------
+
+- Correlation is based on:
+      PageId + Date + Interval
+
+- Only rows where IsCorrelation = 0 are processed.
+
+- Dirty aggregate detection prevents duplicate inserts using NOT EXISTS.
+
+- TABLOCK hint is used during PageAnalytics insert to improve bulk insert
+  performance.
+
+================================================================================
+*/
+
+                    CREATE OR ALTER PROCEDURE correlateStagedData
+                    (
+                        @BatchSize INT
+                    )
+                    AS
+                    BEGIN
+
+                        SET NOCOUNT ON;
+                        SET XACT_ABORT ON;
+
+                        BEGIN TRY
+
+                            BEGIN TRANSACTION;
+
+                            /*
+                            ============================================================================
+                            Step 1: Create Temporary Batch Table
+                            ----------------------------------------------------------------------------
+                            Holds correlated records before final insertion into PageAnalytics.
+                            ============================================================================
+                            */
+
+                            CREATE TABLE #tmp__staged
+                            (
+                                PageId INT NOT NULL,
+                                [Date] DATETIME2 NOT NULL,
+                                DateOnly DATE NOT NULL,
+                                Intervals TINYINT NOT NULL,
+
+                                Users BIGINT NOT NULL,
+                                Sessions BIGINT NOT NULL,
+                                Views BIGINT NOT NULL,
+
+                                PerformanceScore FLOAT NOT NULL,
+                                LcpMs BIGINT NOT NULL
+                            );
+
+
+
+                            /*
+                            ============================================================================
+                            Step 2 + 3:
+                                - Join uncorrelated staged records
+                                - Insert correlated result into temporary table
+                            ----------------------------------------------------------------------------
+                            Correlation Key:
+                                PageId + Date + Interval
+                            ============================================================================
+                            */
+
+                            INSERT INTO #tmp__staged
+                            (
+                                PageId,
+                                [Date],
+                                DateOnly,
+                                Intervals,
+
+                                Users,
+                                Sessions,
+                                Views,
+
+                                PerformanceScore,
+                                LcpMs
+                            )
+
+                            SELECT TOP (@BatchSize)
+
+                                ga.PageId,
+                                ga.[Date],
+                                ga.DateOnly,
+                                ga.Interval,
+
+                                ga.Users,
+                                ga.Sessions,
+                                ga.Views,
+
+                                psa.PerformanceScore,
+                                psa.LCP_MS
+
+                            FROM GARecords_staged ga
+
+                                INNER JOIN PSARecords_staged psa
+                                    ON ga.PageId = psa.PageId
+                                    AND ga.[Date] = psa.[Date]
+                                    AND ga.Interval = psa.Interval
+
+                            WHERE
+                                    ga.IsCorrelation = 0
+                                AND psa.IsCorrelation = 0
+
+                            ORDER BY ga.[Date];
+
+
+
+                            /*
+                            ============================================================================
+                            Exit Early If No Records Were Correlated
+                            ============================================================================
+                            */
+
+                            IF @@ROWCOUNT = 0
+                            BEGIN
+                                COMMIT TRANSACTION;
+                                RETURN;
+                            END;
+
+
+
+                            /*
+                            ============================================================================
+                            Step 4: Insert Correlated Records Into PageAnalytics
+                            ----------------------------------------------------------------------------
+                            TABLOCK is used to optimize bulk insert performance.
+                            ============================================================================
+                            */
+
+                            INSERT INTO PageAnalytics WITH (TABLOCK)
+                            (
+                                PageId,
+                                [Date],
+                                DateOnly,
+                                Intervals,
+
+                                Users,
+                                Sessions,
+                                Views,
+
+                                PerformanceScore,
+                                LcpMs
+                            )
+
+                            SELECT
+                                tmp.PageId,
+                                tmp.[Date],
+                                tmp.DateOnly,
+                                tmp.Intervals,
+
+                                tmp.Users,
+                                tmp.Sessions,
+                                tmp.Views,
+
+                                tmp.PerformanceScore,
+                                tmp.LcpMs
+
+                            FROM #tmp__staged tmp;
+
+
+
+                            /*
+                            ============================================================================
+                            Step 5: Detect Late Arrivals
+                            ----------------------------------------------------------------------------
+
+                            Logic:
+                                If an aggregate already exists in TimeIntervalAnalytics,
+                                then new incoming rows represent late-arriving data.
+
+                            Action:
+                                Mark affected aggregate keys as dirty by inserting them into:
+                                    DirtyTimeIntervalAggregates
+
+                            Duplicate dirty keys are prevented using NOT EXISTS.
+                            ============================================================================
+                            */
+
+                            INSERT INTO DirtyTimeIntervalAggregates
+                            (
+                                PageId,
+                                DateOnly,
+                                IntervalId
+                            )
+
+                            SELECT DISTINCT
+
+                                b.PageId,
+                                b.DateOnly,
+                                b.Intervals
+
+                            FROM #tmp__staged b
+
+                                INNER JOIN TimeIntervalAnalytics tia
+                                    ON tia.PageId = b.PageId
+                                    AND tia.[Date] = b.DateOnly
+                                    AND tia.TimeIntervalId = b.Intervals
+
+                            WHERE NOT EXISTS
+                            (
+                                SELECT 1
+                                FROM DirtyTimeIntervalAggregates d
+                                WHERE
+                                        d.PageId = b.PageId
+                                    AND d.DateOnly = b.DateOnly
+                                    AND d.IntervalId = b.Intervals
+                            );
+
+
+
+                            /*
+                            ============================================================================
+                            Step 6: Mark GA Staged Rows As Correlated
+                            ============================================================================
+                            */
+
+                            UPDATE ga
+                            SET ga.IsCorrelation = 1
+
+                            FROM GARecords_staged ga
+
+                                INNER JOIN #tmp__staged tmp
+                                    ON ga.PageId = tmp.PageId
+                                    AND ga.[Date] = tmp.[Date]
+                                    AND ga.Interval = tmp.Intervals;
+
+
+
+                            /*
+                            ============================================================================
+                            Step 7: Mark PSA Staged Rows As Correlated
+                            ============================================================================
+                            */
+
+                            UPDATE psa
+                            SET psa.IsCorrelation = 1
+
+                            FROM PSARecords_staged psa
+
+                                INNER JOIN #tmp__staged tmp
+                                    ON psa.PageId = tmp.PageId
+                                    AND psa.[Date] = tmp.[Date]
+                                    AND psa.Interval = tmp.Intervals;
+
+
+
+                            /*
+                            ============================================================================
+                            Cleanup
+                            ============================================================================
+                            */
+
+                            DROP TABLE #tmp__staged;
+
+                            COMMIT TRANSACTION;
+
+                        END TRY
+
+                        BEGIN CATCH
+
+                            /*
+                            ============================================================================
+                            Rollback Transaction On Failure
+                            ============================================================================
+                            */
+
+                            IF @@TRANCOUNT > 0
+                                ROLLBACK TRANSACTION;
+
+                            THROW;
+
+                        END CATCH
+
+                    END;
+                    GO
+ 

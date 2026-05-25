@@ -10,4 +10,3 @@ public class TimeInterval
 
     public string IntervalDescription { get; set; } = null!;
 }
-

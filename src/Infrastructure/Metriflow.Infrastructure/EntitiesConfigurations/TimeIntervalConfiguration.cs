@@ -1,8 +1,6 @@
-using System.ComponentModel;
-using System.Reflection;
+
 using Metriflow.Application.Services;
 using Metriflow.Domain.Entities;
-using Metriflow.Domain.Entities.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Metriflow.Infrastructure.EntitiesConfigurations;
@@ -17,8 +15,7 @@ public class TimeIntervalConfiguration : IEntityTypeConfiguration<TimeInterval>
         {
             builder.HasIndex(timeInterval => timeInterval.Interval).IsUnique();
             builder.Property(timeInterval => timeInterval.Interval).IsRequired();
-             builder.HasData(this.TimeIntervalList());
-           
+            builder.HasData(this.TimeIntervalList());
         }
         catch (Exception ex)
         {
@@ -46,9 +43,7 @@ public class TimeIntervalConfiguration : IEntityTypeConfiguration<TimeInterval>
             Console.WriteLine(ex);
         }
 
-       
+
         return null;
     }
-
-    
 }

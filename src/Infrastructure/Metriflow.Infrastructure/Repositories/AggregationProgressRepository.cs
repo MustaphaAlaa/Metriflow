@@ -176,16 +176,16 @@ public class AggregationProgressRepository : BaseRepository<AggregationProgress>
             join ga in Db.GARecords
                 on new { ap.PageId, Date = ap.Date }
                 equals new { ga.PageId, Date = (DateTime)(object)ga.Ticks }
-            join psi in Db.PSIRecords
+            join PSA in Db.PSARecords
                 on new { ap.PageId, Date = ap.Date }
-                equals new { psi.PageId, Date = (DateTime)(object)psi.Ticks }
+                equals new { PSA.PageId, Date = (DateTime)(object)PSA.Ticks }
             select new AggregateRecordsJoins
             {
                 AggregationProgress = ap,
                 Date = ap.Date,
                 PageId = ap.PageId,
                 GARecord = ga,
-                PSIRecord = psi
+                PsaRecord = PSA
             };
 
         return qs;
@@ -227,7 +227,7 @@ public class AggregationProgressRepository : BaseRepository<AggregationProgress>
                          FROM (
                              SELECT "PageId", "Date" FROM "GARecords"
                              UNION ALL
-                             SELECT "PageId", "Date" FROM "PSIRecords"
+                             SELECT "PageId", "Date" FROM "PSARecords"
                          ) AS src
                          WHERE NOT EXISTS (
                              SELECT 1

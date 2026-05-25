@@ -20,7 +20,7 @@ public class TimeIntervalsOrchestration(
     {
         try
         {
-            var unprocessedRecords = pageAnalyticsRepository.GetUnaggregatedIntervalsPageAnalytics().GroupBy(pa => new { pa.Date.Day, pa.PageId, pa.Intervals }).ToDictionary(pa => pa.Key, pa => pa.Select(p => p));
+            var unprocessedRecords = pageAnalyticsRepository.GetUnaggregatedIntervalsPageAnalytics().GroupBy(pa => new { pa.Date.Day, pa.PageId, Intervals = pa.Interval }).ToDictionary(pa => pa.Key, pa => pa.Select(p => p));
 
             if (!unprocessedRecords.Any())
             {

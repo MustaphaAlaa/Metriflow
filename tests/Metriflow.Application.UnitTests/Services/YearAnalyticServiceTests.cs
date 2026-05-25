@@ -23,7 +23,7 @@ public class YearAnalyticServiceTests
     {
         // Arrange
         var monthData = _fixture.Build<MonthlyAnalytic>()
-            .With(x => x.YearMonth, new DateTime(2024, 1, 1))
+            .With(x => x.YearMonth, new DateOnly(2024, 1, 1))
             .CreateMany(12)
             .ToList();
 
@@ -77,7 +77,7 @@ public class YearAnalyticServiceTests
     {
         // Arrange
         var monthData = _fixture.Build<MonthlyAnalytic>()
-            .With(x => x.YearMonth, new DateTime(2023, 5, 1))
+            .With(x => x.YearMonth, new DateOnly(2023, 5, 1))
             .CreateMany(5)
             .ToList();
 
@@ -95,10 +95,10 @@ public class YearAnalyticServiceTests
         var monthData = new List<MonthlyAnalytic>
         {
             _fixture.Build<MonthlyAnalytic>()
-                .With(x => x.YearMonth, new DateTime(2024, 1, 1))
+                .With(x => x.YearMonth, new DateOnly(2024, 1, 1))
                 .Create(),
             _fixture.Build<MonthlyAnalytic>()
-                .With(x => x.YearMonth, new DateTime(2025, 1, 1))
+                .With(x => x.YearMonth, new DateOnly(2025, 1, 1))
                 .Create(),
         };
 
@@ -119,7 +119,7 @@ public class YearAnalyticServiceTests
         {
             monthData.Add(_fixture.Build<MonthlyAnalytic>()
                 .With(x => x.PageId, pageId)
-                .With(x => x.YearMonth, new DateTime(2024, month, 1))
+                .With(x => x.YearMonth, new DateOnly(2024, month, 1))
                 .Create());
         }
 
@@ -137,7 +137,7 @@ public class YearAnalyticServiceTests
     {
         // Arrange
         var monthData = _fixture.Build<MonthlyAnalytic>()
-            .With(x => x.YearMonth, new DateTime(2024, 1, 1))
+            .With(x => x.YearMonth, new DateOnly(2024, 1, 1))
             .CreateMany(6)
             .ToList();
 
@@ -156,12 +156,12 @@ public class YearAnalyticServiceTests
         var firstPageId = _fixture.Create<int>();
         var monthData = _fixture.Build<MonthlyAnalytic>()
             .With(x => x.PageId, firstPageId)
-            .With(x => x.YearMonth, new DateTime(2024, 1, 1))
+            .With(x => x.YearMonth, new DateOnly(2024, 1, 1))
             .CreateMany(1)
             .ToList();
 
         monthData.AddRange(_fixture.Build<MonthlyAnalytic>()
-            .With(x => x.YearMonth, new DateTime(2024, 2, 1))
+            .With(x => x.YearMonth, new DateOnly(2024, 2, 1))
             .CreateMany(1)
             .ToList());
 

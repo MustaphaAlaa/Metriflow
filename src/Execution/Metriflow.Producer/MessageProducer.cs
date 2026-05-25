@@ -1,8 +1,5 @@
-using System.Threading.Channels;
 using Metriflow.Application.Entities;
-using Metriflow.Application.Interfaces;
 using Metriflow.Application.Interfaces.Workers;
-using Metriflow.Domain.Entities.Enums;
 using Metriflow.Domain.Entities.Workers;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -27,30 +24,38 @@ public class MessageProducer(
 
     private string JsonFilePath(string filename) => Path.Combine(environment.ContentRootPath, "data", filename);
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken stoppingToken)
     {
         try
         {
             const int batchSize = 25000;
             logger.LogInformation("Start sending data......");
             var gaMockJson = this.JsonFilePath("GA-mock.json");
-            var psiMockJson = this.JsonFilePath("PSI-mock.json");
+            var psaMockJson = this.JsonFilePath("PSA-mock.json");
 
-            var GA = streamData.RunPipelineAsync<GARecord>(
+            var gaTask = streamData.RunPipelineAsync<GARecord>(
                 gaMockJson,
                 batchSize,
                 (gaRecords) =>
-                    producer.PublishAnalyticRecords<GARecord>(gaRecords, _settings.Queues.GA, _settings.Exchange)
+                    producer.PublishAnalyticRecords(
+                        data: gaRecords,
+                        routingKey: _settings.Queues.GA,
+                        exchangeName: _settings.Exchange,
+                        stoppingToken: stoppingToken)
             );
 
-            var PSI = streamData.RunPipelineAsync<PSIRecord>(
-                psiMockJson,
+            var psaTask = streamData.RunPipelineAsync<PSARecord>(
+                psaMockJson,
                 batchSize,
-                (psiRecords) =>
-                    producer.PublishAnalyticRecords<PSIRecord>(psiRecords, _settings.Queues.PSI, _settings.Exchange)
+                (psaRecords) =>
+                    producer.PublishAnalyticRecords(
+                        data: psaRecords,
+                        routingKey: _settings.Queues.PSA,
+                        exchangeName: _settings.Exchange,
+                        stoppingToken: stoppingToken)
             );
 
-            await Task.WhenAll(GA, PSI);
+            await Task.WhenAll(gaTask, psaTask);
 
             logger.LogInformation("All files is processed.");
         }
