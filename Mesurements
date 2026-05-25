@@ -1,0 +1,61 @@
+This when I used 500K as batch for Ga, and PSA. 600K as batch for PageAnalytics
+
+GARecords → Processed 500000 rows in 22561 ms (22,162 rows/sec)
+PSARecords → Processed 500000 rows in 23725 ms (21,075 rows/sec)
+PageAnalytics → Processed 454307 rows in 89034 ms (5,103 rows/sec)
+
+
+========================================================
+stage: 50K, Page: 20K
+
+
+GARecords → Processed 50000 rows in 2201 ms (22,709 rows/sec)
+PSARecords → Processed 50000 rows in 2133 ms (23,434 rows/sec)
+PageAnalytics → Processed 20000 rows in 3239 ms (6,174 rows/sec)
+
+===========================================
+stage: 105K, Page: 105K
+
+GARecords → Processed 105000 rows in 3597 ms (29,187 rows/sec)
+PSARecords → Processed 105000 rows in 4732 ms (22,185 rows/sec)
+PageAnalytics → Processed 105000 rows in 22854 ms (4,594 rows/sec)
+
+===============================================
+stage: 50K, Page: 50K
+
+GARecords → Processed 50000 rows in 2574 ms (19,422 rows/sec)
+PSARecords → Processed 50000 rows in 3469 ms (14,410 rows/sec)
+PageAnalytics → Processed 50000 rows in 8888 ms (5,625 rows/sec)
+
+
+===============================================
+stage: 60K, Page: 30K
+
+GARecords → Processed 60000 rows in 2502 ms (23,974 rows/sec)
+GARecords → Processed 60000 rows in 6256 ms (9,590 rows/sec)
+PSARecords → Processed 60000 rows in 4224 ms (14,202 rows/sec)
+PSARecords → Processed 60000 rows in 2819 ms (21,280 rows/sec)
+PageAnalytics → Processed 30000 rows in 4255 ms (7,049 rows/sec)
+PageAnalytics → Processed 30000 rows in 5258 ms (5,705 rows/sec)
+PageAnalytics → Processed 30000 rows in 6167 ms (4,864 rows/sec)
+
+
+
+
+--------------------------------------------------------------------------------------
+@TT@ PSARecords → Processed 30000 rows in 1823 ms (16,449 rows/sec)
+@TT@ PSARecords → Processed 30000 rows in 1848 ms (16,229 rows/sec)
+@TT@ PSARecords → Processed 30000 rows in 1445 ms (20,757 rows/sec)
+@TT@ PSARecords → Processed 30000 rows in 1333 ms (22,502 rows/sec
+@TT@ GARecords → Processed 30000 rows in 2598 ms (11,547 rows/sec)
+@TT@ GARecords → Processed 30000 rows in 5237 ms (5,728 rows/sec)
+@TT@ GARecords → Processed 30000 rows in 1535 ms (19,536 rows/sec)
+@TT@ GARecords → Processed 30000 rows in 2061 ms (14,549 rows/sec)
+@TT@ GARecords → Processed 30000 rows in 5289 ms (5,672 rows/sec)
+
+@TT@ PageAnalytics → Processed 30000 rows in 5404 ms (5,551 rows/sec)
+@TT@ PageAnalytics → Processed 30000 rows in 6996 ms (4,288 rows/sec)
+@TT@ PageAnalytics → Processed 30000 rows in 8955 ms (3,350 rows/sec)
+@TT@ PageAnalytics → Processed 30000 rows in 7546 ms (3,975 rows/sec)
+@TT@ PageAnalytics → Processed 30000 rows in 10480 ms (2,862 rows/sec)
+@TT@ PageAnalytics → Processed 30000 rows in 5675 ms (5,286 rows/sec)
