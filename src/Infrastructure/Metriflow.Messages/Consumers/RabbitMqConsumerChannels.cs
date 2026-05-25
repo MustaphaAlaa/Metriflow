@@ -17,9 +17,9 @@ public class RabbitMqConsumerChannels : IMessageBrokerConsumerChannels
     private readonly IMessageBrokerConnection _connection;
     private readonly ILogger<RabbitMqConsumerChannels> _logger;
     private readonly IHandleMessageWithRetry _handleMessageWithRetry;
- 
+
     private const int MaxRetryAttempts = 3;
-    private const int prefetchCount = 30;
+    private int _prefetchCount = 30;
     private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(5);
 
     public RabbitMqConsumerChannels(
@@ -50,9 +50,11 @@ public class RabbitMqConsumerChannels : IMessageBrokerConsumerChannels
         string exchangeName,
         string routingKey,
         Func<T, Task> handleMessage,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        int prefetchCount = 30
     )
     {
+        this._prefetchCount = prefetchCount;
         await SetChannelSettings(channel, queueName, exchangeName, routingKey, cancellationToken);
 
         var consumer = new AsyncEventingBasicConsumer(channel);
@@ -253,7 +255,7 @@ public class RabbitMqConsumerChannels : IMessageBrokerConsumerChannels
 
         await channel.BasicQosAsync(
             prefetchSize: 0,
-            prefetchCount,
+            (ushort)_prefetchCount,
             global: false,
             cancellationToken
         );

@@ -52,6 +52,7 @@ public class RabbitMqConsumer(
         string routingKey,
         Func<T, Task> handleMessage,
         CancellationToken cancellationToken
+       
     )
     {
         if (_sharedChannel is null)
@@ -89,6 +90,7 @@ public class RabbitMqConsumer(
         );
     }
 
+
     /// <inheritdoc/>
     public async Task<IChannel> CreateNewChannelAsync()
     {
@@ -106,13 +108,14 @@ public class RabbitMqConsumer(
         string exchangeName,
         string routingKey,
         Func<T, Task> handleMessage,
-        CancellationToken stoppingToken
+        CancellationToken stoppingToken,
+        int prefetchCount = 30
     )
     {
         await messageBrokerBinding.BindQueueToExchangeAsync(channel: channel, exchangeName: exchangeName,
             routingKey: routingKey,
             queueName: queueName,
-            stoppingToken: stoppingToken); 
+            stoppingToken: stoppingToken);
 
         var consumer = new AsyncEventingBasicConsumer(channel);
         await channel.BasicQosAsync(

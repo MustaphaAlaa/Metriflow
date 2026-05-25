@@ -4,9 +4,9 @@ using Metriflow.Domain.Entities.Workers;
 
 namespace Repositories.Ado;
 
-public class PSARecordDataReader(List<List<PSARecord>> PSARecords) : IDataReader
+public class PsaRecordDataReader(List<List<PSARecord>> psaRecords) : IDataReader
 {
-    private readonly IEnumerator<IEnumerable<PSARecord>> _outer = PSARecords.GetEnumerator();
+    private readonly IEnumerator<IEnumerable<PSARecord>> _outer = psaRecords.GetEnumerator();
     private IEnumerator<PSARecord>? _inner;
     private PSARecord _current;
     public int FieldCount => 7;
